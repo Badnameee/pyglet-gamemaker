@@ -101,7 +101,7 @@ class Button(_PushButton):
 
 	@property
 	def pos(self) -> Point2D:
-		"""The anchored position of the button/"""
+		"""The anchored position of the button"""
 		return self.x + self.anchor_pos[0], self.y + self.anchor_pos[1]
 	@pos.setter
 	def pos(self, val: Point2D) -> None:

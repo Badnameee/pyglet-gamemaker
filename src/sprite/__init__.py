@@ -17,7 +17,7 @@ class SpriteSheet:
 
 		self.lookup: dict[str, int] = {}
 
-	def name(self, *args) -> None:
+	def name(self, *args: str) -> None:
 		"""Name all of the grid parts instead of indexing with numbers"""
 
 		# Must be same number of names as parts of the grid
