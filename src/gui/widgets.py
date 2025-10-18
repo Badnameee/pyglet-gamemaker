@@ -46,7 +46,7 @@ class Button(_PushButton):
 			image_start (str | int): The starting index of the button images
 			window (Window): Window for attaching self
 			batch (Batch): Batch for rendering
-			group (Group): Gorup for rendering
+			group (Group): Group for rendering
 		"""
 		
 		# Extract images from sheet
