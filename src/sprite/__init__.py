@@ -1,1 +1,1 @@
-from .sprite_sheet import *
+from .spritesheet import *
