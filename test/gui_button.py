@@ -44,7 +44,7 @@ def on_draw():
 
 button = Button(
 	'Hi', 320, 240, ('center', 'center'),
-	sheet, window, batch, group,
+	sheet, 0, window, batch, group,
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
 
