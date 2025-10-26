@@ -33,8 +33,8 @@ def on_key_press(symbol: int, modifiers: int):
 	else:
 		return
 
-	print(f'New txt pos: {txt.pos}, {txt2.pos}')
-	print(f'New txt font: {txt.font_name, txt.font_size}, {txt2.font_name, txt2.font_size}')
+	print(f'New txt pos: txt={txt.pos}, txt2={txt2.pos}')
+	print(f'New txt font: txt={txt.font_name, txt.font_size}, txt2={txt2.font_name, txt2.font_size}')
 
 @window.event
 def on_draw():
