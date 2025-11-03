@@ -1,8 +1,5 @@
-# Built-In Modules
 from abc import ABC, abstractmethod
 
-# Pip Modules
-import pyglet
 from pyglet.window import Window
 from pyglet.event import EventDispatcher
 from pyglet.graphics import Batch
