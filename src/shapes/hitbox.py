@@ -15,11 +15,29 @@ class Hitbox:
 	Can use `from_rect` to get coords for rectangle
 	"""
 
-	_global_anchor_pos: Point2D = 0, 0
-	_anchor_coords: tuple[Point2D, ...] = tuple()
+	_local_coords: tuple[Point2D, ...] = tuple()
+	"""Holds the *untransformed* coords relative to first coordinate"""
 	_raw_coords: tuple[Point2D, ...] = tuple()
+	"""Holds the *untransformed* global coords"""
+	_unanchored_coords: tuple[Point2D, ...] = tuple()
+	"""Holds the *unanchored*, global coords"""
+	_anchor_coords: tuple[Point2D, ...] = tuple()
+	"""Holds the *untransformed* coords relative to anchor pos"""
+	_rotation_amount: tuple[Point2D, ...] = tuple()
+	"""Holds the translation due to rotation of each point"""
 	_anchor_pos: Point2D = 0, 0
 	_angle: float = 0
+
+	coords: tuple[Point2D, ...]
+	"""The final coordinates of the hitbox"""
+	_trans_pos: Point2D
+	"""Holds the translation amount from (0, 0)"""
+	_forced_axes: list[Vec2]
+	"""The axes that are forcibly added on top of normal axes (used for circles)"""
+	is_circle: bool
+	"""Whether hitbox is a circle (for SAT)"""
+	is_rect: bool
+	"""Whether hitbox is a rectangle (for SAT)"""
 
 	def __init__(self,
 			coords: tuple[Point2D, ...],
@@ -40,12 +58,11 @@ class Hitbox:
 		if len(coords) <= 2:
 			raise ValueError(f'Hitbox needs at least 2 coordinates ({len(coords)} passed).')
 
-		self.coords: tuple[Point2D, ...] = coords
-		self._global_anchor_pos = coords[0]
+		self._trans_pos = coords[0]
 		self._raw_coords = coords
 		self.anchor_pos = anchor_pos
 
-		self._forced_axes: list[Vec2] = []
+		self._forced_axes = []
 		self.is_circle = circle
 		self.is_rect = rect
 
@@ -307,26 +324,83 @@ class Hitbox:
 		converted_circle._forced_axes.append(least[0])
 		return converted_circle.collide(hitbox, sacrifice_MTV)
 
-	def calc_coords(self) -> None:
-		"""Updates coordinates based on new start_coords, angle, and/or anchor_pos"""
-		self._calc_anchor_coords()
+	def _calc_coords(self) -> None:
+		"""Updates coordinates based on new , angle, and/or anchor_pos"""
 
-		# Get actual vertices
-		self.coords = []
-		for x, y in self._anchor_coords:
-			new_x = x * math.cos(self.angle) - y * math.sin(self.angle)
-			new_y = x * math.sin(self.angle) + y * math.cos(self.angle)
-			self.coords.append((new_x + self._raw_coords[0][0], new_y + self._raw_coords[0][1]))
+		# Steps:
+		#	1. Update local coords
+		#	2. Update anchor coords
+		#	3. Get displacement caused by rotation of anchor coords
+		#	4. Add translation to local to get raw
+		#	5. Add anchor rotation displacement to raw to get unanchored
+		#	6. Add anchor to unanchored to get final
 
-	def _calc_anchor_coords(self) -> None:
-		"""Updates anchor coordinates (when anchor position changes)"""
-		bottomleft_anchor = -self.anchor_x, -self.anchor_y
-		self._anchor_coords = tuple(
+		self._local_coords = tuple(
 			(
-				bottomleft_anchor[0] + coord[0] - self._global_anchor_pos[0],
-				bottomleft_anchor[1] + coord[1] - self._global_anchor_pos[1],
+				coord[0] - self._raw_coords[0][0],
+				coord[1] - self._raw_coords[0][1],
 			)
 			for coord in self._raw_coords
+		)
+
+		self._anchor_coords = tuple(
+			(
+				coord[0] - self.anchor_x,
+				coord[1] - self.anchor_y
+			)
+			for coord in self._local_coords
+		)
+		self._rotation_amount = tuple(
+			(
+				self._get_rotated_pos(coord, 'x') - coord[0], # type: ignore[operator]
+				self._get_rotated_pos(coord, 'y') - coord[1] # type: ignore[operator]
+			)
+			for coord in self._anchor_coords
+		)
+
+		self._raw_coords = tuple(
+			(
+				coord[0] + self._trans_pos[0],
+				coord[1] + self._trans_pos[1]
+			)
+			for coord in self._local_coords
+		)
+
+		self._unanchored_coords = tuple(
+			(
+				coord[0] + rotation[0],
+				coord[1] + rotation[1]
+			)
+			for coord, rotation in zip(self._raw_coords, self._rotation_amount)
+		)
+
+		self.coords = tuple(
+			(
+				coord[0] - self.anchor_x,
+				coord[1] - self.anchor_y
+			)
+			for coord in self._unanchored_coords
+		)
+
+	def _get_rotated_pos(self, coord: Point2D, axis: Axis) -> float | Point2D:
+		"""Gets the rotated point using `angle`.
+
+		Args:
+			coord (Point2D): The coordinate to rotate
+			axis (Axis): The Axis to calculate it on
+		
+		Returns:
+			float | Point2D: The rotated point or single-axis coord
+		"""
+
+		if axis == 'x':
+			return coord[0] * math.cos(self.angle) - coord[1] * math.sin(self.angle)
+		if axis == 'y':
+			return coord[0] * math.sin(self.angle) + coord[1] * math.cos(self.angle)
+		
+		return (
+			coord[0] * math.cos(self.angle) - coord[1] * math.sin(self.angle),
+			coord[0] * math.sin(self.angle) + coord[1] * math.cos(self.angle)
 		)
 
 	def move_to(self, x: float, y: float) -> None:
@@ -335,14 +409,8 @@ class Hitbox:
 		Args:
 			pos (Point2D): The anchored position to move to
 		"""
-		# Calculate translation using old and new pos
-		trans = x - self._global_anchor_pos[0], y - self._global_anchor_pos[1]
-		print(trans)
-		# Translate coords
-		self._raw_coords = tuple((coord[0] + trans[0], coord[1] + trans[1]) for coord in self._raw_coords)
-		
-		self._global_anchor_pos = x, y
-		self.calc_coords()
+		self._trans_pos = x, y		
+		self._calc_coords()
 
 	@property
 	def anchor_x(self) -> float:
@@ -350,9 +418,8 @@ class Hitbox:
 		return self._anchor_pos[0]
 	@anchor_x.setter
 	def anchor_x(self, val: float) -> None:
-		trans = self.anchor_x - val
 		self._anchor_pos = val, self.anchor_y
-		self.move_to(self._global_anchor_pos[0] + trans, self._global_anchor_pos[1])
+		self._calc_coords()
 
 	@property
 	def anchor_y(self) -> float:
@@ -360,9 +427,8 @@ class Hitbox:
 		return self._anchor_pos[1]
 	@anchor_y.setter
 	def anchor_y(self, val: float) -> None:
-		trans = self.anchor_y - val
 		self._anchor_pos = self.anchor_x, val
-		self.move_to(self._global_anchor_pos[0], self._global_anchor_pos[1] + trans)
+		self._calc_coords()
 
 	@property
 	def anchor_pos(self) -> Point2D:
@@ -370,9 +436,8 @@ class Hitbox:
 		return self._anchor_pos
 	@anchor_pos.setter
 	def anchor_pos(self, val: Point2D) -> None:
-		trans = self.anchor_x - val[0], self.anchor_y - val[1]
 		self._anchor_pos = val
-		self.move_to(self._global_anchor_pos[0] + trans[0], self._global_anchor_pos[1] + trans[1])
+		self._calc_coords()
 
 	@property
 	def angle(self) -> float:
@@ -381,7 +446,7 @@ class Hitbox:
 	@angle.setter
 	def angle(self, val: float) -> None:
 		self._angle = val
-		self.calc_coords()
+		self._calc_coords()
 
 
 class HitboxRender(Hitbox):
@@ -411,14 +476,14 @@ class HitboxRender(Hitbox):
 
 		self._hitbox_color = color
 
-	def calc_coords(self):
-		super().calc_coords()
+	def _calc_coords(self):
+		super()._calc_coords()
 
 		# Update polygon render
-		self.render._coordinates = self._raw_coords
+		self.render._coordinates = self.coords
 		self.render._update_vertices()
-		self.render.x = self._raw_coords[0][0]
-		self.render.y = self._raw_coords[0][1]
+		self.render.x = self.coords[0][0]
+		self.render.y = self.coords[0][1]
 
 	@property
 	def hitbox_color(self) -> Color:
