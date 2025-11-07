@@ -77,9 +77,6 @@ class Rect(HitboxRender):
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
 		return self._raw_coords[0]
-	@bottomleft.setter
-	def bottomleft(self, val: Point2D) -> None:
-		raise NotImplementedError('Rect.bottomleft cannot be set, set dimensions instead.')
 	
 	@property
 	def bottomright(self) -> Point2D:
@@ -88,9 +85,6 @@ class Rect(HitboxRender):
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
 		return self._raw_coords[1]
-	@bottomright.setter
-	def bottomright(self, val: Point2D) -> None:
-		raise NotImplementedError('Rect.bottomright cannot be set, set dimensions instead.')
 	
 	@property
 	def topright(self) -> Point2D:
@@ -99,9 +93,6 @@ class Rect(HitboxRender):
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
 		return self._raw_coords[2]
-	@topright.setter
-	def topright(self, val: Point2D) -> None:
-		raise NotImplementedError('Rect.topright cannot be set, set dimensions instead.')
 	
 	@property
 	def topleft(self) -> Point2D:
@@ -110,9 +101,6 @@ class Rect(HitboxRender):
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
 		return self._raw_coords[3]
-	@topleft.setter
-	def topleft(self, val: Point2D) -> None:
-		raise NotImplementedError('Rect.topleft cannot be set, set dimensions instead.')
 	
 	@property
 	def width(self) -> float:
