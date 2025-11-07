@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class Button(_PushButton):
-	"""A basic button.
+	"""A basic 2D button.
 	
 	Takes images for all 3 states ('Unpressed', 'Hover', 'Pressed').
 

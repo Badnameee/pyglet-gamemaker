@@ -13,26 +13,30 @@ if TYPE_CHECKING:
 
 
 class TextButton(Button):
+	"""Both a 2D button and 2D text in one.
+
+	Dispatches 'on_half_click' when pressed, and 'on_full_click' when pressed and released without mouse moving off.
+	
+	Use kwargs to attach event handlers.
+	"""
 
 	# Store as property to reset size when manually changing
 	_hover_enlarge = 0
 
 	def __init__(self,
 			ID: str,
-			image_sheet: SpriteSheet, image_start: str | int,
-			window: Window,
+			text: str,
+			x: float, y: float,
+			window: Window, batch: Batch, group: Group,
 
+			# Button params
+			image_sheet: SpriteSheet, image_start: str | int,
+			button_anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
+			
 			# Text params
-			text: str = '',
-			x: float = 0, y: float = 0,
-			width: int | None = None, height: int | None = None,
-			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'), rotation: float = 0.0,
-			multiline: bool = False, dpi: int | None = None,
+			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
 			font_info: FontInfo = (None, None),
-			weight: str = "normal", italic: bool | str = False, stretch: bool | str=False,
 			color: Color = Color.WHITE,
-			align: HorizontalAlign = "left",
-			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None,
 
 			hover_enlarge: int = 0, **kwargs
 	) -> None:
@@ -40,45 +44,33 @@ class TextButton(Button):
 
 		Args:
 			ID (str): Name/ID of widget
+			text (str): Label text
+			x (float): Anchored x position of button
+			y (float): Anchored y position of button
+			window (Window): Window for attaching self
+			batch (Batch): Batch for rendering
+			group (Group): Group for rendering
 			image_sheet (SpriteSheet): SpriteSheet with the button images
 			image_start (str | int): The starting index of the button images
-			window (Window): Window for attaching self
-			text (str, optional): Label text. Defaults to ''.
-			x (float, optional): Anchored x position of button. Defaults to 0.
-			y (float, optional): Anchored y position of button. Defaults to 0.
-			width (int | None, optional): Width of label. Defaults to None.
-			height (int | None, optional): Height of label. Defaults to None.
-			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
-			rotation (float, optional): Rotation of text. Defaults to 0.0.
-			multiline (bool, optional): Whether text is multiline. Defaults to False.
-			dpi (int | None, optional): DPI of text. Defaults to None.
+			button_anchor (tuple[AnchorX, AnchorY], optional): Anchor for the button. Defaults to ('center', 'baseline').
 			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
-			weight (str, optional): Weight of text. Defaults to "normal".
-			italic (bool | str, optional): Whether to italicize text. Defaults to False.
-			stretch (bool | str, optional): Whether to stretch text.. Defaults to False.
 			color (Color, optional): Color of text. Defaults to Color.WHITE.
-			align (HorizontalAlign, optional): x alignment of text. Defaults to "left".
-			batch (Batch | None, optional): Batch for rendering. Defaults to None.
-			group (Group | None, optional): Group for rendering. Defaults to None.
-			program (ShaderProgram | None, optional): Shader for rendering. Defaults to None.
 			hover_enlarge (int, optional): How much to enlarge text when hovered over. Defaults to 0.
+
+			**kwargs: Any event handlers to attach (such as 'on_full_click')
 		"""
 		
-		super().__init__(ID, x, y, anchor, image_sheet, image_start, window, batch, group, **kwargs)
+		super().__init__(ID, x, y, button_anchor, image_sheet, image_start, window, batch, group, **kwargs)
 		self.enlarged = False
 		self.hover_enlarge = hover_enlarge
 
 		self.text_render = Text(
 			text,
 			x, y,
-			width, height,
-			anchor, rotation,
-			multiline, dpi,
+			batch, group,
+			anchor,
 			font_info,
-			weight, italic, stretch,
 			color,
-			align,
-			batch, group, program
 		)
 
 	def enlarge(self) -> None:

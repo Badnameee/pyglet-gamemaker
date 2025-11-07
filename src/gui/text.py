@@ -4,61 +4,46 @@ from typing import TYPE_CHECKING
 from ..types import *
 from pyglet.text import Label
 if TYPE_CHECKING:
-	from pyglet.customtypes import AnchorX, AnchorY, HorizontalAlign
-	from pyglet.graphics.shader import ShaderProgram
+	from pyglet.customtypes import AnchorX, AnchorY
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
 
 
 class Text(Label):
-	"""A label with extra functions, mainly offsetting for scrolling."""
+	"""A 2D label with extra functions, mainly offsetting for scrolling.
+	
+	Use kwargs to attach event handlers.
+	"""
 
 	_text = ''
 
 	def __init__(self,
-			text: str = '',
-			x: float = 0, y: float = 0,
-			width: int | None = None, height: int | None = None,
-			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'), rotation: float = 0.0,
-			multiline: bool = False, dpi: int | None = None,
+			text: str,
+			x: float, y: float,
+			batch: Batch, group: Group,
+			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
 			font_info: FontInfo = (None, None),
-			weight: str = "normal", italic: bool | str = False, stretch: bool | str=False,
 			color: Color = Color.WHITE,
-			align: HorizontalAlign = "left",
-			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None
 	) -> None:
-		"""Create a text label
+		"""Create a text label.
 
 		Args:
-			text (str, optional): Label text. Defaults to ''.
-			x (float, optional): Anchored x position. Defaults to 0.
-			y (float, optional): Anchored y position. Defaults to 0.
-			width (int | None, optional): Width of label. Defaults to None.
-			height (int | None, optional): Height of label. Defaults to None.
+			text (str): Label text
+			x (float): Anchored x position. Defaults to 0
+			y (float): Anchored y position. Defaults to 0
+			batch (Batch): Batch for rendering
+			group (Group): Group for rendering
 			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
-			rotation (float, optional): Rotation of text. Defaults to 0.0.
-			multiline (bool, optional): Whether text is multiline. Defaults to False.
-			dpi (int | None, optional): DPI of text. Defaults to None.
 			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
-			weight (str, optional): Weight of text. Defaults to "normal".
-			italic (bool | str, optional): Whether to italicize text. Defaults to False.
-			stretch (bool | str, optional): Whether to stretch text.. Defaults to False.
 			color (Color, optional): Color of text. Defaults to Color.WHITE.
-			align (HorizontalAlign, optional): x alignment of text. Defaults to "left".
-			batch (Batch | None, optional): Batch for rendering. Defaults to None.
-			group (Group | None, optional): Group for rendering. Defaults to None.
-			program (ShaderProgram | None, optional): Shader for rendering. Defaults to None.
 		"""
 
 		super().__init__(
 			text, x, y, 0,
-			width, height, *anchor, rotation,
-			multiline, dpi,
-			*font_info,
-			weight, italic, stretch,
-			color.value,
-			align, # type: ignore[arg-type]
-			batch, group, program
+			anchor_x=anchor[0], anchor_y=anchor[1],
+			font_name=font_info[0], font_size=font_info[1],
+			color=color.value,
+			batch=batch, group=group
 		)
 
 		self.start_pos = x, y
@@ -69,50 +54,30 @@ class Text(Label):
 	def from_scale[T: Text](cls: type[T],
 			scale: tuple[float, float],
 			window: Window,
-			text: str = '',
-			width: int | None = None, height: int | None = None,
-			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'), rotation: float = 0.0,
-			multiline: bool = False, dpi: int | None = None,
+			text: str,
+			batch: Batch , group: Group,
+			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
 			font_info: FontInfo = (None, None),
-			weight: str = "normal", italic: bool | str = False, stretch: bool | str=False,
 			color: Color = Color.WHITE,
-			align: HorizontalAlign = "left",
-			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None
 	) -> T:
-		"""Create a button with text
+		"""Create a button with text.
 
 		Args:
 			scale (tuple[float, float]): The (x, y) scale for label
 			window (Window): Window for scaling
-			text (str, optional): Label text. Defaults to ''.
-			x (float, optional): Anchored x position. Defaults to 0.
-			y (float, optional): Anchored y position. Defaults to 0.
-			width (int | None, optional): Width of label. Defaults to None.
-			height (int | None, optional): Height of label. Defaults to None.
+			text (str): Label text
+			batch (Batch): Batch for rendering
+			group (Group): Group for rendering
 			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
-			rotation (float, optional): Rotation of text. Defaults to 0.0.
-			multiline (bool, optional): Whether text is multiline. Defaults to False.
-			dpi (int | None, optional): DPI of text. Defaults to None.
 			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
-			weight (str, optional): Weight of text. Defaults to "normal".
-			italic (bool | str, optional): Whether to italicize text. Defaults to False.
-			stretch (bool | str, optional): Whether to stretch text.. Defaults to False.
 			color (Color, optional): Color of text. Defaults to Color.WHITE.
-			align (HorizontalAlign, optional): x alignment of text. Defaults to "left".
-			batch (Batch | None, optional): Batch for rendering. Defaults to None.
-			group (Group | None, optional): Group for rendering. Defaults to None.
-			program (ShaderProgram | None, optional): Shader for rendering. Defaults to None.
-			hover_enlarge (int, optional): How much to enlarge text when hovered over. Defaults to 0.
 		"""
 		return cls(
 			text, scale[0] * window.width, scale[1] * window.height,
-			width, height, anchor, rotation,
-			multiline, dpi,
+			batch, group,
+			anchor,
 			font_info,
-			weight, italic, stretch,
 			color,
-			align, # type: ignore[arg-type]
-			batch, group, program
 		)
 
 	def offset(self, val: Point2D) -> None:
@@ -125,7 +90,7 @@ class Text(Label):
 		self.x, self.y = self.start_pos[0] + val[0], self.start_pos[1] + val[1]
 
 	def reset(self) -> None:
-		"""Reset text to creation state"""
+		"""Reset text to initial state"""
 		self.x, self.y = self.start_pos
 		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
 
