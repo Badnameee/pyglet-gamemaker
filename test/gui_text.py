@@ -5,7 +5,7 @@ from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
 from src.gui import Text
 
-window = Window(640, 480)
+window = Window(640, 480, caption=__name__)
 batch = Batch()
 group = Group()
 

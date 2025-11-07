@@ -6,7 +6,7 @@ from pyglet.graphics import Batch, Group
 from src.gui import Button
 from src.sprite import SpriteSheet
 
-window = Window(640, 480)
+window = Window(640, 480, caption=__name__)
 pyglet.gl.glClearColor(1, 1, 1, 1)
 batch = Batch()
 group = Group()

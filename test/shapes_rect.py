@@ -6,7 +6,7 @@ from pyglet.graphics import Batch, Group
 from src.shapes import Rect, HitboxRender
 from src.types import Color
 
-window = Window(640, 480)
+window = Window(640, 480, caption=__name__)
 batch = Batch()
 group = Group()
 

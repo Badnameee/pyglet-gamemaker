@@ -6,7 +6,7 @@ from pyglet.graphics import Batch, Group
 from src.gui import TextButton
 from src.sprite import SpriteSheet
 
-window = Window(640, 480)
+window = Window(640, 480, caption=__name__)
 pyglet.gl.glClearColor(1, 1, 1, 1)
 batch = Batch()
 group = Group()
@@ -46,11 +46,13 @@ def on_draw():
 	batch.draw()
 
 button = TextButton(
-	'Hi', sheet, 0,
-	window,
-	'This is text!', 320, 240, anchor=('center', 'center'),
+	'Hi',
+	'This is text!', 320, 240,
+	window, batch, group,
+	sheet, 0,
+	('center', 'center'),
+	('center', 'center'),
 	font_info=('Arial', 30),
-	batch=batch, group=group,
 	hover_enlarge=3,
 	on_half_click=on_half_click, on_full_click=on_full_click
 )

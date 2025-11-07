@@ -13,7 +13,7 @@ for test_num, test in enumerate(tests, 1):
 		'\n'
 		'-----------------------------'
 		'\n'
-		f'Starting test #{test_num}'
+		f'Starting test #{test_num}: "{test}"'
 		'\n'
 		'\n'
 	)

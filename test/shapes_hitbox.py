@@ -9,7 +9,7 @@ from pyglet.shapes import Circle
 from src.shapes import HitboxRender
 from src.types import Color
 
-window = Window(640, 480)
+window = Window(640, 480, caption=__name__)
 batch = Batch()
 group = Group()
 
