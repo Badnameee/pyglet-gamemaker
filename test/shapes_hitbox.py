@@ -22,10 +22,8 @@ mode = 'rect'
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):
-	if mode == 'rect':
-		hitbox.move_to(x, y)
-	elif mode == 'circle':
-		circle.position = x, y
+	hitbox.move_to(x, y)
+	circle.position = x, y
 
 @window.event
 def on_key_press(symbol, modifiers):
