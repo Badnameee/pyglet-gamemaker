@@ -84,10 +84,12 @@ class Hitbox:
 			anchor_pos (Point2D): Anchor position
 		"""
 		return cls(
-			(x, y),
-			(x+width, y),
-			(x+width, y+height),
-			(x, y+height),
+			(
+				(x, y),
+				(x+width, y),
+				(x+width, y+height),
+				(x, y+height)
+			),
 			anchor_pos, _subtype='rect'
 		)
 
@@ -195,7 +197,10 @@ class Hitbox:
 		"""
 		return (l1[0] < l2[0] and l1[1] > l2[1]) or (l2[0] < l1[0] and l2[1] > l1[1])
 	
-	def collide(self, other: Hitbox, sacrifice_MTV: bool=False) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	def collide(self,
+			other: Hitbox | HitboxRender | HitboxRenderCircle,
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
 		"""Runs the SAT algorithm to determine if 2 objects are colliding.
 		
 		The object method is invoked on should be the one that will move after
@@ -210,6 +215,10 @@ class Hitbox:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
 			collision passed and MTV (None if no collision)
 		"""
+
+		# Get hitbox if not subclass
+		if not isinstance(other, Hitbox):
+			other = other.hitbox
 
 		# If other is Circle, then call from circle POV to get forced axis
 		#	First clause prevents infinite recursion
@@ -244,13 +253,13 @@ class Hitbox:
 		return True, MTV_axis * MTV_len
 	
 	def collide_any(self,
-			hitboxes: list[Hitbox],
+			others: list[Hitbox],
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
-		"""Runs the SAT algorithm on a list of hitboxes.
+		"""Runs the SAT algorithm on a list of others.
 
 		Args:
-			hitboxes (list[Hitbox]): List of hitboxes to check collision with self
+			others (list[Hitbox]): List of others to check collision with self
 			sacrifice_MTV (bool, optional): Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
@@ -258,7 +267,7 @@ class Hitbox:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
 			collision passed and MTV (None if no collision)
 		"""
-		for rect in hitboxes:
+		for rect in others:
 			if (collision_info:= self.collide(rect, sacrifice_MTV))[0]:
 				return collision_info
 			
@@ -422,17 +431,30 @@ class HitboxCircle(Hitbox):
 		proj = axis.dot(Vec2(*self.coords[0]))
 		return proj - self.radius, proj + self.radius
 
-	def collide(self, other: Hitbox, sacrifice_MTV: bool = False) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
-		self.set_collision_axis(other)
-		return super().collide(other, sacrifice_MTV)
-	
-	def set_collision_axis(self,
-			hitbox: Hitbox
+	def collide(self,
+			other: Hitbox | HitboxRender | HitboxRenderCircle,
+			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		self._set_collision_axis(other)
+		return super().collide(other, sacrifice_MTV)
+
+	def collide_any(self,
+			others: list[Hitbox],
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		for rect in others:
+			if (collision_info:= self.collide(rect, sacrifice_MTV))[0]:
+				return collision_info
+		
+		return False, None
+	
+	def _set_collision_axis(self,
+			hitbox: Hitbox | HitboxRender | HitboxRenderCircle
+	) -> None:
 		"""Gets closest point on hitbox to circle
 
 		Args:
-			hitbox (Hitbox): Hitbox to check collision with
+			hitbox (Hitbox): Hitbox | HitboxRender | HitboxRenderCircle to check collision with
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -444,6 +466,10 @@ class HitboxCircle(Hitbox):
 			#	(or 2 endpoints of v2) by forcing scale factor to be from 0-1
 			#	This facilitates finding closest points on polygon to circle center
 			return pyglet.math.clamp(v1.dot(v2) / v2.length_squared(), 0, 1) * v2
+		
+		# Get hitbox if not subclass
+		if not isinstance(hitbox, Hitbox):
+			hitbox = hitbox.hitbox
 
 		# Get closest point to other hitbox
 		least = Vec2(0, 0), float('inf')
@@ -472,11 +498,6 @@ class HitboxCircle(Hitbox):
 
 		self.axis = least[0]
 
-	def move_to(self, x: float, y: float) -> None:
-		self.coords = ((x, y), (self.radius, 0))
-		self._trans_pos = x, y
-		self._calc_coords()
-
 	def _calc_coords(self):
 		# Same algorithm as in Hitbox, but optimized for single center coordinate of circle
 		self._local_coords = (0, 0),
@@ -495,6 +516,11 @@ class HitboxCircle(Hitbox):
 			self._unanchored_coords[0][1] - self.anchor_y
 		),
 
+	def move_to(self, x: float, y: float) -> None:
+		self.coords = ((x, y), (self.radius, 0))
+		self._trans_pos = x, y
+		self._calc_coords()
+
 	@property
 	def x(self) -> float:
 		return self._trans_pos[0]
@@ -508,11 +534,14 @@ class HitboxCircle(Hitbox):
 		return self._trans_pos
 
 
-class HitboxRender(Hitbox):
-	"""Holds a Hitbox with a `render` object to render the hitbox"""
+class HitboxRender:
+	"""Holds a Hitbox with `hitbox` and `render` objects"""
 
 	_hitbox_color: Color
-	
+	hitbox: Hitbox
+	render: Polygon
+	subtype: str | None
+
 	def __init__(self,
 			coords: tuple[Point2D, ...],
 			color: Color, batch: Batch, group: Group,
@@ -531,8 +560,9 @@ class HitboxRender(Hitbox):
 			rect (bool, optional): Whether hitbox is a rectangle (for SAT). Defaults to False.
 		"""
 		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
-		super().__init__(coords, anchor_pos, _subtype=subtype)
+		self.hitbox = Hitbox(coords, anchor_pos, _subtype=subtype)
 
+		self.subtype = subtype
 		self._hitbox_color = color
 
 	@classmethod
@@ -554,24 +584,77 @@ class HitboxRender(Hitbox):
 			group (Group): The group for rendering
 			anchor_pos (Point2D): Anchor position
 		"""
-		
-		coords = (x, y), (x+width, y), (x+width, y+height), (x, y+height)
-		return cls(coords, color, batch, group, anchor_pos, subtype='rect')
-
-	@classmethod
-	def from_circle(cls, *args, **kwargs) -> NoReturn:
-		return NotImplementedError(
-			'HitboxRender.from_circle() not implemented. Use HitboxRenderCircle instead.'
+		return cls(
+			(
+				(x, y),
+				(x+width, y),
+				(x+width, y+height),
+				(x, y+height)
+			),
+			color, batch, group, anchor_pos, subtype='rect'
 		)
+	
+	def collide(self,
+			other: Hitbox | HitboxRender | HitboxRenderCircle,
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		return self.hitbox.collide(other, sacrifice_MTV)
+	
+	def collide_any(self,
+			others: list[Hitbox],
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		return self.hitbox.collide_any(others, sacrifice_MTV)
 
 	def _calc_coords(self):
-		super()._calc_coords()
+		self.hitbox._calc_coords()
 
 		# Update polygon render
-		self.render._coordinates = self.coords
+		self.render._coordinates = self.hitbox.coords
 		self.render._update_vertices()
-		self.render.x = self.coords[0][0]
-		self.render.y = self.coords[0][1]
+		self.render.x = self.hitbox.coords[0][0]
+		self.render.y = self.hitbox.coords[0][1]
+	
+	def move_to(self, x: float, y: float) -> None:
+		"""Move the hitbox to a location based on anchor."""
+		self.hitbox._trans_pos = x, y		
+		self._calc_coords()
+
+	@property
+	def anchor_x(self) -> float:
+		"""Anchor on x-axis"""
+		return self.hitbox.anchor_x
+	@anchor_x.setter
+	def anchor_x(self, val: float) -> None:
+		self.hitbox._anchor_pos = val, self.anchor_y
+		self._calc_coords()
+
+	@property
+	def anchor_y(self) -> float:
+		"""Anchor on y-axis"""
+		return self.hitbox.anchor_y
+	@anchor_y.setter
+	def anchor_y(self, val: float) -> None:
+		self.hitbox._anchor_pos = self.anchor_x, val
+		self._calc_coords()
+
+	@property
+	def anchor_pos(self) -> Point2D:
+		"""Anchor position (x, y)"""
+		return self.hitbox._anchor_pos
+	@anchor_pos.setter
+	def anchor_pos(self, val: Point2D) -> None:
+		self.hitbox._anchor_pos = val
+		self._calc_coords()
+
+	@property
+	def angle(self) -> float:
+		"""Angle, in radians, of hitbox"""
+		return self.hitbox._angle
+	@angle.setter
+	def angle(self, val: float) -> None:
+		self.hitbox._angle = val
+		self._calc_coords()
 
 	@property
 	def hitbox_color(self) -> Color:
@@ -583,10 +666,13 @@ class HitboxRender(Hitbox):
 		self.render.color = val.value
 
 
-class HitboxRenderCircle(HitboxCircle):
-	"""Holds a Circle Hitbox with a `render` object to render the circle"""
+class HitboxRenderCircle:
+	"""Holds a Circle Hitbox with `hitbox` and `render` objects"""
 
 	_hitbox_color: Color
+	hitbox: HitboxCircle
+	render: Circle
+	subtype: str | None
 	
 	def __init__(self,
 			x: float, y: float, radius: float,
@@ -605,25 +691,79 @@ class HitboxRenderCircle(HitboxCircle):
 			anchor_pos (Point2D, optional): The anchor position. Defaults to (0, 0).
 		"""
 		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
-		super().__init__(x, y, radius, anchor_pos)
+		self.hitbox = HitboxCircle(x, y, radius, anchor_pos)
 
+		self.subtype = 'circle'
 		self._hitbox_color = color
 
-	@classmethod
-	def from_rect(cls, *args, **kwargs) -> Self:
-		return NotImplementedError(
-			'HitboxRenderCircle.from_rect() not implemented. Use HitboxRender instead.'
-		)
-
-	@classmethod
-	def from_circle(cls, *args, **kwargs) -> NoReturn:
-		return NotImplementedError(
-			'HitboxRenderCircle.from_circle() not implemented. Use default constructor.'
-		)
+	def collide(self,
+			other: Hitbox | HitboxRender | HitboxRenderCircle,
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		return self.hitbox.collide(other, sacrifice_MTV)
+	
+	def collide_any(self,
+			others: list[Hitbox],
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		return self.hitbox.collide_any(others, sacrifice_MTV)
 
 	def _calc_coords(self):
-		super()._calc_coords()
-		self.render.position = self.coords[0]
+		self.hitbox._calc_coords()
+		self.render.position = self.hitbox.coords[0]
+		
+	def move_to(self, x: float, y: float) -> None:
+		self.hitbox.coords = ((x, y), (self.hitbox.radius, 0))
+		self.hitbox._trans_pos = x, y
+		self._calc_coords()
+
+	@property
+	def anchor_x(self) -> float:
+		"""Anchor on x-axis"""
+		return self.hitbox.anchor_x
+	@anchor_x.setter
+	def anchor_x(self, val: float) -> None:
+		self.hitbox._anchor_pos = val, self.anchor_y
+		self._calc_coords()
+
+	@property
+	def anchor_y(self) -> float:
+		"""Anchor on y-axis"""
+		return self.hitbox.anchor_y
+	@anchor_y.setter
+	def anchor_y(self, val: float) -> None:
+		self.hitbox._anchor_pos = self.anchor_x, val
+		self._calc_coords()
+
+	@property
+	def anchor_pos(self) -> Point2D:
+		"""Anchor position (x, y)"""
+		return self.hitbox._anchor_pos
+	@anchor_pos.setter
+	def anchor_pos(self, val: Point2D) -> None:
+		self.hitbox._anchor_pos = val
+		self._calc_coords()
+
+	@property
+	def angle(self) -> float:
+		"""Angle, in radians, of hitbox"""
+		return self.hitbox._angle
+	@angle.setter
+	def angle(self, val: float) -> None:
+		self.hitbox._angle = val
+		self._calc_coords()
+
+	@property
+	def x(self) -> float:
+		return self.hitbox.x
+	
+	@property
+	def y(self) -> float:
+		return self.hitbox.y
+	
+	@property
+	def pos(self) -> Point2D:
+		return self.hitbox.pos
 
 	@property
 	def hitbox_color(self) -> Color:
