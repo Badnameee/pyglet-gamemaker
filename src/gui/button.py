@@ -177,7 +177,7 @@ class Button(_PushButton):
 	def anchor_x(self) -> AnchorX | float:
 		"""The unconverted x anchor of the button.
 		
-		To set both `anchor_x` and `anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
 		return self._anchor[0]
 	@anchor_x.setter
@@ -189,7 +189,7 @@ class Button(_PushButton):
 	def anchor_y(self) -> AnchorY | float:
 		"""The unconverted y anchor of the button.
 		
-		To set both `anchor_x` and `anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
 		return self._anchor[1]
 	@anchor_y.setter
