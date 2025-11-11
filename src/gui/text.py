@@ -139,7 +139,7 @@ class Text(Label):
 
 	@property
 	def pos(self) -> Point2D:
-		"""The position, *anchored*, but *unrotated*"""
+		"""*Anchored*, but *unrotated* position of text"""
 		return self._pos
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
@@ -152,7 +152,7 @@ class Text(Label):
 
 	@property
 	def anchor_x(self) -> AnchorX | float:
-		"""The unconverted x anchor of the button.
+		"""The unconverted x anchor of the text.
 		
 		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
@@ -164,7 +164,7 @@ class Text(Label):
 
 	@property
 	def anchor_y(self) -> AnchorY | float:
-		"""The unconverted y anchor of the button.
+		"""The unconverted y anchor of the text.
 		
 		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
@@ -176,7 +176,7 @@ class Text(Label):
 
 	@property
 	def anchor(self) -> tuple[AnchorX | float, AnchorY | float]:
-		"""The unconverted anchor of the button"""
+		"""The unconverted anchor of the text"""
 		return self._anchor
 	@anchor.setter
 	def anchor(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
