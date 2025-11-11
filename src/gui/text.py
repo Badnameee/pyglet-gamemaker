@@ -136,7 +136,7 @@ class Text(Label):
 
 	@property
 	def pos(self) -> Point2D:
-		"""The position, *Anchored*, but *unrotated*"""
+		"""The position, *anchored*, but *unrotated*"""
 		return self._pos
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
