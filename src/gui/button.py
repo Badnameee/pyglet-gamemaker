@@ -175,6 +175,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor_x(self) -> AnchorX | float:
+		"""The unconverted x anchor of the button"""
 		return self._anchor[0]
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX | float) -> None:
@@ -183,6 +184,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor_y(self) -> AnchorY | float:
+		"""The unconverted y anchor of the button"""
 		return self._anchor[1]
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY | float) -> None:
