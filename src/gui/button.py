@@ -102,14 +102,14 @@ class Button(_PushButton):
 		prev_pos = self.pos
 		self.anchor_pos = (
 			(
-				self.ANCHOR_TYPE_TO_FACTOR[self.anchor_x] * self.width
-				if isinstance(self.anchor_x, str) else
-				self.anchor_x
+				self.ANCHOR_TYPE_TO_FACTOR[self._anchor[0]] * self.hover_img.width
+				if isinstance(self._anchor[0], str) else
+				self._anchor[0]
 			),
 			(
-				self.ANCHOR_TYPE_TO_FACTOR[self.anchor_y] * self.height
-				if isinstance(self.anchor_y, str) else
-				self.anchor_y
+				self.ANCHOR_TYPE_TO_FACTOR[self._anchor[1]] * self.hover_img.height
+				if isinstance(self._anchor[1], str) else
+				self._anchor[1]
 			)
 		)
 		# Refresh position
@@ -171,11 +171,14 @@ class Button(_PushButton):
 		return self.x, self.y
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.x, self.y = val
+		self.position = val
 
 	@property
 	def anchor_x(self) -> AnchorX | float:
-		"""The unconverted x anchor of the button"""
+		"""The unconverted x anchor of the button.
+		
+		To set both `anchor_x` and `anchor_y`, use `anchor =`
+		"""
 		return self._anchor[0]
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX | float) -> None:
@@ -184,7 +187,10 @@ class Button(_PushButton):
 
 	@property
 	def anchor_y(self) -> AnchorY | float:
-		"""The unconverted y anchor of the button"""
+		"""The unconverted y anchor of the button.
+		
+		To set both `anchor_x` and `anchor_y`, use `anchor =`
+		"""
 		return self._anchor[1]
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY | float) -> None:
