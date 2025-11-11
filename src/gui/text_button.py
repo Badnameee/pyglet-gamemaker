@@ -93,7 +93,20 @@ class TextButton(Button):
 			# First frame hover: enlarge text
 			if not self.enlarged:
 				self.enlarged = True
+
+				#* Automatically centers text when enlarging
+				# First get previous dimensions
+				prev = self.text.content_width, self.text.content_height
+
 				self.text.font_size += self.hover_enlarge
+
+				# Use new dimensions to find difference to recenter
+				# Only recenter if static anchor
+				# 'center' anchor is automatically recentered (at least for 'anchor_x')
+				if not self.text.dynamic_x:
+					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
+				if not self.text.dynamic_y:
+					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
 
 				# If anchor is dynamic, update
 				if self.text.dynamic_any:
@@ -102,7 +115,20 @@ class TextButton(Button):
 			# First frame unhover: enlarge text
 			if self.enlarged:
 				self.enlarged = False
+
+				#* Automatically centers text when enlarging
+				# First get previous dimensions
+				prev = self.text.content_width, self.text.content_height
+
 				self.text.font_size -= self.hover_enlarge
+
+				# Use new dimensions to find difference to recenter
+				# Only recenter if static anchor
+				# 'center' anchor is automatically recentered (at least for 'anchor_x')
+				if not self.text.dynamic_x:
+					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
+				if not self.text.dynamic_y:
+					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
 
 				# If anchor is dynamic, update
 				if self.text.dynamic_any:
