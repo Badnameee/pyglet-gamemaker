@@ -1,9 +1,11 @@
 # type: ignore
 
+import random
+
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
-from pyglet.shapes import Circle, Rectangle
+from pyglet.shapes import Circle
 from src.gui import TextButton
 from src.sprite import SpriteSheet
 
@@ -21,8 +23,6 @@ def on_half_click(button):
 def on_full_click(button):
 	print(f'{button} fully pressed and releaased!')
 
-hover_enlarge = 3
-
 @window.event
 def on_key_press(symbol, modifiers):
 	if symbol == key.A:
@@ -33,25 +33,17 @@ def on_key_press(symbol, modifiers):
 		button.y += 10
 	elif symbol == key.S:
 		button.y -= 10
-	if symbol == key.LEFT:
+	elif symbol == key.LEFT:
 		button.anchor_x -= 10
-		button.text.anchor_x -= 10
 	elif symbol == key.RIGHT:
 		button.anchor_x += 10
-		button.text.anchor_x += 10
 	elif symbol == key.UP:
 		button.anchor_y += 10
-		button.text.anchor_y += 10
 	elif symbol == key.DOWN:
 		button.anchor_y -= 10
-		button.text.anchor_y -= 10
 	elif symbol == key.R:
-		if button.hover_enlarge == 0:
-			button.hover_enlarge = hover_enlarge
-			print('Button enlarging added!')
-		else:
-			button.hover_enlarge = 0
-			print('Button enlarging removed!')
+		button.hover_enlarge = random.randint(0, 25)
+		print(f'Button enlarge changed to {button.hover_enlarge}')
 	else:
 		return
 
@@ -71,10 +63,8 @@ button = TextButton(
 	('center', 'center'),
 	('center', 'center'),
 	font_info=('Arial', 30),
-	hover_enlarge=hover_enlarge,
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
-button.anchor = button.anchor_pos
 button_anchor = Circle(*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
 
 pyglet.app.run()

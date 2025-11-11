@@ -55,7 +55,6 @@ button = Button(
 	sheet, 0, window, batch, button_group,
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
-button.anchor = button.anchor_pos
 button_anchor = Circle(*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
 
 pyglet.app.run()

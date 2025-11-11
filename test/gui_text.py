@@ -19,17 +19,17 @@ def on_mouse_motion(x, y, dx, dy):
 
 @window.event
 def on_key_press(symbol, modifiers):
-	if symbol == key.A:
+	if symbol == key.LEFT:
 		txt.anchor_x -= 10
-	elif symbol == key.D:
-		txt.anchor_x += 10
-	elif symbol == key.W:
-		txt.anchor_y += 10
-	elif symbol == key.S:
-		txt.anchor_y -= 10
-	elif symbol == key.LEFT:
-		txt.rotation -= 10
 	elif symbol == key.RIGHT:
+		txt.anchor_x += 10
+	elif symbol == key.UP:
+		txt.anchor_y += 10
+	elif symbol == key.DOWN:
+		txt.anchor_y -= 10
+	elif symbol == key.A:
+		txt.rotation -= 10
+	elif symbol == key.D:
 		txt.rotation += 10
 	elif symbol == key.R:
 		txt.reset()
@@ -50,7 +50,6 @@ txt = Text(
 	batch, txt_group,
 	('center', 'center'), ('Arial', 50)
 )
-txt.anchor = txt.anchor_pos
 txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
 
 pyglet.app.run()
