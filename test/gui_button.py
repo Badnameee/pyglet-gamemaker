@@ -25,23 +25,23 @@ def on_full_click(button):
 	print(f'{button} fully pressed and releaased!')
 
 @window.event
-def on_key_press(symbol: int, modifiers: int):
+def on_key_press(symbol, modifiers):
 	if symbol == key.A:
 		button.x -= 10
 	elif symbol == key.D:
 		button.x += 10
-	elif symbol == key.S:
-		button.y -= 10
 	elif symbol == key.W:
 		button.y += 10
+	elif symbol == key.S:
+		button.y -= 10
 	elif symbol == key.LEFT:
 		button.anchor_x -= 10
 	elif symbol == key.RIGHT:
 		button.anchor_x += 10
-	elif symbol == key.DOWN:
-		button.anchor_y -= 10
 	elif symbol == key.UP:
 		button.anchor_y += 10
+	elif symbol == key.DOWN:
+		button.anchor_y -= 10
 	else:
 		return
 

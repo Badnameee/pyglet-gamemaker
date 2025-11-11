@@ -171,7 +171,7 @@ class Button(_PushButton):
 		return self.x, self.y
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.position = val
+		self.position = val[0] - self.anchor_pos[0], val[1] - self.anchor_pos[1]
 
 	@property
 	def anchor_x(self) -> AnchorX | float:
