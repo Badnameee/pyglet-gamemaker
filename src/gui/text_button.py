@@ -5,17 +5,18 @@ from ..types import *
 from .text import Text
 from .button import Button
 if TYPE_CHECKING:
-	from pyglet.customtypes import AnchorX, AnchorY, HorizontalAlign
-	from pyglet.graphics.shader import ShaderProgram
+	from pyglet.customtypes import AnchorX, AnchorY
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
 	from ..sprite import SpriteSheet
 
 
 class TextButton(Button):
-	"""Both a 2D button and 2D text in one.
+	"""Both a 2D button and 2D text in one. Refer to `gui.Button` and `gui.Text`.
 
-	Dispatches 'on_half_click' when pressed, and 'on_full_click' when pressed and released without mouse moving off.
+	Dispatches: Refer to `gui.Button`.
+
+	Note: Use `.text.text` to get text, as `.text` is the `Text` object
 	
 	Use kwargs to attach event handlers.
 	"""
@@ -31,12 +32,12 @@ class TextButton(Button):
 
 			# Button params
 			image_sheet: SpriteSheet, image_start: str | int,
-			button_anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
+			button_anchor: tuple[AnchorX | float, AnchorY | float]=(0, 0),
 			
 			# Text params
-			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
-			font_info: FontInfo = (None, None),
-			color: Color = Color.WHITE,
+			text_anchor: tuple[AnchorX | float, AnchorY | float]=(0, 0),
+			font_info: FontInfo=(None, None),
+			color: Color=Color.WHITE,
 
 			hover_enlarge: int = 0, **kwargs
 	) -> None:
@@ -52,28 +53,39 @@ class TextButton(Button):
 			group (Group): Group for rendering
 			image_sheet (SpriteSheet): SpriteSheet with the button images
 			image_start (str | int): The starting index of the button images
-			button_anchor (tuple[AnchorX, AnchorY], optional): Anchor for the button. Defaults to ('center', 'baseline').
-			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
-			color (Color, optional): Color of text. Defaults to Color.WHITE.
-			hover_enlarge (int, optional): How much to enlarge text when hovered over. Defaults to 0.
+			button_anchor (tuple[AnchorX | float, AnchorY | float], optional): Anchor for the button.
+				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor.
+				Defaults to (0, 0).
+			text_anchor (tuple[AnchorX | float, AnchorY | float], optional): Anchor for the text.
+				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor.
+				Defaults to (0, 0).
+			font_info (FontInfo, optional): Font name and size.
+				Defaults to (None, None).
+			color (Color, optional): Color of text.
+				Defaults to Color.WHITE.
+			hover_enlarge (int, optional): How much to enlarge text when hovered over.
+				Defaults to 0.
 
 			**kwargs: Any event handlers to attach (such as 'on_full_click')
 		"""
 		
-		super().__init__(ID, x, y, button_anchor, image_sheet, image_start, window, batch, group, **kwargs)
+		super().__init__(
+			ID, x, y, button_anchor, image_sheet, image_start,
+			window, batch, group, **kwargs
+		)
 		self.enlarged = False
 		self.hover_enlarge = hover_enlarge
 
-		self.text_render = Text(
+		self.text = Text(
 			text,
 			x, y,
 			batch, group,
-			anchor,
+			text_anchor,
 			font_info,
 			color,
 		)
 
-	def enlarge(self) -> None:
+	def _enlarge(self) -> None:
 		"""Enlarge the text based on button status."""
 
 		# Hovering
@@ -81,36 +93,48 @@ class TextButton(Button):
 			# First frame hover: enlarge text
 			if not self.enlarged:
 				self.enlarged = True
-				self.text_render.font_size += self.hover_enlarge
+				self.text.font_size += self.hover_enlarge
+
+				# If anchor is dynamic, update
+				if self.text.dynamic_any:
+					self.text._calc_anchor_pos()
 		else:
 			# First frame unhover: enlarge text
 			if self.enlarged:
 				self.enlarged = False
-				self.text_render.font_size -= self.hover_enlarge
+				self.text.font_size -= self.hover_enlarge
 
-	def on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+				# If anchor is dynamic, update
+				if self.text.dynamic_any:
+					self.text._calc_anchor_pos()
+
+	def on_mouse_press(self,
+			x: int, y: int,
+			buttons: int, modifiers: int
+	) -> None:
 		super().on_mouse_press(x, y, buttons, modifiers)
-		self.enlarge()
+		self._enlarge()
 
-	def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+	def on_mouse_motion(self,
+			x: int, y: int,
+			dx: int, dy: int
+	) -> None:
 		super().on_mouse_motion(x, y, dx, dy)
-		self.enlarge()
+		self._enlarge()
 
-	def on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def on_mouse_release(self,
+			x: int, y: int,
+			buttons: int, modifiers: int
+	) -> None:
 		super().on_mouse_release(x, y, buttons, modifiers)
-		self.enlarge()
+		self._enlarge()
 
-	def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int) -> None:
+	def on_mouse_drag(self,
+			x: int, y: int, dx: int, dy: int,
+			buttons: int, modifiers: int
+	) -> None:
 		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
-		self.enlarge()
-
-	@property
-	def text(self) -> str:
-		"""The text string"""
-		return self.text_render.text
-	@text.setter
-	def text(self, txt: str | int) -> None:
-		self.text_render.text = txt
+		self._enlarge()
 
 	@property # type: ignore[override]
 	def x(self) -> float:
@@ -119,7 +143,7 @@ class TextButton(Button):
 	@x.setter
 	def x(self, val: float) -> None:
 		Button.x.fset(self, val) # type: ignore[attr-defined]
-		self.text_render.x = val 
+		self.text.x = val 
 
 	@property # type: ignore[override]
 	def y(self) -> float:
@@ -128,7 +152,7 @@ class TextButton(Button):
 	def y(self, val: float) -> None:
 		"""Anchored y position"""
 		Button.y.fset(self, val) # type: ignore[attr-defined]
-		self.text_render.y = val
+		self.text.y = val
 
 	@property
 	def hover_enlarge(self) -> int:
@@ -139,5 +163,5 @@ class TextButton(Button):
 		# If need to be resized
 		if self.enlarged:
 			# Resize to new enlarge
-			self.text_render.font_size -= self.hover_enlarge - size
+			self.text.font_size -= self.hover_enlarge - size
 		self._hover_enlarge = size
