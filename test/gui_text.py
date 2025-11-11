@@ -48,7 +48,7 @@ def on_draw():
 txt = Text(
 	'Hello World', 0, 0,
 	batch, txt_group,
-	('center', 'center'), ('Arial', None)
+	('center', 'center'), ('Arial', 50)
 )
 txt.anchor = txt.anchor_pos
 txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
