@@ -10,20 +10,23 @@ if TYPE_CHECKING:
 
 class Text(Label):
 	"""A 2D label with scrolling and custom anchor support.
-
-	Supports anchoring with specific pixel values.
+	Supports anchoring with specific pixel values or dynamic.
+	
+	Dynamic Anchors:
+	- `AnchorX`: 'left', 'center', 'right'
+	- `AnchorY`: 'bottom', 'center', 'top'
 
 	Does not support rotating around anchor point (rotates about bottomleft)
 	
 	Use kwargs to attach event handlers.
 	"""
 
-	ANCHOR_TYPE_TO_FACTOR: dict[AnchorX | AnchorY, float] = {
+	CONVERT_DYNAMIC: dict[AnchorX | AnchorY, float] = {
 		'left': 0, 'bottom': 0,
 		'center': 0.5,
 		'right': 1, 'top': 1,
 	}
-	"""Converts anchor type to multiplier"""
+	"""Converts dynamic anchor to multiplier"""
 
 	_text: str = ''
 	_pos: Point2D = 0, 0
@@ -87,18 +90,19 @@ class Text(Label):
 		self.pos = self.start_pos
 		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
 
-	def _calc_anchor_pos(self) -> None:
-		self.anchor_pos = (
+	def _convert_anchor(self) -> None:
+		"""Converts dynamic anchors to multipliers and sync position"""
+		self._anchor = (
 			(
 				# Convert if AnchorX, else use raw int value
-				self.ANCHOR_TYPE_TO_FACTOR[self._anchor[0]] * self.content_width
-				if self.dynamic_x else
+				self.CONVERT_DYNAMIC[self._anchor[0]] * self.content_width
+				if isinstance(self._anchor[0], str) else
 				self._anchor[0]
 			),
 			(
 				# Convert if AnchorY, else use raw int value
-				self.ANCHOR_TYPE_TO_FACTOR[self._anchor[1]] * self.content_height
-				if self.dynamic_y else
+				self.CONVERT_DYNAMIC[self._anchor[1]] * self.content_height
+				if isinstance(self._anchor[0], str) else
 				self._anchor[1]
 			)
 		)
@@ -123,7 +127,7 @@ class Text(Label):
 	@x.setter
 	def x(self, val: float) -> None:
 		self._pos = val, self._pos[1]
-		self._set_x(val - self.anchor_pos[0])
+		self._set_x(val - self._anchor[0])
 
 	@property
 	def y(self) -> float:
@@ -135,7 +139,7 @@ class Text(Label):
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val - self.anchor_pos[1] - self._descent) # Fixes y not centering
+		self._set_y(val - self._anchor[1] - self._descent) # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
@@ -145,60 +149,47 @@ class Text(Label):
 	def pos(self, val: Point2D) -> None:
 		self._pos = val
 		self._set_position((
-			val[0] - self.anchor_pos[0],
-			val[1] - self.anchor_pos[1] - self._descent, # Fixes y not centering
+			val[0] - self._anchor[0],
+			val[1] - self._anchor[1] - self._descent, # Fixes y not centering
 			self._z
 		))
 
 	@property
-	def anchor_x(self) -> AnchorX | float:
+	def anchor_x(self) -> float:
 		"""The unconverted x anchor of the text.
+
+		Can be set in px or dynamic.
 		
 		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
 		return self._anchor[0]
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX | float) -> None:
-		self._anchor = val, self.anchor_y
-		self._calc_anchor_pos()
+		self._anchor = val, self._anchor[1]
+		self._convert_anchor()
 
 	@property
-	def anchor_y(self) -> AnchorY | float:
+	def anchor_y(self) -> float:
 		"""The unconverted y anchor of the text.
+
+		Can be set in px or dynamic.
 		
 		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
 		return self._anchor[1]
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY | float) -> None:
-		self._anchor = self.anchor_x, val
-		self._calc_anchor_pos()
+		self._anchor = self._anchor[0], val
+		self._convert_anchor()
 
 	@property
-	def anchor(self) -> tuple[AnchorX | float, AnchorY | float]:
-		"""The unconverted anchor of the text"""
+	def anchor(self) -> Point2D:
+		"""The unconverted anchor of the text.
+		
+		Can be set in px or dynamic.
+		"""
 		return self._anchor
 	@anchor.setter
 	def anchor(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
 		self._anchor = val
-		self._calc_anchor_pos()
-
-	@property
-	def dynamic_x(self) -> bool:
-		"""Whether anchor x is dynamic"""
-		return isinstance(self._anchor[0], str)
-	
-	@property
-	def dynamic_y(self) -> bool:
-		"""Whether anchor y is dynamic"""
-		return isinstance(self._anchor[1], str)
-	
-	@property
-	def dynamic(self) -> bool:
-		"""Whether anchor is dynamic"""
-		return isinstance(self._anchor[0], str) and isinstance(self._anchor[1], str)
-	
-	@property
-	def dynamic_any(self) -> bool:
-		"""Whether anchor is dynamic on either axis"""
-		return isinstance(self._anchor[0], str) or isinstance(self._anchor[1], str)
+		self._convert_anchor()
