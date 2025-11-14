@@ -1,5 +1,3 @@
-# type: ignore
-
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group

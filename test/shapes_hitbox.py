@@ -1,5 +1,3 @@
-# type: ignore
-
 import math
 
 import pyglet
