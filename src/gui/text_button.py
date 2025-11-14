@@ -107,7 +107,7 @@ class TextButton:
 		self.window.push_handlers(self)
 
 	def _enlarge(self) -> None:
-		"""Enlarge the text based on button status."""
+		"""Enlarge the text based on button status"""
 
 		# Hovering
 		if self.button.status == 'Hover':

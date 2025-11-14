@@ -97,7 +97,7 @@ class Text(Label):
 		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
 
 	def _calc_anchor_pos(self, val: Anchor) -> None:
-		"""Calculate a new anchor position and sync position."""
+		"""Calculate a new anchor position and sync position"""
 		self.raw_anchor = val
 		self._anchor = (
 			(
