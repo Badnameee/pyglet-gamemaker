@@ -8,9 +8,9 @@ from .hitbox import HitboxRender
 class Rect(HitboxRender):
 	"""A rendered rectangle.
 	
-	Has attributes for each vertex (`bottomleft`, `bottomright`, `topright`, `topleft`)
+	Has attributes for each vertex (`.bottomleft`, `.bottomright`, `.topright`, `.topleft`)
 
-	To create a rectangle without a render, use `shapes.Hitbox.from_rect`
+	To create a rectangle without a render, use `shapes.Hitbox.from_rect`.
 	"""
 
 	def __init__(self,
@@ -22,14 +22,22 @@ class Rect(HitboxRender):
 		"""Create a rectangle.
 
 		Args:
-			x (float): x position
-			y (float): y position
-			width (float): Width of rect
-			height (float): Height of rect
-			color (Color): The color of the hitbox render
-			batch (Batch): The batch for rendering
-			group (Group): The group for rendering
-			anchor_pos (Point2D, optional): The starting anchor position. Defaults to (0, 0).
+			x (float):
+				x position
+			y (float):
+				y position
+			width (float):
+				Width of rect
+			height (float):
+				Height of rect
+			color (Color):
+				The color of the hitbox render
+			batch (Batch):
+				The batch for rendering
+			group (Group):
+				The group for rendering
+			anchor_pos (Point2D, optional):
+				The starting anchor position. Defaults to (0, 0).
 		"""
 
 		super().__init__(
@@ -109,7 +117,7 @@ class Rect(HitboxRender):
 	@width.setter
 	def width(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
-		#	updates local coords for us. Updates to local coords would
+		#	updates local coords. Updates to local coords would
 		#	get overwritten when calling ._calc_coords
 		self.hitbox._raw_coords = (
 			self.hitbox._raw_coords[0],
@@ -126,7 +134,7 @@ class Rect(HitboxRender):
 	@height.setter
 	def height(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
-		#	updates local coords for us. Updates to local coords would
+		#	updates local coords. Updates to local coords would
 		#	get overwritten when calling ._calc_coords
 		self.hitbox._raw_coords = (
 			self.hitbox._raw_coords[0],

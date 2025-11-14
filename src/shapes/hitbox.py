@@ -41,10 +41,6 @@ class Hitbox:
 	"""The final coordinates of the hitbox"""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
-	is_circle: bool
-	"""Whether hitbox is a circle (for SAT)"""
-	is_rect: bool
-	"""Whether hitbox is a rectangle (for SAT)"""
 	subtype: str | None
 	"""Subtype ('rect', 'circle') of hitbox"""
 
@@ -56,8 +52,10 @@ class Hitbox:
 		"""Create a hitbox.
 
 		Args:
-			coords (tuple[Point2D, ...]): The coordinates of the hitbox
-			anchor_pos (Point2D, optional): The starting anchor position. Defaults to (0, 0).
+			coords (tuple[Point2D, ...]):
+				The coordinates of the hitbox
+			anchor_pos (Point2D, optional):
+				The starting anchor position. Defaults to (0, 0).
 		"""
 
 		if len(coords) < 2:
@@ -77,11 +75,16 @@ class Hitbox:
 		"""Create a hitbox from rectangle args.
 
 		Args:
-			x (float): x position
-			y (float): y position
-			width (float): Width of rect
-			height (float): Height of rect
-			anchor_pos (Point2D): Anchor position
+			x (float):
+				x position
+			y (float):
+				y position
+			width (float):
+				Width of rect
+			height (float):
+				Height of rect
+			anchor_pos (Point2D):
+				Anchor position
 		"""
 		return cls(
 			(
@@ -97,6 +100,11 @@ class Hitbox:
 		"""Get the normal axes of the hitbox (for SAT).
 		
 		These are perpendicular vectors to each edge.
+
+		Args:
+			remove_dupes (bool):
+				If true, remove duplicate axes (only works for rect) to
+				optimize speed and sacrifice MTV.
 
 		Returns:
 			list[Vec2]: All of the normal axes as vectors.
@@ -121,7 +129,8 @@ class Hitbox:
 		"""Projects the hitbox onto an axis (use self._get_axes()) (for SAT)
 
 		Args:
-			axis (Vec2): The normal axis to project onto
+			axis (Vec2):
+				The normal axis to project onto
 
 		Returns:
 			tuple[float, float]: The left and right side, respectively, of the projected line
@@ -207,13 +216,15 @@ class Hitbox:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | HitboxRender | HitboxRenderCircle): The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			other (Hitbox | HitboxRender | HitboxRenderCircle):
+				The other hitbox to detect collision with
+			sacrifice_MTV (bool, optional):
+				Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 
 		# Get hitbox if not subclass
@@ -259,13 +270,15 @@ class Hitbox:
 		"""Runs the SAT algorithm on a list of others.
 
 		Args:
-			others (list[Hitbox | HitboxRender | HitboxRenderCircle]): List of others to check collision with self
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
+				List of others to check collision with self
+			sacrifice_MTV (bool, optional):
+				Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 		for rect in others:
 			if (collision_info:= self.collide(rect, sacrifice_MTV))[0]:
@@ -338,8 +351,10 @@ class Hitbox:
 		"""Gets the rotated point using `angle`.
 
 		Args:
-			coord (Point2D): The coordinate to rotate
-			axis (Axis): The axis to calculate it on
+			coord (Point2D):
+				The coordinate to rotate
+			axis (Axis):
+				The axis to calculate it on
 		
 		Returns:
 			float | Point2D: The rotated point or single-axis coord
@@ -356,11 +371,14 @@ class Hitbox:
 		)
 
 	def move_to(self, x: float | None=None, y: float | None=None) -> None:
-		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+		"""Move the hitbox to a location based on anchor.
+		Setting argument to None (default) will not change that axis pos.
 
 		Args:
-			x (float | None, optional): New x. Defaults to None.
-			y (float | None, optional): New y. Defaults to None.
+			x (float | None, optional):
+				New x. Defaults to None.
+			y (float | None, optional):
+				New y. Defaults to None.
 		"""
 		x = x if x is not None else self._trans_pos[0]
 		y = y if y is not None else self._trans_pos[1]
@@ -422,10 +440,14 @@ class HitboxCircle(Hitbox):
 		"""Create a hitbox from a circle.
 
 		Args:
-			x (float): Center x
-			y (float): Center y
-			radius (float): The radius of the circle
-			anchor_pos (Point2D, optional): The anchor position. Defaults to (0, 0).
+			x (float):
+				Center x
+			y (float):
+				Center y
+			radius (float):
+				The radius of the circle
+			anchor_pos (Point2D, optional):
+				The anchor position. Defaults to (0, 0).
 		"""
 		super().__init__(((x, y), (radius, 0)), anchor_pos, _subtype='circle')
 		self.axis = Vec2(0, 0)
@@ -461,11 +483,12 @@ class HitboxCircle(Hitbox):
 		"""Gets closest point on hitbox to circle
 
 		Args:
-			hitbox (Hitbox): Hitbox | HitboxRender | HitboxRenderCircle to check collision with
+			hitbox (Hitbox | HitboxRender | HitboxRenderCircle):
+				Hitbox to check collision with
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 
 		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
@@ -480,7 +503,8 @@ class HitboxCircle(Hitbox):
 
 		# Get closest point to other hitbox
 		least = Vec2(0, 0), float('inf')
-		for i in range(len(hitbox.coords)): # Loop through each axis on polygon
+		for i in range(len(hitbox.coords)):
+				# Loop through each axis on polygon
 			# Grabbing vertex positions
 			p1, p2 = hitbox.coords[i], hitbox.coords[(i+1) % len(hitbox.coords)]
 
@@ -524,11 +548,14 @@ class HitboxCircle(Hitbox):
 		),
 
 	def move_to(self, x: float | None=None, y: float | None=None) -> None:
-		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+		"""Move the hitbox to a location based on anchor.
+		Setting argument to None (default) will not change that axis pos.
 
 		Args:
-			x (float | None, optional): New x. Defaults to None.
-			y (float | None, optional): New y. Defaults to None.
+			x (float | None, optional):
+				New x. Defaults to None.
+			y (float | None, optional):
+				New y. Defaults to None.
 		"""
 		x = x if x is not None else self._trans_pos[0]
 		y = y if y is not None else self._trans_pos[1]
@@ -568,13 +595,20 @@ class HitboxRender:
 		"""Create a hitbox render.
 
 		Args:
-			coords (tuple[Point2D, ...]): The coordinates of the hitbox
-			color (Color): The color of the hitbox render
-			batch (Batch): The batch for rendering
-			group (Group): The group for rendering
-			anchor_pos (Point2D, optional): The starting anchor position. Defaults to (0, 0).
-			circle (bool, optional): Whether hitbox is a circle (for SAT). Defaults to False.
-			rect (bool, optional): Whether hitbox is a rectangle (for SAT). Defaults to False.
+			coords (tuple[Point2D, ...]):
+				The coordinates of the hitbox
+			color (Color):
+				The color of the hitbox render
+			batch (Batch):
+				The batch for rendering
+			group (Group):
+				The group for rendering
+			anchor_pos (Point2D, optional):
+				The starting anchor position. Defaults to (0, 0).
+			circle (bool, optional):
+				Whether hitbox is a circle (for SAT). Defaults to False.
+			rect (bool, optional):
+				Whether hitbox is a rectangle (for SAT). Defaults to False.
 		"""
 		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
 		self.hitbox = Hitbox(coords, anchor_pos, _subtype=subtype)
@@ -592,14 +626,22 @@ class HitboxRender:
 		"""Create a hitbox render from rectangle dimensions.
 
 		Args:
-			x (float): x position
-			y (float): y position
-			width (float): Width of rect
-			height (float): Height of rect
-			color (Color): The color of the hitbox render
-			batch (Batch): The batch for rendering
-			group (Group): The group for rendering
-			anchor_pos (Point2D): Anchor position
+			x (float):
+				x position
+			y (float):
+				y position
+			width (float):
+				Width of rect
+			height (float):
+				Height of rect
+			color (Color):
+				The color of the hitbox render
+			batch (Batch):
+				The batch for rendering
+			group (Group):
+				The group for rendering
+			anchor_pos (Point2D):
+				Anchor position
 		"""
 		return cls(
 			(
@@ -621,13 +663,15 @@ class HitboxRender:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | HitboxRender | HitboxRenderCircle): The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			other (Hitbox | HitboxRender | HitboxRenderCircle):
+				The other hitbox to detect collision with
+			sacrifice_MTV (bool, optional):
+				Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
 	
@@ -638,13 +682,15 @@ class HitboxRender:
 		"""Runs the SAT algorithm on a list of others.
 
 		Args:
-			others (list[Hitbox | HitboxRender | HitboxRenderCircle]): List of others to check collision with self
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
+				List of others to check collision with self
+			sacrifice_MTV (bool, optional):
+				Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
 
@@ -658,11 +704,14 @@ class HitboxRender:
 		self.render.y = self.hitbox.coords[0][1]
 	
 	def move_to(self, x: float | None=None, y: float | None=None) -> None:
-		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+		"""Move the hitbox to a location based on anchor.
+		Setting argument to None (default) will not change that axis pos.
 
 		Args:
-			x (float | None, optional): New x. Defaults to None.
-			y (float | None, optional): New y. Defaults to None.
+			x (float | None, optional):
+				New x. Defaults to None.
+			y (float | None, optional):
+				New y. Defaults to None.
 		"""
 		x = x if x is not None else self.hitbox._trans_pos[0]
 		y = y if y is not None else self.hitbox._trans_pos[1]
@@ -731,13 +780,20 @@ class HitboxRenderCircle:
 		"""Create a circular hitbox render
 
 		Args:
-			x (float): Center x
-			y (float): Center y
-			radius (float): The radius of the circle
-			color (Color): The color of the hitbox render
-			batch (Batch): The batch for rendering
-			group (Group): The group for rendering
-			anchor_pos (Point2D, optional): The anchor position. Defaults to (0, 0).
+			x (float):
+				Center x
+			y (float):
+				Center y
+			radius (float):
+				The radius of the circle
+			color (Color):
+				The color of the hitbox render
+			batch (Batch):
+				The batch for rendering
+			group (Group):
+				The group for rendering
+			anchor_pos (Point2D, optional):
+				The anchor position. Defaults to (0, 0).
 		"""
 		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
 		self.hitbox = HitboxCircle(x, y, radius, anchor_pos)
@@ -755,13 +811,15 @@ class HitboxRenderCircle:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | HitboxRender | HitboxRenderCircle): The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			other (Hitbox | HitboxRender | HitboxRenderCircle):
+				The other hitbox to detect collision with
+			sacrifice_MTV (bool, optional):
+				Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
 	
@@ -772,13 +830,15 @@ class HitboxRenderCircle:
 		"""Runs the SAT algorithm on a list of others.
 
 		Args:
-			others (list[Hitbox | HitboxRender | HitboxRenderCircle]): List of others to check collision with self
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
+				List of others to check collision with self
+			sacrifice_MTV (bool, optional):
+				Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
+				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
 
@@ -787,11 +847,14 @@ class HitboxRenderCircle:
 		self.render.position = self.hitbox.coords[0]
 		
 	def move_to(self, x: float | None=None, y: float | None=None) -> None:
-		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+		"""Move the hitbox to a location based on anchor.
+		Setting argument to None (default) will not change that axis pos.
 
 		Args:
-			x (float | None, optional): New x. Defaults to None.
-			y (float | None, optional): New y. Defaults to None.
+			x (float | None, optional):
+				New x. Defaults to None.
+			y (float | None, optional):
+				New y. Defaults to None.
 		"""
 		x = x if x is not None else self.hitbox._trans_pos[0]
 		y = y if y is not None else self.hitbox._trans_pos[1]
