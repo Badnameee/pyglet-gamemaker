@@ -29,8 +29,10 @@ class Scene(ABC, EventDispatcher):
 		"""Create a scene.
 
 		Args:
-			name (str): The name of the scene (used to identity scene by name)
-			window (Window): The screen window
+			name (str):
+				The name of the scene (used to identity scene by name)
+			window (Window):
+				The screen window
 			**kwargs: Event handlers to attach (name=func)
 		"""
 		self.name, self.window = name, window
