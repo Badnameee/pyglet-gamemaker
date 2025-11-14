@@ -74,7 +74,8 @@ class Button(_PushButton):
 			y (float):
 				Anchored y position of button
 			anchor (Anchor):
-				Anchor position. See `gui.Button` for more info on anchor values. Defaults to (0, 0).
+				Anchor position. See `gui.Button` for more info on anchor values.
+				Defaults to (0, 0).
 			image_sheet (SpriteSheet):
 				SpriteSheet with the button images
 			image_start (str | int):
@@ -92,8 +93,7 @@ class Button(_PushButton):
 		"""
 		
 		# Extract images from sheet
-		start = image_sheet.lookup[image_start] if isinstance(image_start, str) else image_start
-		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[start:start + 3] # type: ignore[misc]
+		self._parse_sheet(image_sheet, image_start)
 
 		super().__init__(
 			x, y, # type: ignore[arg-type]
@@ -129,9 +129,19 @@ class Button(_PushButton):
 	def reset(self) -> None:
 		"""Reset text to initial state"""
 		self.pos = self.start_pos
+
+	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
+		"""Update the sheet of the button"""
+		self._parse_sheet(image_sheet, image_start)
+		self._calc_anchor_pos(self.raw_anchor)
+
+	def _parse_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
+		"""Parse a sheet into individual images and store them"""
+		start = image_sheet.lookup[image_start] if isinstance(image_start, str) else image_start
+		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[start:start + 3] # type: ignore[misc]
 	
 	def _update_status(self, x: int, y: int) -> None:
-		"""Updates the status of the button given mouse position."""
+		"""Update the status of the button given mouse position"""
 		if self.value:
 			if self.status != 'Pressed':
 				self.dispatch_event('on_half_click', self)
@@ -144,7 +154,7 @@ class Button(_PushButton):
 			self.status = 'Unpressed'
 
 	def _calc_anchor_pos(self, val: Anchor) -> None:
-		"""Calculate a new anchor position and sync position."""
+		"""Calculate a new anchor position and sync position"""
 		prev_pos = self.pos
 		self.raw_anchor = val
 		self._anchor = (
