@@ -6,19 +6,24 @@ from pyglet.graphics import Batch
 
 class Scene(ABC, EventDispatcher):
 	"""Abstract class for a Scene in the game, inherit to create own scenes.
-	Window object should hold all scenes in window.scenes dictionary
+	`Window` object should hold all scenes in window.scenes dictionary.
 
-	When inheriting, a batch must be created
+	When inheriting, a batch must be created for automatic rendering.
 	
 	Dispatches `on_scene_change` (to window) when program wishes to switch scenes.
 
 	`enable` and `disable` run from `Window` class when enabling and disabling scene.
-	These enabled and disable the scene, but rendering is stopped because batch is not rendered
+	These enable and disable the scene, but not rendering. This happens in `Window`.
 
 	Use kwargs to attach event handlers.
 	"""
 
 	batch: Batch
+	"""Batch scene is drawn on"""
+	name: str
+	"""The name of the scene"""
+	window: Window
+	"""Window scene is a part of"""
 
 	def __init__(self, name: str, window: Window, **kwargs) -> None:
 		"""Create a scene.
