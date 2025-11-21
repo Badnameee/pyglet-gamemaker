@@ -1,38 +1,51 @@
+import string
+import random
+
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
+from pyglet.shapes import Circle
 from src.gui import Text
 
 window = Window(640, 480, caption=__name__)
 batch = Batch()
-group = Group()
+txt_group = Group()
+UI_group = Group(1)
 
 @window.event
-def on_key_press(symbol: int, modifiers: int):
+def on_mouse_motion(x, y, dx, dy):
+	#txt.pos = x, y
+	txt.offset((dx, dy))
+	txt_anchor.position = txt.pos
+	print(f'New txt pos: {txt.pos}')
+
+@window.event
+def on_key_press(symbol, modifiers):
 	if symbol == key.LEFT:
-		txt.x -= 10
+		txt.anchor_x -= 10
 	elif symbol == key.RIGHT:
-		txt.x += 10
-	elif symbol == key.DOWN:
-		txt.y -= 10
+		txt.anchor_x += 10
 	elif symbol == key.UP:
-		txt.y += 10
+		txt.anchor_y += 10
+	elif symbol == key.DOWN:
+		txt.anchor_y -= 10
 	elif symbol == key.A:
-		txt2.x -= 10
+		txt.rotation -= 10
 	elif symbol == key.D:
-		txt2.x += 10
-	elif symbol == key.S:
-		txt2.y -= 10
-	elif symbol == key.W:
-		txt2.y += 10
+		txt.rotation += 10
 	elif symbol == key.R:
 		txt.reset()
-		txt2.reset()
+		txt.text = 'Hello World'
+	elif symbol == key.P:
+		txt.text += random.choice(string.ascii_lowercase)
+	elif symbol == key.O:
+		txt.text = txt.text[:-1]
 	else:
 		return
 
-	print(f'New txt pos: txt={txt.pos}, txt2={txt2.pos}')
-	print(f'New txt font: txt={txt.font_name, txt.font_size}, txt2={txt2.font_name, txt2.font_size}')
+	print(f'New txt pos: {txt.pos}')
+	print(f'New txt font: {txt.font_info}')
+	txt_anchor.position = txt.pos
 
 @window.event
 def on_draw():
@@ -40,12 +53,11 @@ def on_draw():
 	batch.draw()
 
 txt = Text(
-	'Hello World', 0, 0, font_info=('Arial', None), anchor=('center', 'center'),
-	batch=batch, group=group
+	'Hello World', 0, 0,
+	batch, txt_group,
+	('center', 'center'), ('Arial', 50)
 )
-txt2 = Text.from_scale(
-	(0.5, 0.5), window, 'Hello World', font_info=('Times New Roman', 50), anchor=('center', 'center'),
-	batch=batch, group=group
-)
+txt.start_pos = 320, 240
+txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
 
 pyglet.app.run()
