@@ -33,7 +33,8 @@ class Scene(ABC, EventDispatcher):
 				The name of the scene (used to identity scene by name)
 			window (Window):
 				The screen window
-			**kwargs: Event handlers to attach (name=func)
+			**kwargs:
+				Event handlers to attach (name=func)
 		"""
 		self.name, self.window = name, window
 		

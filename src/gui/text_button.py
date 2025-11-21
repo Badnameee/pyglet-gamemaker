@@ -41,7 +41,7 @@ class TextButton:
 			text_anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
-			hover_enlarge: int = 0, **kwargs
+			hover_enlarge: int=0, **kwargs
 	) -> None:
 		"""Create a button with text
 
