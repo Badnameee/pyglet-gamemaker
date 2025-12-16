@@ -35,7 +35,7 @@ class TextButton:
 			ID: str,
 			text: str,
 			x: float, y: float,
-			window: Window, batch: Batch, group: Group,
+			window: Window, batch: Batch, button_group: Group, text_group: Group,
 			image_sheet: SpriteSheet, image_start: str | int,
 			button_anchor: Anchor=(0, 0),
 			text_anchor: Anchor=(0, 0),
@@ -87,7 +87,7 @@ class TextButton:
 		self.button = Button(
 			ID, x, y,
 			image_sheet, image_start,
-			window, batch, group,
+			window, batch, button_group,
 			button_anchor,
 			attach_events=False, **kwargs
 		)
@@ -96,7 +96,7 @@ class TextButton:
 		self.text = Text(
 			text,
 			x, y,
-			batch, group,
+			batch, text_group,
 			text_anchor,
 			font_info,
 			color,
