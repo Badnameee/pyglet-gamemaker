@@ -166,6 +166,8 @@ class TextButton:
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_press(x, y, buttons, modifiers)
 		self._enlarge()
 
@@ -173,6 +175,8 @@ class TextButton:
 			x: int, y: int,
 			dx: int, dy: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_motion(x, y, dx, dy)
 		self._enlarge()
 
@@ -180,6 +184,8 @@ class TextButton:
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_release(x, y, buttons, modifiers)
 		self._enlarge()
 
@@ -187,8 +193,16 @@ class TextButton:
 			x: int, y: int, dx: int, dy: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._enlarge()
+
+	def enable(self) -> None:
+		self.button.enable()
+
+	def disable(self) -> None:
+		self.button.disable()
 
 	@property # type: ignore[override]
 	def x(self) -> float:
@@ -290,3 +304,7 @@ class TextButton:
 
 		else:
 			self._hover_enlarge = size
+
+	@property
+	def enabled(self) -> bool:
+		return self.button.enabled

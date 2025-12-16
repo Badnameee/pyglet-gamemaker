@@ -116,6 +116,10 @@ class Text(Label):
 		# Refresh position
 		self.pos = self.pos
 
+	def enable(self) -> None: ...
+
+	def disable(self) -> None: ...
+
 	@property
 	def text(self) -> str:
 		"""The text string"""

@@ -177,6 +177,8 @@ class Button(_PushButton):
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_press(x, y, buttons, modifiers)
 		self._update_status(x, y)
@@ -185,6 +187,8 @@ class Button(_PushButton):
 			x: int, y: int,
 			dx: int, dy: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_motion(x, y, dx, dy)
 		self._update_status(x, y)
@@ -193,6 +197,8 @@ class Button(_PushButton):
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
@@ -201,6 +207,8 @@ class Button(_PushButton):
 			x: int, y: int, dx: int, dy: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
