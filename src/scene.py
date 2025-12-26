@@ -10,7 +10,8 @@ class Scene(ABC, EventDispatcher):
 
 	When inheriting, a batch must be created for automatic rendering.
 	
-	Dispatches `on_scene_change` (to window) when program wishes to switch scenes.
+	Dispatches:
+	- 'on_scene_change' (to window) when program wishes to switch scenes.
 
 	`enable` and `disable` run from `Window` class when enabling and disabling scene.
 	These enable and disable the scene, but not rendering. This happens in `Window`.

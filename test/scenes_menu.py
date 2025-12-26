@@ -7,7 +7,7 @@ from src.types import *
 
 class TestMenu(Menu):
 
-	WIDGET_POS = {
+	widget_pos = {
 		'Test1': (0.2, 0.1),
 		'Test2': (0.5, 0.5),
 		'Test3': (0.7, 0.7)
@@ -15,6 +15,7 @@ class TestMenu(Menu):
 
 	def __init__(self, name, window, bg_color):
 		super().__init__(name, window)
+		self.default_font_info = None, 40
 
 		self.sheet = SpriteSheet('Default Button.png', 3, 1)
 
@@ -22,7 +23,6 @@ class TestMenu(Menu):
 		self.create_text(
 			'Test1', 'Hi',
 			('center', 'center'),
-			(None, 40)
 		)
 		self.create_button(
 			'Test2',
@@ -35,7 +35,7 @@ class TestMenu(Menu):
 			'Test3', 'Hi2',
 			self.sheet, 0,
 			('center', 'center'), ('center', 'center'),
-			(None, 40), hover_enlarge=5,
+			hover_enlarge=5,
 			on_half_click=self.on_half_click,
 			on_full_click=self.on_full_click,
 		)
