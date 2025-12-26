@@ -8,6 +8,7 @@ tests = [
 	'gui_text_button',
 	'shapes_hitbox',
 	'shapes_rect',
+	'scenes_menu',
 ]
 
 pyglet.resource.path = ['test']
