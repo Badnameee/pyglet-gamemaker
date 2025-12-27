@@ -35,7 +35,8 @@ class Text(Label):
 	"""Original (*unanchored* AND *unrotated*) position of text"""
 	font_info: FontInfo
 	"""(name, size)"""
-	raw_anchor: Anchor = None, None
+
+	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic)"""
 
 	def __init__(self,
