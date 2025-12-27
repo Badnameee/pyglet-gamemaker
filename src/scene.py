@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Callable
 
 from pyglet.window import Window
 from pyglet.event import EventDispatcher
@@ -25,6 +26,7 @@ class Scene(ABC, EventDispatcher):
 	"""The name of the scene"""
 	window: Window
 	"""Window scene is a part of"""
+	event_handlers: dict[str, Callable] = {}
 
 	def __init__(self, name: str, window: Window, **kwargs) -> None:
 		"""Create a scene.
@@ -40,9 +42,17 @@ class Scene(ABC, EventDispatcher):
 		self.name, self.window = name, window
 		
 		# Adds any event handlers passed through kwargs
-		for name in kwargs:
+		self.add_events(**kwargs)
+		
+	def add_events(self, **kwargs: Callable) -> None:
+		for name, handler in kwargs.items():
+			self.event_handlers[name] = handler
 			self.register_event_type(name)
 		self.push_handlers(**kwargs)
+
+	def remove_events(self, *args: str) -> None:
+		for name in args:
+			self.remove_handler(name, self.event_handlers.pop(name))
 
 	@abstractmethod
 	def enable(self) -> None:
