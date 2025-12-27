@@ -100,7 +100,7 @@ class Menu(Scene, ABC):
 		if font_info == (None, None):
 			font_info = self.default_font_info
 		
-		self.widgets[widget_name] = text = Text(
+		self.widgets[widget_name] = text_obj = Text(
 			text,
 			self.widget_pos[widget_name][0] * self.window.width,
 			self.widget_pos[widget_name][1] * self.window.width,
@@ -109,7 +109,7 @@ class Menu(Scene, ABC):
 			font_info,
 			color
 		)
-		text.disable()
+		text_obj.disable()
 	
 	def create_button(self,
 			widget_name: str,
