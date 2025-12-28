@@ -34,3 +34,13 @@ exclude = [
 	"^test/.*$",
 	"^run_tests\\.py$"
 ]
+
+[tool.ruff]
+exclude = ["**/__init__.py"]
+
+[tool.ruff.format]
+indent-style = "tab"
+quote-style = "single"
+
+[tool.ruff.lint]
+ignore = ["F403", "F405"]
