@@ -50,10 +50,10 @@ class Button(_PushButton):
 	"""Window button is associated with"""
 	status: ButtonStatus
 	"""Status of button"""
+
 	_last_mouse_pos: Point2D = 0, 0
 	"""Holds the last mouse position registered by button"""
-
-	raw_anchor: Anchor = None, None
+	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic)"""
 	
 	def __init__(self,

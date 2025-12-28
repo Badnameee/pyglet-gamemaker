@@ -28,6 +28,7 @@ class TextButton:
 	"""Button object"""
 	text: Text
 	"""Text object"""
+
 	_enlarged: bool = False
 	"""If true, text is currently enlarged. Used internally to enlarge text once."""
 
