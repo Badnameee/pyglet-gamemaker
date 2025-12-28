@@ -1,2 +1,0 @@
-[flake8]
-extend-ignore: W191, E124, E128, E261, E265, E302, E305, F403, F405

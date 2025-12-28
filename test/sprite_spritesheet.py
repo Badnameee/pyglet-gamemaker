@@ -1,3 +1,4 @@
+import pyglet
 from src.sprite import SpriteSheet
 
 sheet = SpriteSheet('Default Button.png', 3, 1)
