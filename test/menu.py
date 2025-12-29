@@ -10,12 +10,14 @@ class TestMenu(Menu):
 
 	default_font_info = None, 40
 
-	def __init__(self, name, window, bg_color):
-		super().__init__(name, window)
+	def __init__(self, name, bg_color):
+		super().__init__(name)
+		self.bg_color = bg_color
 
+	def create_widgets(self):
 		self.sheet = SpriteSheet('Default Button.png', 3, 1)
 
-		self.create_bg(bg_color)
+		self.create_bg(self.bg_color)
 		self.create_text(
 			'Test1',
 			'Hi',
@@ -62,8 +64,9 @@ class TestMenu(Menu):
 			widget.disable()
 
 
+menu = TestMenu('Test', Color.ORANGE)
 window = Window(640, 480, caption=__name__)
-menu = TestMenu('Test', window, Color.ORANGE)
+menu.set_window(window)
 menu.enable()
 
 

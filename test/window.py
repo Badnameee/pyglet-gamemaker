@@ -9,12 +9,14 @@ class TestMenu(Menu):
 
 	default_font_info = None, 40
 
-	def __init__(self, name, window, bg_color):
-		super().__init__(name, window)
+	def __init__(self, name, bg_color):
+		super().__init__(name)
+		self.bg_color = bg_color
 
+	def create_widgets(self):
 		self.sheet = SpriteSheet('Default Button.png', 3, 1)
 
-		self.create_bg(bg_color)
+		self.create_bg(self.bg_color)
 		self.create_text(
 			'Test1',
 			'Hi',
@@ -73,12 +75,15 @@ class TestMenu2(Menu):
 
 	default_font_info = None, 40
 
-	def __init__(self, name, window, bg_color):
-		super().__init__(name, window)
+	def __init__(self, name, bg_color):
+		super().__init__(name)
+		self.bg_color = bg_color
+
+	def create_widgets(self):
 
 		self.sheet = SpriteSheet('Default Button.png', 3, 1)
 
-		self.create_bg(bg_color)
+		self.create_bg(self.bg_color)
 		self.create_text(
 			'Test1',
 			'Hi',
@@ -127,9 +132,10 @@ class TestMenu2(Menu):
 		for widget in self.widgets.values():
 			widget.disable()
 
+test1 = TestMenu('TestMenu', Color.ORANGE)
+test2 = TestMenu2('TestMenu2', Color.WHITE)
 
 window = Window((640, 480))
-window.add_scene('TestMenu', TestMenu('TestMenu', window, Color.ORANGE))
-window.add_scene('TestMenu2', TestMenu2('TestMenu2', window, Color.WHITE))
-print(window.scenes, window.scene)
-window.start()
+window.add_scene('TestMenu', test1)
+window.add_scene('TestMenu2', test2)
+window.run()
