@@ -165,7 +165,9 @@ class Menu(Scene, ABC):
 			text_anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
-			hover_enlarge: int=0, **kwargs
+			hover_enlarge: int=0,
+			attach_events: bool=True,
+			**kwargs
 	) -> None:
 		"""Create a text button widget.
 
@@ -193,6 +195,9 @@ class Menu(Scene, ABC):
 			hover_enlarge (int, optional):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
+			attach_events (bool, optional):
+				If False, don't push mouse event handlers to window.
+				Defaults to True.
 			kwargs:
 				Event handlers (name=func)
 		"""
@@ -208,7 +213,7 @@ class Menu(Scene, ABC):
 			self.window, self.batch, self.button_group, self.text_group,
 			image_sheet, image_start,
 			button_anchor, text_anchor,
-			font_info, color, hover_enlarge,
+			font_info, color, hover_enlarge, attach_events,
 			**kwargs
 		)
 		text_button.disable()
