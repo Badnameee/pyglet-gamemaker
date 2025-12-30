@@ -326,3 +326,11 @@ class TextButton:
 	@property
 	def enabled(self) -> bool:
 		return self.button.enabled
+	
+	@property
+	def dispatch(self) -> bool:
+		return self.button.dispatch
+	
+	@dispatch.setter
+	def dispatch(self, val: bool) -> None:
+		self.button.dispatch = val
