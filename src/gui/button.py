@@ -38,7 +38,7 @@ class Button(_PushButton):
 	}
 	"""Converts dynamic anchor to multiplier"""
 
-	_anchor: Point2D = 0, 0
+	_anchor_pos: Point2D = 0, 0
 
 	unpressed_img: AbstractImage
 	"""Image of unpressed button"""
@@ -178,7 +178,7 @@ class Button(_PushButton):
 		"""Calculate a new anchor position and sync position"""
 		prev_pos = self.pos
 		self.raw_anchor = val
-		self._anchor = (
+		self._anchor_pos = (
 			(
 				self.CONVERT_DYNAMIC[val[0]] * self.hover_img.width
 				if isinstance(val[0], str)
@@ -231,34 +231,40 @@ class Button(_PushButton):
 
 	@property  # type: ignore[override]
 	def x(self) -> float:
-		"""Anchored x position"""
-		return self._x + self._anchor[0]
+		"""The x position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self._x + self._anchor_pos[0]
 
 	@x.setter
 	def x(self, val: float) -> None:
-		_PushButton.x.fset(self, val - self._anchor[0])  # type: ignore[attr-defined]
+		_PushButton.x.fset(self, val - self._anchor_pos[0])  # type: ignore[attr-defined]
 		# Sync status
 		self.on_mouse_motion(*self._last_mouse_pos, 0, 0)  # type: ignore[arg-type]
 
 	@property  # type: ignore[override]
 	def y(self) -> float:
-		"""Anchored y position"""
-		return self._y + self._anchor[1]
+		"""The y position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self._y + self._anchor_pos[1]
 
 	@y.setter
 	def y(self, val: float) -> None:
-		_PushButton.y.fset(self, val - self._anchor[1])  # type: ignore[attr-defined]
+		_PushButton.y.fset(self, val - self._anchor_pos[1])  # type: ignore[attr-defined]
 		# Sync status
 		self.on_mouse_motion(*self._last_mouse_pos, 0, 0)  # type: ignore[arg-type]
 
 	@property
 	def pos(self) -> Point2D:
-		"""Anchored position"""
-		return self._x + self._anchor[0], self._y + self._anchor[1]
+		"""The anchor position."""
+		return self._x + self._anchor_pos[0], self._y + self._anchor_pos[1]
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.position = val[0] - self._anchor[0], val[1] - self._anchor[1]  # type: ignore[assignment] # bro widget can take float
+		self.position = val[0] - self._anchor_pos[0], val[1] - self._anchor_pos[1]  # type: ignore[assignment] # bro widget can take float
 		# Sync status
 		self.on_mouse_motion(*self._last_mouse_pos, 0, 0)  # type: ignore[arg-type]
 
@@ -268,13 +274,13 @@ class Button(_PushButton):
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
-		return self._anchor[0]
+		return self._anchor_pos[0]
 
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX) -> None:
-		self._calc_anchor_pos((val, self._anchor[1]))
+		self._calc_anchor_pos((val, self._anchor_pos[1]))
 
 	@property
 	def anchor_y(self) -> float:
@@ -282,24 +288,24 @@ class Button(_PushButton):
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
-		return self._anchor[1]
+		return self._anchor_pos[1]
 
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY) -> None:
-		self._calc_anchor_pos((self._anchor[0], val))
+		self._calc_anchor_pos((self._anchor_pos[0], val))
 
 	@property
-	def anchor(self) -> Point2D:
+	def anchor_pos(self) -> Point2D:
 		"""The anchor of the button, in px.
 
 		Can be set in px or dynamic.
 		"""
-		return self._anchor
+		return self._anchor_pos
 
-	@anchor.setter
-	def anchor(self, val: Anchor) -> None:
+	@anchor_pos.setter
+	def anchor_pos(self, val: Anchor) -> None:
 		self._calc_anchor_pos(val)
 
 	@property
