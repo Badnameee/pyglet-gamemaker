@@ -25,7 +25,9 @@
   - Uses spritesheets instead of individual images
 - Scenes:
   - Enabling and disabling handled automatically
-  - Menus: Easily create visuals + widgets
+  - Menus:
+    - Easily create visuals + widgets
+    - Widget positions relative to window size
 - Main Window class handles switching of scenes
 
 ### ✍️ Authors
@@ -37,7 +39,7 @@ I'm [Steven Robles](https://github.com/Badnameee) and I am a high school student
 
 <!-- *Show off what your software looks like in action! Try to limit it to one-liners if possible and don't delve into API specifics.* -->
 
-A simple program to render an empty Menu:
+A simple program to render an empty Menu with button detection:
 ```py
 >>> import pyglet_gamemaker as pgm
 >>> from pyglet_gamemaker.types import Color
@@ -46,6 +48,10 @@ A simple program to render an empty Menu:
 >>> class Menu(pgm.Menu):
 >>>     # Create widgets here
 >>>     def create_widgets(self): ...
+>>>     # Code that runs when button is pressed down
+>>>     def on_half_click(self, button): ...
+>>>     # Code that runs when button is fully clicked and released
+>>>     def on_full_click(self, button): ...
 >>>     # Code that runs when scene is enabled
 >>>     def enable(self): ...
 >>>     # Code that runs when scene is disabled
@@ -58,68 +64,48 @@ A simple program to render an empty Menu:
 >>> game.run()
 ```
 
-Example Menu showing all features
+Creating a spritesheet
 ```py
->>> import pyglet_gamemaker as pgm
->>> from pyglet_gamemaker.types import Color
->>> 
->>> 
->>> class Menu(pgm.Menu):
->>>     # Store scaled positions (x, y) relative to window size
->>>     #   (0.5, 0.5) is center
->>>     WIDGET_POS = {
->>>         'Text': (0.25, 0.25),
->>>         'Button': (0.5, 0.5),
->>>         'TextButton': (0.65, 0.65)
->>>     }
->>> 
->>>     # Set default font information here
->>>     default_font_info = None, 40
->>>     
->>>     def create_widgets(self):
->>>         
->>>         # Create a sprite sheet with image assets
->>>         #   This image, found in /test, has 3 images (bottom to top):
->>>         #   Unpressed, Hover, and Pressed
->>>         self.sheet = pgm.sprite.SpriteSheet('test/Default Button.png', 3, 1)
->>>         
->>>         # Create a solid background with the given color
->>>         self.create_bg(Color.RED)
->>> 
->>>         # Create separate text and button
->>>         self.create_text(
->>>             'Text', 'Test',
->>>             ('center', 'center'), color=Color.BLACK
->>>         )
->>>         self.create_button(
->>>             'Button', self.sheet, 0,
->>>             ('center', 'center'),
->>>             # In this test, we don't need to monitor button status
->>>             dispatch=False
->>>         )
->>> 
->>>         # A textbutton combines text and a button
->>>         #   Hover enlarge makes text larger when hovering
->>>         #   Works well with using larger hover sprite for button
->>>         self.create_text_button(
->>>             'TextButton', 'Text',
->>>             self.sheet, 0,
->>>             ('center', 'center'), ('center', 'center'),
->>>             hover_enlarge=5,
->>>             # In this test, we don't need to monitor button status
->>>             dispatch=False
->>>         )
->>>     
->>>     def enable(self):
->>>         # Enable all widgets
->>>         for widget in self.widgets.values():
->>>             widget.enable()
->>> 
->>>     def disable(self):
->>>         # Disable all widgets
->>>         for widget in self.widgets.values():
->>>             widget.enable()
+>>> # Create a sprite sheet with image assets
+>>> #   This image, found in /test, has 3 images (bottom to top):
+>>> #   Unpressed, Hover, and Pressed
+>>> self.sheet = pgm.sprite.SpriteSheet('test/Default Button.png', rows=3, cols=1)
 ```
+
+The following should go in `Menu.create_widgets()`:
+
+- Creating text
+```py
+>>>  # Create separate text and button
+>>> self.create_text(
+>>>     'Text', 'Test',
+>>>     ('center', 'center'), color=pgm.types.Color.BLACK
+>>> )
+```
+
+- Creating a button
+```py
+>>> self.create_button(
+>>>     'Button', self.sheet, 0,
+>>>     ('center', 'center'),
+>>>     on_half_click=self.on_half_click, on_full_click=self.on_full_click
+>>> )
+```
+
+- Creating a text and button in one
+```py
+>>> # A textbutton combines text and a button
+>>> #   Hover enlarge makes text larger when hovering
+>>> #   Works well with using larger hover sprite for button
+>>> self.create_text_button(
+>>>     'TextButton', 'Text',
+>>>     self.sheet, 0,
+>>>     ('center', 'center'), ('center', 'center'),
+>>>     on_half_click=self.on_half_click, on_full_click=self.on_full_click
+>>> )
+```
+
+![](media/demo.gif)
 
 
 ## ⬇️ Installation
