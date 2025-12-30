@@ -88,7 +88,7 @@ class Text(Label):
 			group=group,
 		)
 
-		self.anchor = anchor
+		self.anchor_pos = anchor
 		self.start_pos = self.pos = x, y
 		self.font_info = font_info
 		self.text = text
