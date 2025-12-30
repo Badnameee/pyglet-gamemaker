@@ -216,8 +216,11 @@ class TextButton:
 
 	@property  # type: ignore[override]
 	def x(self) -> float:
-		"""Anchored x position of the button. Setting sets text AND button."""
-		return self.button._x + self.anchor[0]
+		"""The x position of the anchor point. Setting sets text AND button.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self.button.x
 
 	@x.setter
 	def x(self, val: float) -> None:
@@ -226,8 +229,11 @@ class TextButton:
 
 	@property
 	def y(self) -> float:
-		"""Anchored y position of the button. Setting sets text AND button."""
-		return self.button._y + self.anchor[1]
+		"""The y position of the anchor point. Setting sets text AND button.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self.button.y
 
 	@y.setter
 	def y(self, val: float) -> None:
@@ -236,8 +242,8 @@ class TextButton:
 
 	@property
 	def pos(self) -> Point2D:
-		"""Anchored position of the button. Setting sets text AND button."""
-		return self.button._x + self.anchor[0], self.button._y + self.anchor[1]
+		"""The x position of the anchor point. Setting sets text AND button."""
+		return self.button.pos
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
@@ -246,11 +252,11 @@ class TextButton:
 
 	@property
 	def anchor_x(self) -> float:
-		"""The unconverted x anchor of the button. Setting sets text AND button.
+		"""The x position of the button anchor point. Setting sets text AND button.
 
 		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
 
-		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
 		return self.button.anchor_x
 
@@ -264,11 +270,11 @@ class TextButton:
 
 	@property
 	def anchor_y(self) -> float:
-		"""The unconverted y anchor of the button. Setting sets text AND button.
+		"""The x position of the button anchor point. Setting sets text AND button.
 
 		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
 
-		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
 		return self.button.anchor_y
 
@@ -281,15 +287,15 @@ class TextButton:
 		self._enlarge()
 
 	@property
-	def anchor(self) -> Point2D:
-		"""The unconverted anchor of the button. Setting sets text AND button.
+	def anchor_pos(self) -> Point2D:
+		"""The anchor position of the button. Setting sets text AND button.
 
 		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
 		"""
-		return self.button.anchor
+		return self.button.anchor_pos
 
-	@anchor.setter
-	def anchor(self, val: Anchor) -> None:
+	@anchor_pos.setter
+	def anchor_pos(self, val: Anchor) -> None:
 		self.anchor_x, self.anchor_y = val
 		self._enlarge()
 

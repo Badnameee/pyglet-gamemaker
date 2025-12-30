@@ -143,11 +143,11 @@ class Text(Label):
 
 	@property
 	def x(self) -> float:
-		"""*Anchored*, but *unrotated* x position of text.
-
-		To set both `.x` and `.y`, use `.pos =`
+		"""The *unrotated* x position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.pos[0]
+		return self._pos[0]
 
 	@x.setter
 	def x(self, val: float) -> None:
@@ -156,9 +156,9 @@ class Text(Label):
 
 	@property
 	def y(self) -> float:
-		"""*Anchored*, but *unrotated* y position of text.
-
-		To set both `.x` and `.y`, use `.pos =`
+		"""The *unrotated* y position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
 		"""
 		return self._pos[1]
 
@@ -169,7 +169,7 @@ class Text(Label):
 
 	@property
 	def pos(self) -> Point2D:
-		"""*Anchored*, but *unrotated* position of text"""
+		"""The *unrotated* anchor position."""
 		return self._pos
 
 	@pos.setter
@@ -189,7 +189,7 @@ class Text(Label):
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
 		return self._anchor[0]
 
@@ -203,7 +203,7 @@ class Text(Label):
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
 		return self._anchor[1]
 
