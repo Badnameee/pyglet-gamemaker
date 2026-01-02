@@ -40,15 +40,14 @@ I'm [Steven Robles](https://github.com/Badnameee) and I am a high school student
 
 <!-- *Show off what your software looks like in action! Try to limit it to one-liners if possible and don't delve into API specifics.* -->
 
-A simple program to render an empty Menu with button detection:
+A simple program to render an empty Scene with button detection:
 ```py
 >>> import pyglet_gamemaker as pgm
->>> from pyglet_gamemaker.types import Color
 >>> 
 >>> 
->>> class Menu(pgm.Menu):
+>>> class Menu(pgm.Scene):
 >>>     # Create widgets here
->>>     def create_widgets(self): ...
+>>>     def initialize(self): ...
 >>>     # Code that runs when button is pressed down
 >>>     def on_half_click(self, button): ...
 >>>     # Code that runs when button is fully clicked and released
@@ -59,9 +58,9 @@ A simple program to render an empty Menu with button detection:
 >>>     def disable(self): ...
 >>> 
 >>> 
->>> scene = Menu('Test')
+>>> menu = Menu('Test')
 >>> game = pgm.Window((640, 480))
->>> game.add_scene('Test', scene)
+>>> game.add_scene('Test', menu)
 >>> game.run()
 ```
 
@@ -79,7 +78,7 @@ The following should go in `Menu.create_widgets()`:
 ```py
 >>> self.create_text(
 >>>     'Text', 'Test',
->>>     ('center', 'center'), color=pgm.types.Color.BLACK
+>>>     ('center', 'center'), color=pgm.types.Color.RED
 >>> )
 ```
 
