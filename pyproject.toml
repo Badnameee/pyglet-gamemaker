@@ -72,3 +72,6 @@ quote-style = "single"
 [tool.ruff.lint.per-file-ignores]
 "test/*" = ["D", "T20"]
 "run_tests.py" = ["T20"]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
