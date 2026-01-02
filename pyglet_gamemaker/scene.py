@@ -1,17 +1,31 @@
-from abc import ABC, abstractmethod
-from typing import Callable
+"""Module holding Scene class.
 
-from pyglet.window import Window
+Use `~pgm.Scene` instead of `~pgm.scene.Scene`
+"""
+
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
 from pyglet.event import EventDispatcher
 from pyglet.graphics import Batch, Group
-from .types import *
-from .sprite import SpriteSheet
-from .shapes import Rect
-from .gui import *
+
+from .gui.button import Button
+from .gui.text import Text
+from .gui.text_button import TextButton
+from .shapes.rect import Rect
+from .types import Color
+
+if TYPE_CHECKING:
+	from .sprite import SpriteSheet
+	from .types import Anchor, EventHandler, FontInfo
+	from .window import Window
 
 
 class Scene(ABC, EventDispatcher):
 	"""Abstract class for a Scene in the game, inherit to create own scenes.
+
 	`Window` object should hold all scenes in window.scenes dictionary.
 
 	Required Methods (**do not override `.__init__`**):
@@ -20,7 +34,7 @@ class Scene(ABC, EventDispatcher):
 	- `.disable()`: Disable scene (not rendering, just logic)
 
 	Constants to set:
-	- `.WIDGET_POS`: Positions of widgets as scale to window (see `Scene.WIDGET_POS`)
+	- `.WIDGET_POS`: Positions of widgets as scale to window (see `.WIDGET_POS`)
 	- `.default_font_info`: The default font information used if none passed into methods
 
 	Creates its own batch and groups:
@@ -33,8 +47,10 @@ class Scene(ABC, EventDispatcher):
 		- `.text_group`
 
 	Dispatches:
-	- 'on_scene_change' (to window) when program wishes to switch scenes.
-		- Arg: Name of new scene to switch to
+	- `on_scene_change` (to window) when program wishes to switch scenes.
+		- Args:
+			- Name of new scene to switch to
+			- Any args for extra data. Note scenes have access to window and can retrieve data manually from there.
 
 	Use kwargs to attach event handlers.
 	"""
@@ -49,7 +65,7 @@ class Scene(ABC, EventDispatcher):
 
 	name: str
 	"""The name of the scene"""
-	event_handlers: dict[str, Callable]
+	event_handlers: dict[str, EventHandler]
 	"""All manually attached event handlers for this scene.
 	
 	**Do not modify**; use `.add_event_handlers` and `.remove_event_handlers` instead.
@@ -71,13 +87,13 @@ class Scene(ABC, EventDispatcher):
 	widgets: dict[str, Text | Button | TextButton]
 	"""Stores all widgets in the menu"""
 
-	def __init__(self, name: str, **kwargs) -> None:
+	def __init__(self, name: str, **kwargs: EventHandler) -> None:
 		"""Create a scene.
 
 		Args:
 			name (str):
 				The name of the scene (used to identity scene by name)
-			**kwargs:
+			**kwargs (EventHandler):
 				Event handlers to attach (name=func)
 		"""
 		self.name = name
@@ -104,11 +120,11 @@ class Scene(ABC, EventDispatcher):
 		self.window = window
 		self.initialize()
 
-	def add_event_handlers(self, **kwargs: Callable) -> None:
+	def add_event_handlers(self, **kwargs: EventHandler) -> None:
 		"""Add event handlers to this scene.
 
 		Args:
-			**kwargs (Callable):
+			**kwargs (EventHandler):
 				Name-function pair(s) representing handlers
 		"""
 		for name, handler in kwargs.items():
@@ -162,7 +178,7 @@ class Scene(ABC, EventDispatcher):
 			text (str):
 				Label text
 			anchor_pos (Anchor, optional):
-				Anchor position. See `gui.Text` for more info on anchor values.
+				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
@@ -171,7 +187,6 @@ class Scene(ABC, EventDispatcher):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
-
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
@@ -194,9 +209,9 @@ class Scene(ABC, EventDispatcher):
 		image_sheet: SpriteSheet,
 		image_start: str | int,
 		anchor: Anchor = (0, 0),
-		*,
+		dispatch: bool = True,
 		attach_events: bool = True,
-		**kwargs,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button widget.
 
@@ -208,15 +223,18 @@ class Scene(ABC, EventDispatcher):
 			image_start (str | int):
 				The starting index of the button images
 			anchor (Anchor):
-				Anchor position. See `gui.Button` for more info on anchor values.
+				Anchor position. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
-			attach_events (bool, optional):
-				If False, don't push mouse event handlers to window.
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			kwargs:
-				Event handlers (name=func)
+			attach_events (bool, optional):
+				If False, don't attach mouse events to window.
+				Event handlers can still be manually invoked.
+				Defaults to True.
+			**kwargs (EventHandler):
+				Name-function pair(s) representing handlers
 		"""
-
 		self.widgets[widget_name] = button = Button(
 			widget_name,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
@@ -227,7 +245,8 @@ class Scene(ABC, EventDispatcher):
 			self.batch,
 			self.button_group,
 			anchor,
-			attach_events=attach_events,
+			dispatch,
+			attach_events,
 			**kwargs,
 		)
 		button.disable()
@@ -243,8 +262,9 @@ class Scene(ABC, EventDispatcher):
 		font_info: FontInfo = (None, None),
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
+		dispatch: bool = True,
 		attach_events: bool = True,
-		**kwargs,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a text button widget.
 
@@ -254,14 +274,14 @@ class Scene(ABC, EventDispatcher):
 			text (str):
 				Label text
 			image_sheet (SpriteSheet):
-				SpriteSheet with the button images
+				SpriteSheet with the button images. See `~pgm.gui.Button` for more info on SpriteSheet usage.
 			image_start (str | int):
-				The starting index of the button images
+				The starting index of the button images. See `~pgm.gui.Button` for more info on SpriteSheet usage.
 			button_anchor (Anchor, optional):
-				Anchor position for the button. See `gui.Button` for more info on anchor values.
+				Anchor position for the button. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
 			text_anchor (Anchor, optional):
-				Anchor position for the text. See `gui.Text` for more info on anchor values.
+				Anchor position for the text. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
@@ -272,13 +292,16 @@ class Scene(ABC, EventDispatcher):
 			hover_enlarge (int, optional):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
-			attach_events (bool, optional):
-				If False, don't push mouse event handlers to window.
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			kwargs:
-				Event handlers (name=func)
+			attach_events (bool, optional):
+				If False, don't attach mouse events to window.
+				Event handlers can still be manually invoked.
+				Defaults to True.
+			**kwargs (EventHandler):
+				Name-function pair(s) representing handlers
 		"""
-
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
@@ -287,7 +310,7 @@ class Scene(ABC, EventDispatcher):
 			widget_name,
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
-			self.WIDGET_POS[widget_name][1] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.height,
 			self.window,
 			self.batch,
 			self.button_group,
@@ -299,6 +322,7 @@ class Scene(ABC, EventDispatcher):
 			font_info,
 			color,
 			hover_enlarge,
+			dispatch,
 			attach_events,
 			**kwargs,
 		)
@@ -310,8 +334,8 @@ class Scene(ABC, EventDispatcher):
 
 	@abstractmethod
 	def enable(self) -> None:
-		"""Enables this scene. (does not enable rendering)"""
+		"""Enable this scene (does not enable rendering)."""
 
 	@abstractmethod
 	def disable(self) -> None:
-		"""Disables this scene. (does not disable rendering)"""
+		"""Disable this scene (does not disable rendering)."""

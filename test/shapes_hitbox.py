@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import pyglet
-from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
-from src.shapes import HitboxRender, HitboxRenderCircle
-from src.types import Color
+from pyglet.window import Window, key
+
+from pyglet_gamemaker.shapes import HitboxRender, HitboxRenderCircle
+from pyglet_gamemaker.types import Color
 
 window = Window(640, 480, caption=__name__)
 batch = Batch()

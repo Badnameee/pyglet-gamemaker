@@ -1,11 +1,37 @@
+"""Module holding base Widget class.
+
+Use `~pgm.gui.Widget` instead of `~pgm.gui.widget.Widget`.
+"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from ..types import Anchor, AnchorX, AnchorY, Point2D
+if TYPE_CHECKING:
+	from ..types import Anchor, AnchorX, AnchorY, Point2D
+	from ..window import Window
 
 
 class Widget(ABC):
+	"""The base class for a Widget.
+
+	Required Methods:
+	- `._calc_anchor()`: Calculate the static anchor with raw_anchor
+
+	Required Properties:
+	- `.x`
+	- `.y`
+	- `.pos`
+	- `.anchor_x`
+	- `.anchor_y`
+	- `.anchor`
+
+	Optional Methods:
+	- `_on_mouse_...`: `...press`, `...release`, `...motion`, `...drag`
+		- Mouse events to attach when creating widget.
+	"""
+
 	CONVERT_DYNAMIC: dict[AnchorX | AnchorY, float] = {
 		'left': 0,
 		'bottom': 0,
@@ -18,6 +44,8 @@ class Widget(ABC):
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
 
+	window: Window
+	"""Window widget is associated with."""
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic) of widget"""
 	start_pos: Point2D = 0, 0
@@ -43,28 +71,36 @@ class Widget(ABC):
 		self.pos = self.start_pos
 		self.anchor = self.start_anchor
 
+	def _bind_mouse(self) -> None:
+		self.window.push_handlers(
+			on_mouse_press=self._on_mouse_press,
+			on_mouse_release=self._on_mouse_release,
+			on_mouse_motion=self._on_mouse_motion,
+			on_mouse_drag=self._on_mouse_drag,
+		)
+
 	@abstractmethod
 	def _calc_anchor(self) -> None:
 		"""Calculate new anchor and sync position."""
 
-	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		raise NotImplementedError(
 			f'Widget "{self.__class__.__name__}" does not contain ._on_mouse_press() method.'
 		)
 
-	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		raise NotImplementedError(
 			f'Widget "{self.__class__.__name__}" does not contain ._on_mouse_release() method.'
 		)
 
-	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		raise NotImplementedError(
 			f'Widget "{self.__class__.__name__}" does not contain ._on_mouse_motion() method.'
 		)
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
-	) -> None:
+	) -> bool:
 		raise NotImplementedError(
 			f'Widget "{self.__class__.__name__}" does not contain ._on_mouse_drag() method.'
 		)

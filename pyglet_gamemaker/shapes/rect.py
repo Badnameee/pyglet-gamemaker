@@ -1,5 +1,13 @@
+"""Module holding Rect class.
+
+Use `~pgm.shapes.Rect` instead of `~pgm.shapes.rect.Rect`
+"""
+
+from __future__ import annotations
+
 from pyglet.graphics import Batch, Group
-from ..types import *
+
+from ..types import Color, Point2D
 from .hitbox import HitboxRender
 
 
@@ -8,7 +16,7 @@ class Rect(HitboxRender):
 
 	Has attributes for each vertex position (`.bottomleft`, `.bottomright`, `.topright`, `.topleft`)
 
-	To create a rectangle without a render, use `shapes.Hitbox.from_rect()`.
+	To create a rectangle without a render, use `~pgm.shapes.Hitbox.from_rect()`.
 	"""
 
 	def __init__(
@@ -43,7 +51,6 @@ class Rect(HitboxRender):
 				The starting anchor position.
 				Defaults to (0, 0).
 		"""
-
 		super().__init__(
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
 			color,
@@ -55,27 +62,27 @@ class Rect(HitboxRender):
 
 	@property
 	def bottomleft(self) -> Point2D:
-		"""The bottomleft vertex position of the rect after all transformations"""
+		"""The bottomleft vertex position of rect after all transformations."""
 		return self.hitbox.coords[0]
 
 	@property
 	def bottomright(self) -> Point2D:
-		"""The bottomright vertex position of the rect after all transformations"""
+		"""The bottomright vertex position of rect after all transformations."""
 		return self.hitbox.coords[1]
 
 	@property
 	def topright(self) -> Point2D:
-		"""The topright vertex position of the rect after all transformations"""
+		"""The topright vertex position of rect after all transformations."""
 		return self.hitbox.coords[2]
 
 	@property
 	def topleft(self) -> Point2D:
-		"""The topleft vertex position of the rect after all transformations"""
+		"""The topleft vertex position of rect after all transformations."""
 		return self.hitbox.coords[3]
 
 	@property
 	def width(self) -> float:
-		"""The width of the *unrotated* rectangle."""
+		"""The width of *unrotated* rectangle."""
 		return self.hitbox._raw_coords[1][0] - self.hitbox._raw_coords[0][0]
 
 	@width.setter
@@ -93,7 +100,7 @@ class Rect(HitboxRender):
 
 	@property
 	def height(self) -> float:
-		"""The height of the *unrotated* rectangle."""
+		"""The height of *unrotated* rectangle."""
 		return self.hitbox._raw_coords[3][1] - self.hitbox._raw_coords[0][1]
 
 	@height.setter

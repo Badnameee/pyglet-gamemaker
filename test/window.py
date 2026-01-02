@@ -1,11 +1,17 @@
-from src.window import Window
-from src.types import *
+from __future__ import annotations
+
 from pyglet_gamemaker.scene import Scene
-from src.sprite import SpriteSheet
+from pyglet_gamemaker.sprite import SpriteSheet
+from pyglet_gamemaker.types import Color
+from pyglet_gamemaker.window import Window
 
 
 class TestScene(Scene):
-	WIDGET_POS = {'Test1': (0.2, 0.1), 'Test2': (0.5, 0.5), 'Test3': (0.7, 0.7)}
+	WIDGET_POS = {
+		'Test1': (0.2, 0.1),
+		'Test2': (0.5, 0.5),
+		'Test3': (0.7, 0.7)
+	}
 
 	default_font_info = None, 40
 
@@ -41,6 +47,7 @@ class TestScene(Scene):
 			on_half_click=self.on_half_click,
 			on_full_click=self.on_full_click,
 		)
+		print(self.widgets['Test3'].pos)
 
 	def on_half_click(self, button):
 		if button.ID == 'Test2':
@@ -80,7 +87,6 @@ class TestScene2(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-
 		self.sheet = SpriteSheet('Default Button.png', 3, 1)
 
 		self.bg = self.create_bg(self.bg_color)
@@ -110,16 +116,11 @@ class TestScene2(Scene):
 		)
 
 	def on_half_click(self, button):
-		if button.ID == 'Test2':
-			print(f'{self.__class__.__name__}: Test2 was clicked!')
-		elif button.ID == 'Test3':
-			print(f'{self.__class__.__name__}: Test3 was clicked!')
+		print(f'{self.__class__.__name__}: {button.ID} was clicked!')
 
 	def on_full_click(self, button):
-		if button.ID == 'Test2':
-			print(f'{self.__class__.__name__}: Test2 was fully pressed!')
-		elif button.ID == 'Test3':
-			print(f'{self.__class__.__name__}: Test3 was fully pressed!')
+		print(f'{self.__class__.__name__}: {button.ID} was fully pressed!')
+		if button.ID == 'Test3':
 			self.dispatch_event('on_scene_change', 'TestScene')
 
 	def enable(self):
@@ -132,10 +133,11 @@ class TestScene2(Scene):
 		for widget in self.widgets.values():
 			widget.disable()
 
+
 test1 = TestScene('TestScene', Color.ORANGE)
 test2 = TestScene2('TestScene2', Color.WHITE)
 
-window = Window((640, 480))
+window = Window(640, 480)
 window.add_scene('TestScene', test1)
 window.add_scene('TestScene2', test2)
 window.run()

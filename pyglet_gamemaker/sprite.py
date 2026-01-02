@@ -1,14 +1,23 @@
-from typing import SupportsIndex
+"""Module holding SpriteSheet class."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyglet
-from pyglet.image import TextureRegion, ImageGrid, TextureGrid, AbstractImage
+from pyglet.image import ImageGrid, TextureGrid
+
+if TYPE_CHECKING:
+	from typing import SupportsIndex
+
+	from pyglet.image import AbstractImage, TextureRegion
 
 
 class SpriteSheet:
 	"""An object holding a rectangular sheet of common sprites.
 
 	Index to get portion of image to render.
-	Allows indexing by name using `name(...)`
+	Allows indexing by name using `.name()`.
 	"""
 
 	img: AbstractImage
@@ -36,13 +45,12 @@ class SpriteSheet:
 		)  # For efficient rendering, make it all one texture
 
 	def name(self, *args: str) -> None:
-		"""Name all of the grid parts instead of indexing with numbers
+		"""Name all of the grid parts instead of indexing with numbers.
 
 		Args:
 			*args (str):
 				The names of the grid parts. Must be in same order as regular indexing.
 		"""
-
 		# Must be same number of names as parts of the grid
 		if len(args) != len(self.grid):
 			raise ValueError(
@@ -58,6 +66,10 @@ class SpriteSheet:
 		| int
 		| slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None],
 	) -> TextureRegion | list[TextureRegion]:
+		"""Get the sprite at position `index`.
+
+		Either a normal index or a string matching an index (using `.name()`) can be used.
+		"""
 		# Slice and int can be directly used
 		if isinstance(index, slice | int):
 			return self.grid[index]
@@ -68,15 +80,15 @@ class SpriteSheet:
 
 	@property
 	def item_width(self) -> int:
-		"""Width of single item"""
+		"""Width of single sprite."""
 		return self.grid.item_width
 
 	@property
 	def item_height(self) -> int:
-		"""Height of single item"""
+		"""Height of single sprite."""
 		return self.grid.item_height
 
 	@property
 	def item_dim(self) -> tuple[int, int]:
-		"""Dimensions of single item"""
+		"""Dimensions of single sprite."""
 		return self.item_width, self.item_height

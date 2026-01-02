@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import pyglet
-from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
-from src.shapes import HitboxRenderCircle
-from src.types import Color
+from pyglet.window import Window, key
+
+from pyglet_gamemaker.shapes import HitboxRenderCircle
+from pyglet_gamemaker.types import Color
 
 window = Window(640, 480, caption=__name__)
 batch = Batch()
@@ -19,7 +22,6 @@ def on_mouse_motion(x, y, dx, dy):
 
 @window.event
 def on_key_press(symbol, modifiers):
-
 	if symbol == key.A:
 		circle.anchor_x -= 10
 	elif symbol == key.D:

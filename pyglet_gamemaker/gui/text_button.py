@@ -1,21 +1,37 @@
+"""Module holding TextButton widget class.
+
+Use `~pgm.gui.TextButton` instead of `~pgm.gui.text_button.TextButton`
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..types import *
-from . import Button, Text, Widget
+from ..types import Color
+from .button import Button
+from .text import Text
+from .widget import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
-	from pyglet.window import Window
 
 	from ..sprite import SpriteSheet
+	from ..types import (
+		Anchor,
+		AnchorX,
+		AnchorY,
+		ButtonStatus,
+		EventHandler,
+		FontInfo,
+		Point2D,
+	)
+	from ..window import Window
 
 
 class TextButton(Widget):
-	"""Both a 2D button and 2D text in one. Refer to `gui.Button` and `gui.Text`.
+	"""Both a 2D button and 2D text in one. Refer to `~pgm.gui.Button` and `~pgm.gui.Text`.
 
-	Dispatches: Refer to `gui.Button`.
+	Dispatches: Refer to `~pgm.gui.Button`.
 
 	Note: `.text` holds Text object, `.button` holds Button object
 
@@ -24,8 +40,6 @@ class TextButton(Widget):
 
 	_hover_enlarge: int = 0
 
-	window: Window
-	"""Window button is associated with."""
 	button: Button
 	"""Button object"""
 	text: Text
@@ -54,7 +68,8 @@ class TextButton(Widget):
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
-		**kwargs,
+		attach_events: bool = True,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button with text.
 
@@ -71,17 +86,19 @@ class TextButton(Widget):
 				Window for attaching self
 			batch (Batch):
 				Batch for rendering
-			group (Group):
-				Group for rendering
+			button_group (Group):
+				Group for rendering button
+			text_group (Group):
+				Group for rendering text
 			image_sheet (SpriteSheet):
 				SpriteSheet with the button images
 			image_start (str | int):
 				The starting index of the button images
 			button_anchor (Anchor, optional):
-				Anchor position for the button. See `gui.Button` for more info on anchor values.
+				Anchor position for the button. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
 			text_anchor (Anchor, optional):
-				Anchor position for the text. See `gui.Text` for more info on anchor values.
+				Anchor position for the text. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
@@ -93,11 +110,14 @@ class TextButton(Widget):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `gui.Button` for more info.
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-
-			**kwargs:
-				Any event handlers to attach (such as 'on_full_click')
+			attach_events (bool, optional):
+				If False, don't attach mouse events to window.
+				Event handlers can still be manually invoked.
+				Defaults to True.
+			**kwargs (Callable[... Any]):
+				Any event handlers to attach to *button* (such as `on_full_click`)
 		"""
 		self.button = Button(
 			ID,
@@ -127,15 +147,12 @@ class TextButton(Widget):
 		)
 
 		self.window = window
+		self.attach_events = attach_events
 		# Adds event handler for mouse events
-		self.window.push_handlers(
-			on_mouse_press=self._on_mouse_press,
-			on_mouse_release=self._on_mouse_release,
-			on_mouse_motion=self._on_mouse_motion,
-			on_mouse_drag=self._on_mouse_drag,
-		)
+		if attach_events:
+			self._bind_mouse()
 
-	def reset(self) -> None:
+	def reset(self) -> None:  # noqa: D102
 		self.text.reset()
 		self.button.reset()
 		self.hover_enlarge = self.start_hover_enlarge
@@ -146,7 +163,8 @@ class TextButton(Widget):
 		self.button._calc_anchor()
 
 	def _enlarge(self) -> None:
-		"""Enlarge the text based on button status"""
+		# Enlarge the text based on button status
+
 		if self.button.status == 'Hover':
 			# First frame hover: enlarge text
 			if not self._enlarged:
@@ -163,12 +181,8 @@ class TextButton(Widget):
 				self._sync_text_anchor(prev)
 
 	def _sync_text_anchor(self, prev: tuple[int, int]) -> None:
-		"""Sync anchor of text widget using dimensions before resize.
+		# Sync anchor of text widget using dimensions before resize
 
-		Args:
-			prev (tuple[int, int]):
-				The previous dimensions before resizing text
-		"""
 		# Only sync if dynamic anchor
 		# Use _anchor to circumvent auto setting of raw_anchor to static
 
@@ -190,36 +204,44 @@ class TextButton(Widget):
 			self.button.pos = self.button.pos
 			self.text.pos = self.text.pos
 
-	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
-			return
-		self.button._on_mouse_press(x, y, buttons, modifiers)
+			return False
+		ret = self.button._on_mouse_press(x, y, buttons, modifiers)
 		self._enlarge()
 
-	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+		return ret
+
+	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.button.enabled:
-			return
-		self.button._on_mouse_motion(x, y, dx, dy)
+			return False
+		ret = self.button._on_mouse_motion(x, y, dx, dy)
 		self._enlarge()
 
-	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+		return ret
+
+	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
-			return
-		self.button._on_mouse_release(x, y, buttons, modifiers)
+			return False
+		ret = self.button._on_mouse_release(x, y, buttons, modifiers)
 		self._enlarge()
+
+		return ret
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
-	) -> None:
+	) -> bool:
 		if not self.button.enabled:
-			return
-		self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+			return False
+		ret = self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._enlarge()
+		
+		return ret
 
-	def enable(self) -> None:
+	def enable(self) -> None:  # noqa: D102
 		self.button.enable()
 
-	def disable(self) -> None:
+	def disable(self) -> None:  # noqa: D102
 		self.button.disable()
 
 	@property
@@ -262,7 +284,7 @@ class TextButton(Widget):
 	def anchor_x(self) -> float:
 		"""The x position of the button anchor point. Setting sets text AND button.
 
-		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
+		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
@@ -295,7 +317,7 @@ class TextButton(Widget):
 	def anchor_y(self) -> float:
 		"""The x position of the button anchor point. Setting sets text AND button.
 
-		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
+		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
@@ -328,7 +350,7 @@ class TextButton(Widget):
 	def anchor(self) -> Point2D:
 		"""The anchor position of the button. Setting sets text AND button.
 
-		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
+		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
 		"""
 		return self.button.anchor
 
@@ -338,6 +360,7 @@ class TextButton(Widget):
 
 	@property
 	def status(self) -> ButtonStatus:
+		"""Status of button. See `~pgm.gui.button.Button`."""
 		return self.button.status
 
 	@status.setter
@@ -346,7 +369,7 @@ class TextButton(Widget):
 
 	@property
 	def hover_enlarge(self) -> int:
-		"""How much to enlarge text when hovered over"""
+		"""How much to enlarge text when hovered over."""
 		return self._hover_enlarge
 
 	@hover_enlarge.setter
@@ -367,11 +390,11 @@ class TextButton(Widget):
 			self._hover_enlarge = size
 
 	@property
-	def enabled(self) -> bool:
+	def enabled(self) -> bool:  # noqa: D102
 		return self.button.enabled
 
 	@property
-	def dispatch(self) -> bool:
+	def dispatch(self) -> bool:  # noqa: D102
 		return self.button.dispatch
 
 	@dispatch.setter
@@ -379,9 +402,9 @@ class TextButton(Widget):
 		self.button.dispatch = val
 
 	@property
-	def width(self) -> int:
+	def width(self) -> int:  # noqa: D102
 		return self.button.width
 
 	@property
-	def height(self) -> int:
+	def height(self) -> int:  # noqa: D102
 		return self.button.height

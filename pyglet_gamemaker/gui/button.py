@@ -1,35 +1,43 @@
+"""Module holding Button widget class.
+
+Use `~pgm.gui.Button` instead of `~pgm.gui.button.Button`
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from pyglet.gui import PushButton as _PushButton
 
-from ..types import *
-from . import Widget
+from .widget import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 	from pyglet.image import AbstractImage
-	from pyglet.window import Window
 
 	from ..sprite import SpriteSheet
+	from ..types import Anchor, AnchorX, AnchorY, ButtonStatus, EventHandler, Point2D
+	from ..window import Window
 
 
-class Button(Widget, _PushButton):
-	"""A basic 2D button.
-	Supports anchoring with specific pixel values or dynamic.
+class Button(_PushButton, Widget):
+	"""A basic 2D button. Supports anchoring with specific pixel values or dynamic.
 
 	Dynamic Anchors:
 	- `AnchorX`: 'left', 'center', 'right'
 	- `AnchorY`: 'bottom', 'center', 'top'
 
+	Button has three statuses: 'unpressed', 'hover', and 'pressed'.
+
 	Takes a sprite sheet (using `sprite.Spritesheet`) to render the button.
-	Button has three status: 'unpressed', 'hover', 'pressed'.
-	Sprite sheet must have images in a row for all of the statuses in this order.
+	Sprite sheet must have images in a row for all of the statuses in above order.
+
+	When creating object, give the starting index of the button images.
+	For example, passing in 0 will take 0 as the unpressed image, 1 as the hovered, and 2 as the pressed.
 
 	Dispatches:
-	- 'on_half_click' when pressed
-	- 'on_full_click' when pressed and released without mouse moving off.
+	- `on_half_click` when pressed.
+	- `on_full_click` when pressed and released without mouse moving off.
 
 	Use kwargs to attach event handlers.
 	"""
@@ -42,8 +50,6 @@ class Button(Widget, _PushButton):
 	"""Image of pressed button"""
 	ID: str
 	"""Identifier of button"""
-	window: Window
-	"""Window button is associated with"""
 	status: ButtonStatus
 	"""Status of button"""
 
@@ -61,10 +67,9 @@ class Button(Widget, _PushButton):
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
-		*,
 		dispatch: bool = True,
 		attach_events: bool = True,
-		**kwargs,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button.
 
@@ -78,7 +83,7 @@ class Button(Widget, _PushButton):
 			image_sheet (SpriteSheet):
 				SpriteSheet with the button images
 			image_start (str | int):
-				The starting index of the button images
+				The starting index of the button images.
 			window (Window):
 				Window for attaching self
 			batch (Batch):
@@ -86,16 +91,16 @@ class Button(Widget, _PushButton):
 			group (Group):
 				Group for rendering
 			anchor (Anchor):
-				Anchor position. See `gui.Button` for more info on anchor values.
+				Anchor position. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `gui.Button` for more info.
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
 			attach_events (bool, optional):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
-			kwargs:
+			kwargs (Callable):
 				Event handlers (name=func)
 		"""
 		# Extract images from sheet
@@ -122,35 +127,32 @@ class Button(Widget, _PushButton):
 
 		# Adds event handler for mouse events
 		if attach_events:
-			self.window.push_handlers(
-				on_mouse_press = self._on_mouse_press,
-				on_mouse_release = self._on_mouse_release,
-				on_mouse_motion = self._on_mouse_motion,
-				on_mouse_drag = self._on_mouse_drag,
-			)
+			self._bind_mouse()
+
 		# Adds any event handlers passed through kwargs
 		for name in kwargs:
 			self.register_event_type(name)
 		self.push_handlers(**kwargs)
 
 	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
-		"""Update the sheet of the button"""
+		"""Update the sheet of the button."""
 		self._parse_sheet(image_sheet, image_start)
 		self._calc_anchor()
 
 	def _parse_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
-		"""Parse a sheet into individual images and store them"""
+		"""Parse a sheet into individual images and store them."""
 		start = (
 			image_sheet.lookup[image_start]
-			if isinstance(image_start, str) else
-			image_start
+			if isinstance(image_start, str)
+			else image_start
 		)
 		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[
 			start : start + 3
 		]  # type: ignore[misc]
 
 	def _update_status(self, x: int, y: int) -> None:
-		"""Update the status of the button given mouse position"""
+		# Update the status of the button given mouse position
+
 		if self.value:
 			if self.dispatch and self.status != 'Pressed':
 				self.dispatch_event('on_half_click', self)
@@ -167,47 +169,58 @@ class Button(Widget, _PushButton):
 		self._anchor = (
 			(
 				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.hover_img.width
-				if isinstance(self.raw_anchor[0], str) else
-				self.raw_anchor[0]
+				if isinstance(self.raw_anchor[0], str)
+				else self.raw_anchor[0]
 			),
 			(
 				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.hover_img.height
-				if isinstance(self.raw_anchor[1], str) else
-				self.raw_anchor[1]
+				if isinstance(self.raw_anchor[1], str)
+				else self.raw_anchor[1]
 			),
 		)
 		# Refresh position
 		self.pos = prev_pos
 
-	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.enabled:
-			return
+			return False
 		self._last_mouse_pos = x, y
 		super().on_mouse_press(x, y, buttons, modifiers)
 		self._update_status(x, y)
 
-	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+		# Check for successful hit: Do not allow click to propagate through handlers
+		return self.status == 'Pressed'
+
+	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.enabled:
-			return
+			return False
 		self._last_mouse_pos = x, y
 		super().on_mouse_motion(x, y, dx, dy)
 		self._update_status(x, y)
 
-	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+		# Check for successful hit: Do not allow click to propagate through handlers
+		return self.status == 'Hover'
+
+	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.enabled:
-			return
+			return False
 		self._last_mouse_pos = x, y
 		super().on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
 
+		return False
+
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
-	) -> None:
+	) -> bool:
 		if not self.enabled:
-			return
+			return False
 		self._last_mouse_pos = x, y
 		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
+
+		# Check for successful hit: Do not allow click to propagate through handlers
+		return self.status == 'Hover'
 
 	def enable(self) -> None:  # noqa: D102
 		self.enabled = True

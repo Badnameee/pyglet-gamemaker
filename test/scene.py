@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import pyglet
 from pyglet.window import Window
+
 from pyglet_gamemaker.scene import Scene
-from src.sprite import SpriteSheet
-from src.types import *
+from pyglet_gamemaker.sprite import SpriteSheet
+from pyglet_gamemaker.types import Color
 
 
 class TestScene(Scene):
@@ -44,16 +47,10 @@ class TestScene(Scene):
 		)
 
 	def on_half_click(self, button):
-		if button.ID == 'Test2':
-			print(f'{self.__class__.__name__}: Test2 was clicked!')
-		elif button.ID == 'Test3':
-			print(f'{self.__class__.__name__}: Test3 was clicked!')
+		print(f'{self.__class__.__name__}: {button.ID} was clicked!')
 
 	def on_full_click(self, button):
-		if button.ID == 'Test2':
-			print(f'{self.__class__.__name__}: Test2 was fully pressed!')
-		elif button.ID == 'Test3':
-			print(f'{self.__class__.__name__}: Test3 was fully pressed!')
+		print(f'{self.__class__.__name__}: {button.ID} was fully pressed!')
 
 	def enable(self):
 		for widget in self.widgets.values():
