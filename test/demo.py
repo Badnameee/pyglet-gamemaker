@@ -3,7 +3,7 @@ from __future__ import annotations
 import pyglet_gamemaker as pgm
 
 
-class Menu(pgm.Menu):
+class Demo(pgm.Scene):
 	# Store scaled positions (x, y) relative to window size
 	#   (0.5, 0.5) is center
 	WIDGET_POS = {'Text': (0.5, 0.1), 'Button': (0.5, 0.4), 'TextButton': (0.5, 0.6)}
@@ -65,7 +65,7 @@ class Menu(pgm.Menu):
 			widget.enable()
 
 
-scene = Menu('Test')
+demo = Demo('Demo')
 game = pgm.Window((640, 480))
-game.add_scene('Test', scene)
+game.add_scene('Demo', demo)
 game.run()
