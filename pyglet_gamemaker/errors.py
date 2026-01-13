@@ -95,11 +95,11 @@ class InvalidConfigValueType(TypeError):
 
 		s += '  |  Expected value type '
 		if isinstance(self.expected, tuple):
-			s += ' | '.join(map(lambda type: type.__name__, self.expected))
+			s += '|'.join(map(lambda type: type.__name__, self.expected))
 		else:
 			s += self.expected.__name__
 
-		s += f', got type {self.actual} instead.'
+		s += f', got type {self.actual.__name__} instead.'
 		return f'{self.__class__.__name__}: {s}'
 
 
