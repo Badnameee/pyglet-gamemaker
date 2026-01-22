@@ -266,7 +266,7 @@ class YAMLValidator:
 							errors.append(
 								InvalidConfigValueType(
 									('data', row_num_error, col_num_error),
-									list,
+									str,
 									type(row),
 								)
 							)
@@ -275,7 +275,7 @@ class YAMLValidator:
 								continue
 
 							if not conditions['delimiter']:
-								conditions
+								continue
 
 							alias, delimiter, frame_num = id.partition(
 								self.yaml['delimiter']
