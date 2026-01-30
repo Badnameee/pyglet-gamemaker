@@ -67,7 +67,7 @@ class InvalidConfigKeyType(TypeError):
 		return f'{self.__class__.__name__}: {s}'
 
 
-class InvalidConfigValueType(TypeError):
+class InvalidConfigValueType(ValueError):
 	"""Invalid value type in .yaml file."""
 
 	hierarchy: Any | tuple[Any, ...]
