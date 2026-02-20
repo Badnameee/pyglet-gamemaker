@@ -195,7 +195,7 @@ class Scene(ABC, EventDispatcher):
 		self.widgets[widget_name] = text_obj = Text(
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
-			self.WIDGET_POS[widget_name][1] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.height,
 			self.batch,
 			self.text_group,
 			anchor_pos,
