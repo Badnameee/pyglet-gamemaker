@@ -1,4 +1,6 @@
-from src.sprite import SpriteSheet
+from __future__ import annotations
+
+from pyglet_gamemaker.sprite import SpriteSheet
 
 sheet = SpriteSheet('Default Button.png', 3, 1)
 print(f'Lookup before naming: {sheet.lookup}')

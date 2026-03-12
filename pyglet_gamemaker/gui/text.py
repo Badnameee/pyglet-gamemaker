@@ -1,19 +1,23 @@
+"""Module holding Text widget class.
+
+Use `~pgm.gui.Text` instead of `~pgm.gui.text.Text`
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from pyglet.text import Label
 
-from ..types import *
-from . import Widget
+from ..types import Anchor, AnchorX, AnchorY, Color, FontInfo, Point2D
+from .widget import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
 
 class Text(Label, Widget):
-	"""A 2D label with scrolling and custom anchor support.
-	Supports anchoring with specific pixel values or dynamic.
+	"""A 2D label with scrolling and custom anchor support. Supports anchoring with specific pixel values or dynamic.
 
 	Dynamic Anchors:
 	- `AnchorX`: 'left', 'center', 'right'
@@ -55,7 +59,7 @@ class Text(Label, Widget):
 			group (Group):
 				Group for rendering
 			anchor (Anchor, optional):
-				Anchor position. See `gui.Text` for more info on anchor values.
+				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
@@ -81,7 +85,7 @@ class Text(Label, Widget):
 		self.font_info = font_info
 		self.text = text
 
-	def reset(self) -> None:
+	def reset(self) -> None:  # noqa: D102
 		super().reset()
 		self.font_name, self.font_size = self.font_info  # type: ignore[assignment]
 
@@ -90,26 +94,26 @@ class Text(Label, Widget):
 			(
 				# Convert if AnchorX, else use raw int value
 				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.content_width
-				if isinstance(self.raw_anchor[0], str) else
-				self.raw_anchor[0]
+				if isinstance(self.raw_anchor[0], str)
+				else self.raw_anchor[0]
 			),
 			(
 				# Convert if AnchorY, else use raw int value
 				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.content_height
-				if isinstance(self.raw_anchor[1], str) else
-				self.raw_anchor[1]
+				if isinstance(self.raw_anchor[1], str)
+				else self.raw_anchor[1]
 			),
 		)
 		# Refresh position
 		self.pos = self.pos
 
-	def enable(self) -> None: ...
+	def enable(self) -> None: ...  # noqa: D102
 
-	def disable(self) -> None: ...
+	def disable(self) -> None: ...  # noqa: D102
 
 	@property
 	def text(self) -> str:
-		"""The text string"""
+		"""The text string."""
 		return self._text
 
 	@text.setter
@@ -165,7 +169,7 @@ class Text(Label, Widget):
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self._anchor[0]
 
@@ -180,7 +184,7 @@ class Text(Label, Widget):
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self._anchor[1]
 
@@ -202,29 +206,29 @@ class Text(Label, Widget):
 		self.raw_anchor = val
 		self._calc_anchor()
 
-	@property  # type: ignore[override]
+	@property
 	def width(self) -> int:
 		"""Width of text. Equivalent to `~pyglet.text.Label.content_width`.
 
 		To get `~pyglet.text.Label.width`, use `.label_width()`.
 		"""
-		return Label.content_width.fget(self)  # type: ignore[attr-defined]
+		return Label.content_width.fget(self)  # type: ignore[attr-defined, no-any-return]
 
 	@width.setter
 	def width(self, val: int) -> None:
-		return Label.content_width.fset(self, val)  # type: ignore[attr-defined]
+		return Label.content_width.fset(self, val)  # type: ignore[attr-defined, no-any-return]
 
-	@property  # type: ignore[override]
+	@property
 	def height(self) -> int:
 		"""Height of text. Equivalent to `~pyglet.text.Label.content_height`.
 
 		To get `~pyglet.text.Label.height`, use `.label_height()`.
 		"""
-		return Label.content_height.fget(self)  # type: ignore[attr-defined]
+		return Label.content_height.fget(self)  # type: ignore[attr-defined, no-any-return]
 
 	@height.setter
 	def height(self, val: int) -> None:
-		return Label.content_height.fset(self, val)  # type: ignore[attr-defined]
+		return Label.content_height.fset(self, val)  # type: ignore[attr-defined, no-any-return]
 
 	@property
 	def label_width(self) -> int | None:
@@ -234,7 +238,7 @@ class Text(Label, Widget):
 		text will be wrapped. If `multiline` is False or `wrap_lines` is False,
 		this property has no effect.
 		"""
-		return Label.width.fget(self)  # type: ignore[attr-defined]
+		return Label.width.fget(self)  # type: ignore[attr-defined, no-any-return]
 
 	@property
 	def label_height(self) -> int | None:
@@ -245,4 +249,4 @@ class Text(Label, Widget):
 		:py:attr:`~pyglet.text.layout.TextLayout.content_valign` are
 		used.
 		"""
-		return Label.width.fget(self)  # type: ignore[attr-defined]
+		return Label.width.fget(self)  # type: ignore[attr-defined, no-any-return]

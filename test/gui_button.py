@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import pyglet
-from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
+from pyglet.window import Window, key
+
 from pyglet_gamemaker.gui import Button
 from pyglet_gamemaker.sprite import SpriteSheet
 
@@ -16,11 +19,11 @@ sheet.name('Unpressed', 'Hover', 'Pressed')
 
 
 def on_half_click(button):
-	print(f'{button} pressed down on!')
+	print(f'{button.ID} pressed down on!')
 
 
 def on_full_click(button):
-	print(f'{button} fully pressed and releaased!')
+	print(f'{button.ID} fully pressed and releaased!')
 
 
 @window.event

@@ -37,6 +37,7 @@ Issues = "https://github.com/Badnameee/pyglet-gamemaker/issues"
 
 [tool.mypy]
 python_version = "3.14"
+strict = true
 exclude = [
 	"^test/.*$",
 	"^run_tests\\.py$",
@@ -70,4 +71,7 @@ quote-style = "single"
 
 [tool.ruff.lint.per-file-ignores]
 "test/*" = ["D", "T20"]
-"run_tests.py" = ["T20"]
+"run_tests.py" = ["D", "T20"]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
