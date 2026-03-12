@@ -71,6 +71,7 @@ button = TextButton(
 	320,
 	240,
 	window,
+	None,
 	batch,
 	button_group,
 	txt_group,

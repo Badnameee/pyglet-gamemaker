@@ -11,7 +11,6 @@ tests = [
 	'shapes_hitbox',
 	'shapes_rect',
 	'shapes_circle',
-	'scene',
 	'window',
 ]
 

@@ -152,7 +152,7 @@ class Window(PygletWin):
 				Defaults to None.
 		"""
 		if not self.scenes:
-			raise RuntimeError('Window.scenes must have at least 1 scene!')
+			raise RuntimeError('Window must have at least 1 scene!')
 
 		# Set start scene if needed
 		if start_scene:
@@ -176,7 +176,6 @@ class Window(PygletWin):
 		"""
 		self.scenes[name] = obj
 		obj.set_window(self)
-		obj.add_event_handlers(on_scene_change=self._on_scene_change)
 		obj.disable()
 
 		# Sets default scene

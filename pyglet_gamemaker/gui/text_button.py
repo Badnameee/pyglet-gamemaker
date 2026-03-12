@@ -15,6 +15,7 @@ from .widget import Widget
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
+	from ..scene import Scene
 	from ..sprite import SpriteSheet
 	from ..types import (
 		Anchor,
@@ -38,6 +39,8 @@ class TextButton(Widget):
 	Use kwargs to attach event handlers.
 	"""
 
+	EVENT_TYPES = Text.EVENT_TYPES + Button.EVENT_TYPES
+
 	_hover_enlarge: int = 0
 
 	button: Button
@@ -57,6 +60,7 @@ class TextButton(Widget):
 		x: float,
 		y: float,
 		window: Window,
+		scene: Scene,
 		batch: Batch,
 		button_group: Group,
 		text_group: Group,
@@ -84,6 +88,8 @@ class TextButton(Widget):
 				Anchored y position of button
 			window (Window):
 				Window for attaching self
+			scene (Scene):
+				The scene the widget is from. None if widget is a template.
 			batch (Batch):
 				Batch for rendering
 			button_group (Group):
@@ -116,8 +122,8 @@ class TextButton(Widget):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
-			**kwargs (Callable[... Any]):
-				Any event handlers to attach to *button* (such as `on_full_click`)
+			**kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.button = Button(
 			ID,
@@ -126,6 +132,7 @@ class TextButton(Widget):
 			image_sheet,
 			image_start,
 			window,
+			scene,
 			batch,
 			button_group,
 			button_anchor,
@@ -139,6 +146,8 @@ class TextButton(Widget):
 			text,
 			x,
 			y,
+			window,
+			scene,
 			batch,
 			text_group,
 			text_anchor,
@@ -146,7 +155,7 @@ class TextButton(Widget):
 			color,
 		)
 
-		self.window = window
+		self.window, self.scene = window, scene
 		self.attach_events = attach_events
 		# Adds event handler for mouse events
 		if attach_events:
@@ -235,7 +244,7 @@ class TextButton(Widget):
 			return False
 		ret = self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._enlarge()
-		
+
 		return ret
 
 	def enable(self) -> None:  # noqa: D102

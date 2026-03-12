@@ -15,12 +15,13 @@ if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 	from pyglet.image import AbstractImage
 
+	from ..scene import Scene
 	from ..sprite import SpriteSheet
 	from ..types import Anchor, AnchorX, AnchorY, ButtonStatus, EventHandler, Point2D
 	from ..window import Window
 
 
-class Button(_PushButton, Widget):
+class Button(_PushButton, Widget):  # type: ignore[misc] # I know changing local events vars in Widget stops it, but why?? They are local!
 	"""A basic 2D button. Supports anchoring with specific pixel values or dynamic.
 
 	Dynamic Anchors:
@@ -41,6 +42,8 @@ class Button(_PushButton, Widget):
 
 	Use kwargs to attach event handlers.
 	"""
+
+	EVENT_TYPES = 'on_half_click', 'on_full_click'
 
 	unpressed_img: AbstractImage
 	"""Image of unpressed button"""
@@ -64,6 +67,7 @@ class Button(_PushButton, Widget):
 		image_sheet: SpriteSheet,
 		image_start: str | int,
 		window: Window,
+		scene: Scene,
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
@@ -86,6 +90,8 @@ class Button(_PushButton, Widget):
 				The starting index of the button images.
 			window (Window):
 				Window for attaching self
+			scene (Scene):
+				The scene the widget is from. None if widget is a template.
 			batch (Batch):
 				Batch for rendering
 			group (Group):
@@ -100,8 +106,8 @@ class Button(_PushButton, Widget):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
-			kwargs (Callable):
-				Event handlers (name=func)
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		# Extract images from sheet
 		self._parse_sheet(image_sheet, image_start)
@@ -116,23 +122,21 @@ class Button(_PushButton, Widget):
 			group,
 		)
 
+		self.window, self.scene = window, scene
 		self.start_pos = x, y
 		self.start_anchor = self.anchor = anchor
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 
 		self.ID = ID
-		self.window = window
 		self.status = 'Unpressed'
 
+		self.push_handlers()
 		# Adds event handler for mouse events
 		if attach_events:
 			self._bind_mouse()
 
-		# Adds any event handlers passed through kwargs
-		for name in kwargs:
-			self.register_event_type(name)
-		self.push_handlers(**kwargs)
+		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
 
 	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
 		"""Update the sheet of the button."""
@@ -148,7 +152,7 @@ class Button(_PushButton, Widget):
 		)
 		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[
 			start : start + 3
-		]  # type: ignore[misc]
+		]  # type: ignore[misc] # Because mypy cannot determine I am using slice and it will ALWAYS return a list
 
 	def _update_status(self, x: int, y: int) -> None:
 		# Update the status of the button given mouse position
@@ -230,9 +234,9 @@ class Button(_PushButton, Widget):
 
 	@property  # type: ignore[override]
 	def x(self) -> float:
-		"""The x position of the anchor point.
+		"""X position of the anchor point.
 
-		To set both `.x` and `.y`, use `.pos`.
+		To set both `.x` and `.y`, use `.pos`
 		"""
 		return self._x + self._anchor[0]
 
@@ -244,9 +248,9 @@ class Button(_PushButton, Widget):
 
 	@property  # type: ignore[override]
 	def y(self) -> float:
-		"""The y position of the anchor point.
+		"""Y position of the anchor point.
 
-		To set both `.x` and `.y`, use `.pos`.
+		To set both `.x` and `.y`, use `.pos`
 		"""
 		return self._y + self._anchor[1]
 
@@ -269,11 +273,11 @@ class Button(_PushButton, Widget):
 
 	@property
 	def anchor_x(self) -> float:
-		"""The x anchor of the button, in px.
+		"""X position of widget anchor offset.
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self._anchor[0]
 
@@ -286,11 +290,11 @@ class Button(_PushButton, Widget):
 
 	@property
 	def anchor_y(self) -> float:
-		"""The y anchor of the button, in px.
+		"""Y position of widget anchor offset.
 
 		Can be set in px or dynamic.
 
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self._anchor[1]
 
@@ -303,7 +307,7 @@ class Button(_PushButton, Widget):
 
 	@property
 	def anchor(self) -> Point2D:
-		"""The anchor of the button, in px.
+		"""Widget anchor offset.
 
 		Can be set in px or dynamic.
 		"""

@@ -66,6 +66,7 @@ button = Button(
 	sheet,
 	0,
 	window,
+	None,
 	batch,
 	button_group,
 	('center', 'center'),

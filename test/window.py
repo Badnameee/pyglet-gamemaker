@@ -33,8 +33,6 @@ class TestScene(Scene):
 			self.sheet,
 			0,
 			('center', 'center'),
-			on_half_click=self.on_half_click,
-			on_full_click=self.on_full_click,
 		)
 		self.create_text_button(
 			'Test3',
@@ -44,8 +42,6 @@ class TestScene(Scene):
 			('center', 'center'),
 			('center', 'center'),
 			hover_enlarge=5,
-			on_half_click=self.on_half_click,
-			on_full_click=self.on_full_click,
 		)
 		print(self.widgets['Test3'].pos)
 
@@ -100,8 +96,6 @@ class TestScene2(Scene):
 			self.sheet,
 			0,
 			('center', 'center'),
-			on_half_click=self.on_half_click,
-			on_full_click=self.on_full_click,
 		)
 		self.create_text_button(
 			'Test3',
@@ -111,8 +105,6 @@ class TestScene2(Scene):
 			('center', 'center'),
 			('center', 'center'),
 			hover_enlarge=5,
-			on_half_click=self.on_half_click,
-			on_full_click=self.on_full_click,
 		)
 
 	def on_half_click(self, button):

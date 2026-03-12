@@ -9,11 +9,15 @@ from typing import TYPE_CHECKING
 
 from pyglet.text import Label
 
-from ..types import Anchor, AnchorX, AnchorY, Color, FontInfo, Point2D
+from ..types import Color
 from .widget import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
+
+	from ..scene import Scene
+	from ..types import Anchor, AnchorX, AnchorY, FontInfo, Point2D
+	from ..window import Window
 
 
 class Text(Label, Widget):
@@ -39,6 +43,8 @@ class Text(Label, Widget):
 		text: str,
 		x: float,
 		y: float,
+		window: Window,
+		scene: Scene,
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
@@ -54,6 +60,10 @@ class Text(Label, Widget):
 				Anchored x position
 			y (float):
 				Anchored y position
+			window (Window):
+				Window for attaching self
+			scene (Scene):
+				The scene the widget is from. None if widget is a template.
 			batch (Batch):
 				Batch for rendering
 			group (Group):
@@ -80,6 +90,7 @@ class Text(Label, Widget):
 			group=group,
 		)
 
+		self.window, self.scene = window, scene
 		self.start_anchor = self.anchor = anchor
 		self.start_pos = self.pos = x, y
 		self.font_info = font_info
@@ -125,7 +136,7 @@ class Text(Label, Widget):
 	def x(self) -> float:
 		"""The *unrotated* x position of the anchor point.
 
-		To set both `.x` and `.y`, use `.pos`.
+		To set both `.x` and `.y`, use `.pos`
 		"""
 		return self._pos[0]
 
@@ -138,7 +149,7 @@ class Text(Label, Widget):
 	def y(self) -> float:
 		"""The *unrotated* y position of the anchor point.
 
-		To set both `.x` and `.y`, use `.pos`.
+		To set both `.x` and `.y`, use `.pos`
 		"""
 		return self._pos[1]
 
@@ -165,7 +176,7 @@ class Text(Label, Widget):
 
 	@property  # type: ignore[override]
 	def anchor_x(self) -> float:
-		"""The x anchor of the text, in px.
+		"""X position of widget anchor offset.
 
 		Can be set in px or dynamic.
 
@@ -180,7 +191,7 @@ class Text(Label, Widget):
 
 	@property  # type: ignore[override]
 	def anchor_y(self) -> float:
-		"""The y anchor of the text, in px.
+		"""Y position of widget anchor offset.
 
 		Can be set in px or dynamic.
 
@@ -195,7 +206,7 @@ class Text(Label, Widget):
 
 	@property
 	def anchor(self) -> Point2D:
-		"""The anchor of the text, in px.
+		"""Widget anchor offset.
 
 		Can be set in px or dynamic.
 		"""

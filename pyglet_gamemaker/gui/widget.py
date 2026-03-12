@@ -8,13 +8,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from pyglet.event import EventDispatcher
+
 if TYPE_CHECKING:
+	from ..scene import Scene
 	from ..types import Anchor, AnchorX, AnchorY, Point2D
 	from ..window import Window
 
 
 class Widget(ABC):
-	"""The base class for a Widget.
+	"""The base class for a Widget. Inherit to create own widget.
 
 	Required Methods:
 	- `._calc_anchor()`: Calculate the static anchor with raw_anchor
@@ -40,12 +43,22 @@ class Widget(ABC):
 		'top': 1,
 	}
 	"""Converts dynamic anchor to multiplier"""
+	_ALL_EVENT_TYPES: tuple[str, ...] = 'on_half_click', 'on_full_click'
+	"""This are all event types in all widgets to register them, used internally"""
+	EVENT_TYPES: tuple[str, ...] = ()
+	"""The event names that a widget can dispatch"""
+
+	# Register all event types beforehand
+	for event in _ALL_EVENT_TYPES:
+		EventDispatcher.register_event_type(event)
 
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
 
 	window: Window
-	"""Window widget is associated with."""
+	"""Window widget is associated with. Currently has no functionality."""
+	scene: Scene
+	"""The scene the widget is from. None if widget is a template."""
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic) of widget"""
 	start_pos: Point2D = 0, 0
@@ -72,12 +85,38 @@ class Widget(ABC):
 		self.anchor = self.start_anchor
 
 	def _bind_mouse(self) -> None:
-		self.window.push_handlers(
+		self.window.set_handlers(
 			on_mouse_press=self._on_mouse_press,
 			on_mouse_release=self._on_mouse_release,
 			on_mouse_motion=self._on_mouse_motion,
 			on_mouse_drag=self._on_mouse_drag,
 		)
+
+	def _bind_events(self, **kwargs: EventDispatcher) -> None:
+		"""Bind scene and kwarg events to widget.
+
+		Args:
+			kwargs (EventDispatcher): The event handlers to attach. Has priority over scene implementation.
+		"""
+		if not isinstance(self, EventDispatcher):
+			raise NotImplementedError(
+				f'Widget "{self.__class__.__name__}" cannot has events bound to it.'
+			)
+
+		# First check for kwargs to overwrite
+		for event, func in kwargs.items():
+			if event in self.EVENT_TYPES:
+				self.set_handler(event, func)
+			else:
+				raise ValueError(
+					f'Event name {event} not in {self.__class__.__name__}.EVENT_TYPES = {self.EVENT_TYPES}.'
+				)
+
+		# Next check for scene-wide implementation
+		for event in set(self.EVENT_TYPES).difference(kwargs):
+			# Check if scene has an implementation with same name
+			if callable(func := getattr(self.scene, event, None)):
+				self.set_handler(event, func)
 
 	@abstractmethod
 	def _calc_anchor(self) -> None:
@@ -116,9 +155,9 @@ class Widget(ABC):
 	@property
 	@abstractmethod
 	def x(self) -> float:
-		"""X of widget's anchor point.
+		"""X position of widget's anchor point.
 
-		To set both `.x` and `.y`, use `.pos`.
+		To set both `.x` and `.y`, use `.pos`
 		"""
 
 	@x.setter
@@ -128,9 +167,9 @@ class Widget(ABC):
 	@property
 	@abstractmethod
 	def y(self) -> float:
-		"""Y of widget's anchor point.
+		"""Y position of widget's anchor point.
 
-		To set both `.x` and `.y`, use `.pos`.
+		To set both `.x` and `.y`, use `.pos`
 		"""
 
 	@y.setter

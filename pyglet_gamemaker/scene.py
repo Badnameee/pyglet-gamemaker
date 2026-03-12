@@ -109,6 +109,7 @@ class Scene(ABC, EventDispatcher):
 		self.text_group = Group(1, self.UI_group)
 
 		# Adds any event handlers passed through kwargs
+		self.push_handlers()
 		self.add_event_handlers(**kwargs)
 
 	def set_window(self, window: Window) -> None:
@@ -119,6 +120,7 @@ class Scene(ABC, EventDispatcher):
 				The screen window
 		"""
 		self.window = window
+		self.add_event_handlers(on_scene_change=window._on_scene_change)
 		self.initialize()
 
 	def add_event_handlers(self, **kwargs: EventHandler) -> None:
@@ -126,12 +128,12 @@ class Scene(ABC, EventDispatcher):
 
 		Args:
 			**kwargs (EventHandler):
-				Name-function pair(s) representing handlers
+				Event handlers to attach (name=func)
 		"""
 		for name, handler in kwargs.items():
 			self.event_handlers[name] = handler
 			self.register_event_type(name)
-		self.push_handlers(**kwargs)
+		self.set_handlers(**kwargs)
 
 	def remove_event_handlers(self, *args: str) -> None:
 		"""Remove event handlers from this scene.
@@ -196,6 +198,8 @@ class Scene(ABC, EventDispatcher):
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.height,
+			self.window,
+			self,
 			self.batch,
 			self.text_group,
 			anchor_pos,
@@ -243,6 +247,7 @@ class Scene(ABC, EventDispatcher):
 			image_sheet,
 			image_start,
 			self.window,
+			self,
 			self.batch,
 			self.button_group,
 			anchor,
@@ -313,6 +318,7 @@ class Scene(ABC, EventDispatcher):
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.height,
 			self.window,
+			self,
 			self.batch,
 			self.button_group,
 			self.text_group,
