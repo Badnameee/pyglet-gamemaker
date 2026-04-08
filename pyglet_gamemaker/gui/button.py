@@ -131,7 +131,6 @@ class Button(_PushButton, Widget):  # type: ignore[misc] # I know changing local
 		self.ID = ID
 		self.status = 'Unpressed'
 
-		self.push_handlers()
 		# Adds event handler for mouse events
 		if attach_events:
 			self._bind_mouse()

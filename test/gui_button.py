@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import os
+import sys
+
+sys.path.append(os.getcwd())
+
 import pyglet
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle

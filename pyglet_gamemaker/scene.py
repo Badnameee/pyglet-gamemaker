@@ -109,7 +109,6 @@ class Scene(ABC, EventDispatcher):
 		self.text_group = Group(1, self.UI_group)
 
 		# Adds any event handlers passed through kwargs
-		self.push_handlers()
 		self.add_event_handlers(**kwargs)
 
 	def set_window(self, window: Window) -> None:

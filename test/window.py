@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import os
+import sys
+
+sys.path.append(os.getcwd())
+
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.sprite import SpriteSheet
 from pyglet_gamemaker.types import Color
@@ -7,11 +12,7 @@ from pyglet_gamemaker.window import Window
 
 
 class TestScene(Scene):
-	WIDGET_POS = {
-		'Test1': (0.2, 0.1),
-		'Test2': (0.5, 0.5),
-		'Test3': (0.7, 0.7)
-	}
+	WIDGET_POS = {'Test1': (0.2, 0.1), 'Test2': (0.5, 0.5), 'Test3': (0.7, 0.7)}
 
 	default_font_info = None, 40
 
@@ -43,7 +44,6 @@ class TestScene(Scene):
 			('center', 'center'),
 			hover_enlarge=5,
 		)
-		print(self.widgets['Test3'].pos)
 
 	def on_half_click(self, button):
 		if button.ID == 'Test2':
@@ -132,4 +132,5 @@ test2 = TestScene2('TestScene2', Color.WHITE)
 window = Window(640, 480)
 window.add_scene('TestScene', test1)
 window.add_scene('TestScene2', test2)
+print(window._event_stack)
 window.run()

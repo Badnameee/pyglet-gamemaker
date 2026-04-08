@@ -85,7 +85,7 @@ class Widget(ABC):
 		self.anchor = self.start_anchor
 
 	def _bind_mouse(self) -> None:
-		self.window.set_handlers(
+		self.window.push_handlers(
 			on_mouse_press=self._on_mouse_press,
 			on_mouse_release=self._on_mouse_release,
 			on_mouse_motion=self._on_mouse_motion,
@@ -100,7 +100,7 @@ class Widget(ABC):
 		"""
 		if not isinstance(self, EventDispatcher):
 			raise NotImplementedError(
-				f'Widget "{self.__class__.__name__}" cannot has events bound to it.'
+				f'Widget "{self.__class__.__name__}" cannot have events bound to it.'
 			)
 
 		# First check for kwargs to overwrite
