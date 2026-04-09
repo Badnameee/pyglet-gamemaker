@@ -1,6 +1,6 @@
 """Module holding TextButton widget class.
 
-Use `~pgm.gui.TextButton` instead of `~pgm.gui.text_button.TextButton`
+Use `~pgm.gui.TextButton` instead of `~pgm.gui.text_button.TextButton`.
 """
 
 from __future__ import annotations

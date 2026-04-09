@@ -1,6 +1,6 @@
 """Module holding Button widget class.
 
-Use `~pgm.gui.Button` instead of `~pgm.gui.button.Button`
+Use `~pgm.gui.Button` instead of `~pgm.gui.button.Button`.
 """
 
 from __future__ import annotations

@@ -12,6 +12,7 @@ from pyglet.event import EventDispatcher
 from pyglet.graphics import Batch, Group
 
 from .gui.button import Button
+from .gui.entry import Entry
 from .gui.text import Text
 from .gui.text_button import TextButton
 from .shapes.rect import Rect
@@ -62,7 +63,7 @@ class Scene(ABC, EventDispatcher):
 	Ex. `'Test': (0.5, 0.5)` is the center of the window.
 	"""
 	default_font_info: FontInfo = None, None
-	"""The default font info is none is passed to gui methods"""
+	"""The default font info if none is passed to gui methods"""
 
 	name: str
 	"""The name of the scene"""
@@ -237,7 +238,7 @@ class Scene(ABC, EventDispatcher):
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			**kwargs (EventHandler):
-				Name-function pair(s) representing handlers
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.widgets[widget_name] = button = Button(
 			widget_name,
@@ -305,7 +306,7 @@ class Scene(ABC, EventDispatcher):
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			**kwargs (EventHandler):
-				Name-function pair(s) representing handlers
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		# Use default if none provided
 		if font_info == (None, None):
@@ -333,6 +334,68 @@ class Scene(ABC, EventDispatcher):
 			**kwargs,
 		)
 		text_button.disable()
+
+	def create_entry(
+		self,
+		widget_name: str,
+		text: str,
+		width: int,
+		font_info: FontInfo = (None, None),
+		color: Color = Color.WHITE,
+		text_color: Color = Color.BLACK,
+		caret_color: Color = Color.BLACK,
+		dispatch: bool = True,
+		**kwargs: EventHandler,
+	) -> None:
+		"""Create an entry widget.
+
+		Args:
+			widget_name (str):
+				The name of the widget. Used as ID and to get position from widget_pos.
+			text (str):
+				Label text
+			width (int):
+				The width of the entry background
+			font_info (FontInfo, optional):
+				Font name and size.
+				Defaults to value in `.default_font_info`.
+			color (Color, optional):
+				Color of entry background.
+				Defaults to Color.WHITE.
+			text_color (Color, optional):
+				Color of text.
+				Defaults to Color.BLACK.
+			caret_color (Color, optional):
+				Color of text.
+				Defaults to Color.BLACK.
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			**kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
+		"""
+		# Use default if none provided
+		if font_info == (None, None):
+			font_info = self.default_font_info
+
+		self.widgets[widget_name] = entry = Entry(
+			widget_name,
+			text,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.height,
+			width,
+			self.window,
+			self,
+			self.batch,
+			self.text_group,
+			font_info,
+			color,
+			text_color,
+			caret_color,
+			dispatch,
+			**kwargs,
+		)
+		entry.disable()
 
 	@abstractmethod
 	def initialize(self) -> None:

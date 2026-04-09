@@ -1,6 +1,6 @@
 """Module holding Text widget class.
 
-Use `~pgm.gui.Text` instead of `~pgm.gui.text.Text`
+Use `~pgm.gui.Text` instead of `~pgm.gui.text.Text`.
 """
 
 from __future__ import annotations

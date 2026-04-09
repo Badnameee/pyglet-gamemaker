@@ -43,14 +43,14 @@ class Widget(ABC):
 		'top': 1,
 	}
 	"""Converts dynamic anchor to multiplier"""
-	_ALL_EVENT_TYPES: tuple[str, ...] = 'on_half_click', 'on_full_click'
+	_ALL_EVENT_TYPES: tuple[str, ...] = 'on_half_click', 'on_full_click', 'on_submit'
 	"""This are all event types in all widgets to register them, used internally"""
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
 
 	# Register all event types beforehand
-	for event in _ALL_EVENT_TYPES:
-		EventDispatcher.register_event_type(event)
+	# 	Comprehension prevents name clashing with multiinheritance
+	[EventDispatcher.register_event_type(event) for event in _ALL_EVENT_TYPES]
 
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
@@ -106,7 +106,7 @@ class Widget(ABC):
 		# First check for kwargs to overwrite
 		for event, func in kwargs.items():
 			if event in self.EVENT_TYPES:
-				self.set_handler(event, func)
+				self.set_handler(event, func) # type: ignore[arg-type] # Why do kwargs do this???
 			else:
 				raise ValueError(
 					f'Event name {event} not in {self.__class__.__name__}.EVENT_TYPES = {self.EVENT_TYPES}.'
@@ -115,7 +115,7 @@ class Widget(ABC):
 		# Next check for scene-wide implementation
 		for event in set(self.EVENT_TYPES).difference(kwargs):
 			# Check if scene has an implementation with same name
-			if callable(func := getattr(self.scene, event, None)):
+			if callable(func := getattr(self.scene, event, None)): # type: ignore[assignment]
 				self.set_handler(event, func)
 
 	@abstractmethod
