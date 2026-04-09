@@ -113,7 +113,6 @@ class Entry(TextEntry, Widget):
 		# Attach events
 		self.window.push_handlers(self)
 		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
-		print(self._event_stack)
 
 	def on_commit(self, widget: TextEntry, text: str) -> None:  # noqa: D102
 		if self.dispatch:
