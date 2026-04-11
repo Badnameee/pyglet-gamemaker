@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 	from pyglet.image import AbstractImage
 
 	from ..scene import Scene
-	from ..sprite import SpriteSheet
+	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import Anchor, AnchorX, AnchorY, ButtonStatus, EventHandler, Point2D
 	from ..window import Window
 

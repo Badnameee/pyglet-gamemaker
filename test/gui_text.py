@@ -71,7 +71,17 @@ def on_draw():
 	batch.draw()
 
 
-txt = Text('Hello World', 0, 0, window, None, batch, txt_group, ('center', 'center'), ('Arial', 50))
+txt = Text(
+	'Hello World',
+	0,
+	0,
+	window,
+	None,
+	batch,
+	txt_group,
+	('center', 'center'),
+	('Arial', 50),
+)
 txt.start_pos = 320, 240
 txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
 

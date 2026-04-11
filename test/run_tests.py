@@ -1,10 +1,18 @@
 from __future__ import annotations
 
-import pyglet
+import os
+
+
+def clear_terminal() -> None:
+	if os.name == 'nt':
+		os.system('cls')
+	else:
+		os.system('clear')
+
 
 # Holds all imports for tests
 tests = [
-	'sprite_spritesheet',
+	'sprite',
 	'gui_button',
 	'gui_text',
 	'gui_text_button',
@@ -14,9 +22,7 @@ tests = [
 	'window',
 ]
 
-pyglet.resource.path = ['test']
-pyglet.resource.reindex()
-
+clear_terminal()
 for test_num, test in enumerate(tests, 1):
 	print(f'\n-----------------------------\nStarting test #{test_num}: "{test}"\n\n')
 	exec(f'import test.{test}')  # Run actual test

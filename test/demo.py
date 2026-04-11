@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pyglet_gamemaker as pgm
 
 
@@ -15,7 +20,9 @@ class Demo(pgm.Scene):
 		# Create a sprite sheet with image assets
 		#   This image, found in /test, has 3 images (bottom to top):
 		#   Unpressed, Hover, and Pressed
-		self.sheet = pgm.sprite.SpriteSheet('test/Default Button.png', 3, 1)
+		self.sheet = pgm.sprite_sheet.SpriteSheet(
+			'test/Test Button SpriteSheet.png', 3, 1
+		)
 
 		# Create a solid background with the given color
 		self.create_bg(pgm.types.Color.RED)

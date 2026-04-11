@@ -13,7 +13,10 @@ from pyglet.shapes import Circle
 from pyglet.window import Window, key
 
 from pyglet_gamemaker.gui import TextButton
-from pyglet_gamemaker.sprite import SpriteSheet
+from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
+
+pyglet.resource.path.append('..')
+pyglet.resource.reindex()
 
 window = Window(640, 480, caption=__name__)
 pyglet.gl.glClearColor(1, 1, 1, 1)
@@ -22,7 +25,7 @@ txt_group = Group()
 button_group = Group()
 UI_group = Group()
 
-sheet = SpriteSheet('Default Button.png', 3, 1)
+sheet = SpriteSheet('test/media/Button SpriteSheet.png', 3, 1)
 sheet.name('Unpressed', 'Hover', 'Pressed')
 
 
