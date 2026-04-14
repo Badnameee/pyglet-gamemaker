@@ -30,11 +30,11 @@ sheet.name('Unpressed', 'Hover', 'Pressed')
 
 
 def on_half_click(button):
-	print(f'{button.ID} pressed down on!')
+	print(f'{button.ID} ("{button.text.text}") pressed down on!')
 
 
 def on_full_click(button):
-	print(f'{button.ID} fully pressed and releaased!')
+	print(f'{button.ID} ("{button.text.text}") fully pressed and released!')
 
 
 @window.event

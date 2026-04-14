@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pyglet.event import EventDispatcher
+
 from ..types import Color
 from .button import Button
 from .text import Text
@@ -21,7 +23,6 @@ if TYPE_CHECKING:
 		Anchor,
 		AnchorX,
 		AnchorY,
-		ButtonStatus,
 		EventHandler,
 		FontInfo,
 		Point2D,
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
 	from ..window import Window
 
 
-class TextButton(Widget):
+class TextButton(EventDispatcher, Widget):
 	"""Both a 2D button and 2D text in one. Refer to `~pgm.gui.Button` and `~pgm.gui.Text`.
 
 	Dispatches: Refer to `~pgm.gui.Button`.
@@ -39,7 +40,7 @@ class TextButton(Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	EVENT_TYPES = Text.EVENT_TYPES + Button.EVENT_TYPES
+	EVENT_TYPES = Button.EVENT_TYPES
 
 	_hover_enlarge: int = 0
 
@@ -136,8 +137,8 @@ class TextButton(Widget):
 			batch,
 			button_group,
 			button_anchor,
-			dispatch=dispatch,
-			attach_events=False,
+			False,
+			False,
 			**kwargs,
 		)
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
@@ -156,10 +157,14 @@ class TextButton(Widget):
 		)
 
 		self.window, self.scene = window, scene
+		self.ID = ID
+		self.dispatch = dispatch
 		self.attach_events = attach_events
 		# Adds event handler for mouse events
 		if attach_events:
 			self._bind_mouse()
+
+		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
 
 	def reset(self) -> None:  # noqa: D102
 		self.text.reset()
@@ -167,6 +172,19 @@ class TextButton(Widget):
 		self.hover_enlarge = self.start_hover_enlarge
 		# Sync status
 		self._on_mouse_motion(*self.button._last_mouse_pos, 0, 0)
+
+	def _update_status(self, x: int, y: int) -> None:
+		# Update the status of the button given mouse position
+		if self.button.value:
+			if self.dispatch and self.status != 'Pressed':
+				self.dispatch_event('on_half_click', self)
+			self.status = 'Pressed'
+		elif self.button._check_hit(x, y):
+			if self.dispatch and self.status == 'Pressed':
+				self.dispatch_event('on_full_click', self)
+			self.status = 'Hover'
+		else:
+			self.status = 'Unpressed'
 
 	def _calc_anchor(self) -> None:
 		self.button._calc_anchor()
@@ -216,36 +234,43 @@ class TextButton(Widget):
 	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
 			return False
-		ret = self.button._on_mouse_press(x, y, buttons, modifiers)
+		self.button._on_mouse_press(x, y, buttons, modifiers)
+		self._update_status(x, y)
 		self._enlarge()
 
-		return ret
+		# Check for successful hit: Do not allow click to propagate through handlers
+		return self.status == 'Pressed'
 
 	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.button.enabled:
 			return False
-		ret = self.button._on_mouse_motion(x, y, dx, dy)
+		self.button._on_mouse_motion(x, y, dx, dy)
+		self._update_status(x, y)
 		self._enlarge()
 
-		return ret
+		# Check for successful hit: Do not allow click to propagate through handlers
+		return self.status == 'Hover'
 
 	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
 			return False
-		ret = self.button._on_mouse_release(x, y, buttons, modifiers)
+		self.button._on_mouse_release(x, y, buttons, modifiers)
+		self._update_status(x, y)
 		self._enlarge()
 
-		return ret
+		return False
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
 	) -> bool:
 		if not self.button.enabled:
 			return False
-		ret = self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+		self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+		self._update_status(x, y)
 		self._enlarge()
 
-		return ret
+		# Check for successful hit: Do not allow click to propagate through handlers
+		return self.status == 'Hover'
 
 	def enable(self) -> None:  # noqa: D102
 		self.button.enable()
@@ -368,15 +393,6 @@ class TextButton(Widget):
 		self.anchor_x, self.anchor_y = val
 
 	@property
-	def status(self) -> ButtonStatus:
-		"""Status of button. See `~pgm.gui.button.Button`."""
-		return self.button.status
-
-	@status.setter
-	def status(self, val: ButtonStatus) -> None:
-		self.button.status = val
-
-	@property
 	def hover_enlarge(self) -> int:
 		"""How much to enlarge text when hovered over."""
 		return self._hover_enlarge
@@ -401,14 +417,6 @@ class TextButton(Widget):
 	@property
 	def enabled(self) -> bool:  # noqa: D102
 		return self.button.enabled
-
-	@property
-	def dispatch(self) -> bool:  # noqa: D102
-		return self.button.dispatch
-
-	@dispatch.setter
-	def dispatch(self, val: bool) -> None:
-		self.button.dispatch = val
 
 	@property
 	def width(self) -> int:  # noqa: D102
