@@ -123,13 +123,13 @@ class Button(_PushButton, Widget):  # type: ignore[misc] # I know changing local
 		)
 
 		self.window, self.scene = window, scene
+		self.ID = ID
+		self.status = 'Unpressed'
+
 		self.start_pos = x, y
 		self.start_anchor = self.anchor = anchor
 		self.dispatch = dispatch
 		self.attach_events = attach_events
-
-		self.ID = ID
-		self.status = 'Unpressed'
 
 		# Adds event handler for mouse events
 		if attach_events:
