@@ -144,6 +144,7 @@ class TextButton(EventDispatcher, Widget):
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 
 		self.text = Text(
+			ID,
 			text,
 			x,
 			y,

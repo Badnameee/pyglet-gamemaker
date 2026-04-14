@@ -195,6 +195,7 @@ class Scene(ABC, EventDispatcher):
 			font_info = self.default_font_info
 
 		self.widgets[widget_name] = text_obj = Text(
+			widget_name,
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.height,

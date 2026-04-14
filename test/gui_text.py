@@ -26,7 +26,7 @@ def on_mouse_motion(x, y, dx, dy):
 	# txt.pos = x, y
 	txt.offset((dx, dy))
 	txt_anchor.position = txt.pos
-	print(f'New txt pos: {txt.pos}')
+	print(f'New pos of {txt.ID} ("{txt.text}"): {txt.pos}')
 
 
 @window.event
@@ -34,7 +34,7 @@ def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
 	# txt.pos = x, y
 	txt.offset((dx, dy))
 	txt_anchor.position = txt.pos
-	print(f'New txt pos: {txt.pos}')
+	print(f'New pos of {txt.ID} ("{txt.text}"): {txt.pos}')
 
 
 @window.event
@@ -72,6 +72,7 @@ def on_draw():
 
 
 txt = Text(
+	'Test',
 	'Hello World',
 	0,
 	0,

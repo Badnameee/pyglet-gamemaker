@@ -40,6 +40,7 @@ class Text(Label, Widget):
 
 	def __init__(
 		self,
+		ID: str,
 		text: str,
 		x: float,
 		y: float,
@@ -54,6 +55,8 @@ class Text(Label, Widget):
 		"""Create a text label.
 
 		Args:
+			ID (str):
+				Name/ID of widget
 			text (str):
 				Label text
 			x (float):
@@ -91,6 +94,7 @@ class Text(Label, Widget):
 		)
 
 		self.window, self.scene = window, scene
+		self.ID = ID
 		self.start_anchor = self.anchor = anchor
 		self.start_pos = self.pos = x, y
 		self.font_info = font_info

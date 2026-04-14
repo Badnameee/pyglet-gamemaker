@@ -59,6 +59,8 @@ class Widget(ABC):
 	"""Window widget is associated with. Currently has no functionality."""
 	scene: Scene
 	"""The scene the widget is from. None if widget is a template."""
+	ID: str
+	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic) of widget"""
 	start_pos: Point2D = 0, 0

@@ -51,8 +51,6 @@ class Button(_PushButton, Widget):  # type: ignore[misc] # I know changing local
 	"""Image of hovered button"""
 	pressed_img: AbstractImage
 	"""Image of pressed button"""
-	ID: str
-	"""Identifier of button"""
 	status: ButtonStatus
 	"""Status of button"""
 
