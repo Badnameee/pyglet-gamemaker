@@ -159,6 +159,7 @@ class TextButton(EventDispatcher, Widget):
 
 		self.window, self.scene = window, scene
 		self.ID = ID
+		self.status = 'Unpressed'
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 		# Adds event handler for mouse events

@@ -63,7 +63,7 @@ class Hitbox:
 			anchor_pos (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
-			_subtype (str | None, optional)
+			_subtype (str, optional)
 				The subtype of the hitbox. Ex: 'rect', 'circle'.
 				Defaults to None.
 		"""
@@ -586,7 +586,7 @@ class HitboxRender:
 			rect (bool, optional):
 				If True, hitbox is a rectangle (for SAT).
 				Defaults to False.
-			subtype (str | None, optional):
+			subtype (str, optional):
 				The subtype of the hitbox. Ex: 'rect', 'circle'.
 				Defaults to None.
 		"""

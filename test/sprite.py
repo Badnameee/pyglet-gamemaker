@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.getcwd())
 
 import pyglet
 from pyglet.gl import *
@@ -16,15 +16,12 @@ from pyglet.window import Window
 from pyglet_gamemaker.sprite.animation import Animation, AnimationList
 from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 
-pyglet.resource.path.append('..')
-pyglet.resource.reindex()
-
 #######################
 # Testing SpriteSheet #
 #######################
 
 sheet = SpriteSheet(
-	'test/media/Button SpriteSheet.png', 3, 1, top_down=False, atlas=False
+	'media/Button SpriteSheet.png', 3, 1, top_down=False
 )
 print(f'Lookup before naming: {sheet.lookup}')
 sheet.name('Unpressed', 'Hover', 'Pressed')
@@ -42,21 +39,21 @@ window = Window()
 batch = Batch()
 glClearColor(0, 1, 0, 1)
 
-anim_sheet = SpriteSheet('test/media/SpriteSheet.png', 3, 2, atlas=False)
+anim_sheet = SpriteSheet('media/SpriteSheet.png', 3, 2)
 frames = [PygletAnimationFrame(frame, 1 / 12) for frame in anim_sheet.image_grid]
 anim = PygletAnimation(frames)
 sprite = Sprite(anim, batch=batch)
 sprite.scale = 10
 
 anim2 = Animation.from_file(
-	'test/media/Button SpriteSheet.png', 3, 1, 1 / 3, loop=True, atlas=False
+	'media/Button SpriteSheet.png', 3, 1, 1 / 3, loop=True
 )
 sprite2 = Sprite(anim2, 0, sprite.height, batch=batch)
 sprite2.scale = 10
 
 anim3 = AnimationList(
-	'test/media/AnimationList.png',
-	atlas=False,
+	'media/AnimationList.png',
+	'test/media/AnimationList.yaml',
 )
 sprite_3s = []
 x = sprite.width
@@ -68,11 +65,6 @@ for anim in anim3.animations.values():
 # Alias images
 glBindTexture(GL_TEXTURE_2D, 1)
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-glBindTexture(GL_TEXTURE_2D, 2)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-glBindTexture(GL_TEXTURE_2D, 3)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-glBindTexture(GL_TEXTURE_2D, 0)
 
 
 @window.event

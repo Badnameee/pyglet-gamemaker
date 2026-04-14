@@ -65,36 +65,36 @@ class Window(PygletWin):
 		Copied from `~pyglet.window.BaseWindow`
 
 		Args:
-			width (int | None, optional):
+			width (int, optional):
 				Width of the window, in pixels.
 				Defaults to 960, or the screen width if ``fullscreen`` is True.
-			height (int | None, optional):
+			height (int, optional):
 				Height of the window, in pixels.
 				Defaults to 540, or the screen height if ``fullscreen`` is True.
 			center_window (bool, optional):
 				If True, center the window on the screen.
 				Defaults to True.
-			caption (str | None, optional):
+			caption (str, optional):
 				Initial caption (title) of the window.
 				Defaults to ``sys.argv[0]``.
-			resizable (bool | None, optional):
+			resizable (bool, optional):
 				If True, the window will be resizable.
 				Defaults to False.
-			style (str | None, optional):
+			style (str, optional):
 				One of the ``~pyglet.window.Window.WINDOW_STYLE_*`` constants specifying
 				the border style of the window.
-			fullscreen (bool | None, optional):
+			fullscreen (bool, optional):
 				If True, the window will cover the entire screen rather than floating.
 				Defaults to False.
-			visible (bool | None, optional):
+			visible (bool, optional):
 				Determines if the window is visible immediately after creation.
 				Defaults to True.
 				Set this to False if you would like to change attributes of the window
 				before having it appear to the user.
-			vsync (bool | None, optional):
+			vsync (bool, optional):
 				If True, buffer flips are synchronised to the primary screen's
 				vertical retrace, eliminating flicker.
-			file_drops (bool | None, optional):
+			file_drops (bool, optional):
 				If True, the Window will accept files being dropped into it and call
 				the ``on_file_drop`` event.
 			display (Display, optional):
@@ -147,7 +147,7 @@ class Window(PygletWin):
 		"""Run the game.
 
 		Args:
-			start_scene (str | None, optional):
+			start_scene (str, optional):
 				The scene to start on.
 				Defaults to None.
 		"""

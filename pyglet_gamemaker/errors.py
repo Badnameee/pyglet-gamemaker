@@ -133,7 +133,7 @@ class InvalidConfigValue(TypeError):
 class InvalidConfigFile(RuntimeError):
 	"""Invalid .yaml file."""
 
-	file_path: PurePath
+	file_path: str
 	"""Path to .yaml file"""
 	validation_mode: str
 	"""The mode of validation /yaml file failed"""
@@ -141,7 +141,7 @@ class InvalidConfigFile(RuntimeError):
 	"""All errors generated while parsing .yaml file"""
 
 	def __init__(
-		self, file_path: PurePath, validation_mode: str, errors: list[Exception]
+		self, file_path: str, validation_mode: str, errors: list[Exception]
 	) -> None:
 		self.file_path = file_path
 		self.validation_mode = validation_mode

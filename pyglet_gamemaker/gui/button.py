@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 	from ..window import Window
 
 
-class Button(_PushButton, Widget):  # type: ignore[misc] # I know changing local events vars in Widget stops it, but why?? They are local!
+class Button(_PushButton, Widget):
 	"""A basic 2D button. Supports anchoring with specific pixel values or dynamic.
 
 	Dynamic Anchors:

@@ -5,6 +5,8 @@ import sys
 
 sys.path.append(os.getcwd())
 
+import pyglet
+
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 from pyglet_gamemaker.types import Color
@@ -21,7 +23,7 @@ class TestScene(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.sheet = SpriteSheet('Test Button SpriteSheet.png', 3, 1)
+		self.sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1)
 
 		self.bg = self.create_bg(self.bg_color)
 		self.create_text(
@@ -83,7 +85,7 @@ class TestScene2(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.sheet = SpriteSheet('Test Button SpriteSheet.png', 3, 1)
+		self.sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1)
 
 		self.bg = self.create_bg(self.bg_color)
 		self.create_text(

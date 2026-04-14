@@ -44,7 +44,7 @@ class Widget(ABC):
 	}
 	"""Converts dynamic anchor to multiplier"""
 	_ALL_EVENT_TYPES: tuple[str, ...] = 'on_half_click', 'on_full_click', 'on_submit'
-	"""This are all event types in all widgets to register them, used internally"""
+	"""Holds all event types in all widgets to register them, used internally"""
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
 

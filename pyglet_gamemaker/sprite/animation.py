@@ -7,6 +7,7 @@ Use `~pgm.sprite.Animation` instead of `~pgm.sprite.animation.Animation`
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyglet.image.animation import Animation as _Animation
@@ -130,7 +131,7 @@ class AnimationFrame(_AnimationFrame):
 				The image to display
 			duration (float | None):
 				The duration of the frame
-			frame_num (int | None, optional):
+			frame_num (int, optional):
 				The frame number in the animation.
 				Defaults to None.
 		"""
@@ -222,15 +223,20 @@ class AnimationList:
 
 	def __init__(
 		self,
-		file_path: str,
+		file_path: Path | str,
+		yaml_path: Path | str | None = None,
 		top_down: bool = True,
 		atlas: bool = True,
 	) -> None:
 		"""Create an animation list.
 
 		Args:
-			file_path (str):
-				The path to the spritesheet. Must be relative to cwd or be absolute.
+			file_path (Path | str):
+				The path to the spritesheet. Must be relative to `~pyglet.resource.path` or be absolute.
+			yaml_path (Path | str, optional):
+				The path to the .yaml file. Exists because of possible desync if `~pyglet.resource.path` does not match cwd.
+				Must be relative to cwd or be absolute.
+				Defaults to None.
 			top_down (bool, optional):
 				If True, parse spritesheet from top-to-bottom. If False, parse from bottom-to-top.
 				Defaults to True.
@@ -240,8 +246,13 @@ class AnimationList:
 				If False, create separate texture. Slower but allows for more customization.
 				Defaults to True.
 		"""
+		# Revolse default yaml path
+		if yaml_path is None:
+			yaml_path = Path(file_path).absolute().with_suffix('.yaml')
+		
 		self.sprite_sheet = SpriteSheet.from_yaml(
 			file_path,
+			yaml_path,
 			top_down,
 			atlas,
 		)

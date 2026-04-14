@@ -5,7 +5,7 @@ Use `~pgm.sprite.SpriteSheet` instead of `~pgm.sprite.sprite_sheet.SpriteSheet`
 
 from __future__ import annotations
 
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pyglet
@@ -32,6 +32,10 @@ class SpriteSheet:
 	"""Path of original image"""
 	yaml_path: Path | None = None
 	"""Path of .yaml config file"""
+	has_yaml: bool
+	"""If True, SpriteSheet created with .yaml data"""
+	yaml: Any | None = None
+	"""The yaml data"""
 	rows: int
 	"""Number of rows in sheet"""
 	cols: int
@@ -54,23 +58,22 @@ class SpriteSheet:
 	lookup: dict[str, int] = {}
 	"""The lookup table to convert aliases to integers for indexing"""
 
-	yaml: Any | None = None
-
 	def __init__(
 		self,
-		file_path: str,
+		file_path: Path | str,
 		rows: int,
 		cols: int,
 		row_padding: int = 0,
 		col_padding: int = 0,
 		top_down: bool = True,
 		atlas: bool = True,
-		yaml: bool = False,
+		_yaml: bool = False,
+		_yaml_path: Path | str | None = None,
 	) -> None:
 		"""Create a sprite sheet from a file.
 
 		Args:
-			file_path (str):
+			file_path (Path | str):
 				The path to the sprite sheet
 			rows (int):
 				The number of rows for sprites
@@ -90,29 +93,43 @@ class SpriteSheet:
 				Ex. Cannot set texture parameters without setting for entire atlas.
 				If False, create separate texture. Slower but allows for more customization.
 				Defaults to True.
-			yaml (bool, optional):
-				If True, add yaml file path to `.yaml_file`. Used by `._name_with_yaml()`.
+			_yaml (bool, optional):
+				If True, add yaml file path to `.yaml_path`.
+				Used by `._name_with_yaml()`.
+			_yaml_path (Path | str, optional):
+				Used
 		"""
 		self.path, self.rows, self.cols = Path(file_path), rows, cols
 		self.row_padding, self.col_padding = row_padding, col_padding
 		self.top_down = top_down
-		self.img = pyglet.resource.image(file_path, atlas=atlas)
+		self.img = pyglet.resource.image(file_path, atlas=atlas)  # type: ignore[arg-type] # Should work as it uses some variation of open()
 		self.image_grid = ImageGrid(
 			self.img, rows, cols, row_padding, col_padding, self.top_down
 		)
 
-		if yaml:
-			self.yaml_file = Path(file_path).absolute().with_suffix('.yaml')
+		self.has_yaml = _yaml
+		if _yaml:
+			self.yaml_path = (
+				Path(_yaml_path)
+				if _yaml_path
+				else self.path.absolute().with_suffix('.yaml')
+			)
 
 	@classmethod
 	def from_yaml(
-		cls, file_path: str, top_down: bool = True, atlas: bool = True
+		cls,
+		file_path: Path | str,
+		yaml_path: Path | str,
+		top_down: bool = True,
+		atlas: bool = True,
 	) -> Self:
 		"""Load a spritesheet using the associated .yaml file.
 
 		Args:
-			file_path (str):
-				The path of the image. Name stem must be the same as the .yaml file.
+			file_path (Path | str):
+				The path to the sprite sheet
+			yaml_path (Path | str):
+				The path to the .yaml file
 			top_down (bool, optional):
 				If True, parse spritesheet from top-to-bottom. If False, parse from bottom-to-top.
 				Defaults to True.
@@ -122,12 +139,13 @@ class SpriteSheet:
 				If False, create separate texture. Slower but allows for more customization.
 				Defaults to True.
 		"""
-		yaml_path = Path(file_path).absolute().with_suffix('.yaml')
+		if isinstance(yaml_path, str):
+			yaml_path = Path(yaml_path)
 
 		validator = YAMLValidator(yaml_path, 'Anim')
 		errors = validator.validate()
 		if errors:
-			raise InvalidConfigFile(PurePath(yaml_path), validator.validation_mode, errors)
+			raise InvalidConfigFile(str(yaml_path), validator.validation_mode, errors)
 
 		yaml = cls._raw_yaml(yaml_path)
 		self = cls(
@@ -138,7 +156,8 @@ class SpriteSheet:
 			yaml['col-padding'],
 			top_down,
 			atlas,
-			yaml=True,
+			_yaml=True,
+			_yaml_path=yaml_path,
 		)
 		self._name_from_yaml()
 
@@ -166,7 +185,11 @@ class SpriteSheet:
 			return yaml.safe_load(file)
 
 	def _name_from_yaml(self) -> None:
-		with open(self.path.absolute().with_suffix('.yaml')) as file:
+		if not self.has_yaml:
+			raise NotImplementedError(
+				'Should not run SpriteSheet.name_with_yaml on a SpriteSheet with no yaml'
+			)
+		with open(self.yaml_path) as file:  # type: ignore[arg-type] # self.yaml_path guaranteed to be Path if self.has_yaml
 			self.yaml = yaml.safe_load(file)
 
 			# Parse data for names
