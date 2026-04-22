@@ -83,9 +83,11 @@ class Scene(ABC, EventDispatcher):
 	UI_group: Group
 	"""Rendering group for all UI"""
 	button_group: Group
-	"""Rendering subgroup for the buttons"""
+	"""Rendering subgroup for buttons"""
 	text_group: Group
-	"""Rendering subgroup for the text"""
+	"""Rendering subgroup for text"""
+	entry_group: Group
+	"""Rendering subgroup for entries"""
 	widgets: dict[str, Widget]
 	"""Stores all widgets in the menu"""
 
@@ -107,7 +109,8 @@ class Scene(ABC, EventDispatcher):
 		self.bg_group = Group(0, self.main_group)
 		self.UI_group = Group(1)
 		self.button_group = Group(0, self.UI_group)
-		self.text_group = Group(1, self.UI_group)
+		self.entry_group = Group(1, self.UI_group)
+		self.text_group = Group(2, self.UI_group)
 
 		# Adds any event handlers passed through kwargs
 		self.add_event_handlers(**kwargs)
@@ -169,7 +172,7 @@ class Scene(ABC, EventDispatcher):
 		self,
 		widget_name: str,
 		text: str,
-		anchor_pos: Anchor = (0, 0),
+		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None),
 		color: Color = Color.WHITE,
 	) -> None:
@@ -180,7 +183,7 @@ class Scene(ABC, EventDispatcher):
 				The name of the widget. Used as ID and to get position from widget_pos.
 			text (str):
 				Label text
-			anchor_pos (Anchor, optional):
+			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
@@ -203,7 +206,7 @@ class Scene(ABC, EventDispatcher):
 			self,
 			self.batch,
 			self.text_group,
-			anchor_pos,
+			anchor,
 			font_info,
 			color,
 		)
@@ -341,6 +344,7 @@ class Scene(ABC, EventDispatcher):
 		widget_name: str,
 		text: str,
 		width: int,
+		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None),
 		color: Color = Color.WHITE,
 		text_color: Color = Color.BLACK,
@@ -357,6 +361,9 @@ class Scene(ABC, EventDispatcher):
 				Label text
 			width (int):
 				The width of the entry background
+			anchor (Anchor, optional):
+				Anchor position. See `~pgm.gui.Entry` for more info on anchor values.
+				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
 				Defaults to value in `.default_font_info`.
@@ -389,6 +396,7 @@ class Scene(ABC, EventDispatcher):
 			self,
 			self.batch,
 			self.text_group,
+			anchor,
 			font_info,
 			color,
 			text_color,

@@ -21,9 +21,22 @@ if TYPE_CHECKING:
 
 
 class Entry(TextEntry, Widget):
-	"""A wrapper for TextEntry that adds a couple of things, including adding font info and an ID."""
+	"""A text entry with custom anchor support. Supports anchoring with specific pixel values or dynamic.
+
+	Dynamic Anchors:
+	- `AnchorX`: 'left', 'center', 'right'
+	- `AnchorY`: 'bottom', 'center', 'top'
+
+	Dispatches:
+	- 'on_commit' when enter/return key is pressed on the entry.
+	"""
 
 	EVENT_TYPES = ('on_submit',)
+
+	initial_text: str
+	"""Initial text to display"""
+	edited: bool = False
+	"""If True, text has been edited. If False, remove default text when focused"""
 
 	def __init__(
 		self,
@@ -36,6 +49,7 @@ class Entry(TextEntry, Widget):
 		scene: Scene,
 		batch: Batch,
 		group: Group,
+		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None),
 		color: Color = Color.WHITE,
 		text_color: Color = Color.BLACK,
@@ -64,6 +78,9 @@ class Entry(TextEntry, Widget):
 				Optional batch to add the text entry widget to
 			group (Group):
 				Optional parent group of text entry widget
+			anchor (Anchor, optional):
+				Anchor position. See `~pgm.gui.Entry` for more info on anchor values.
+				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				The font name and size.
 				Defaults to (None, None).
@@ -98,12 +115,19 @@ class Entry(TextEntry, Widget):
 		self.ID = ID
 		self.window, self.scene = window, scene
 		self.dispatch = dispatch
+		self.start_pos = x, y
+		self.start_anchor = self.anchor = anchor
+		self.initial_text = text
 
 		# Restyle for font customization
 		self._doc.set_style(
 			0,
 			len(self._doc.text),
-			{'color': text_color.value, 'font_name': font_info[0], 'font_size': font_info[1]},
+			{
+				'color': text_color.value,
+				'font_name': font_info[0],
+				'font_size': font_info[1],
+			},
 		)
 
 		# Automatically adjust height to font size
@@ -114,11 +138,53 @@ class Entry(TextEntry, Widget):
 		self.window.push_handlers(self)
 		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
 
+	def clear(self) -> None:
+		"""Clear the entry."""
+		self._layout.document.delete_text(0, len(self._layout.document.text))
+
+	def reset(self, pos: bool = True, text: bool = True) -> None:
+		"""Reset entry to initial state. Optional arguments control which parts get reset.
+
+		Args:
+			pos (bool, optional): If True, reset the position and anchoring. Defaults to True.
+			text (bool, optional): If True, reset the text. Defaults to True.
+		"""
+		if pos:
+			super().reset()
+		if text:
+			self.clear()
+			self._layout.document.insert_text(0, self.initial_text)
+			self.edited = False
+
 	def on_commit(self, widget: TextEntry, text: str) -> None:  # noqa: D102
 		if self.dispatch:
 			self.dispatch_event('on_submit', self, text)
 
-	def _calc_anchor(self) -> None: ...
+	def _set_focus(self, value: bool) -> None:
+		super()._set_focus(value)
+		if not self.edited:
+			self.edited = True
+			self.clear()
+
+	def _calc_anchor(self) -> None:
+		# Get pos before messing with anchor
+		prev_pos = self.pos
+		self._anchor = (
+			(
+				# Convert if AnchorX, else use raw int value
+				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width
+				if isinstance(self.raw_anchor[0], str)
+				else self.raw_anchor[0]
+			),
+			(
+				# Convert if AnchorY, else use raw int value
+				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height
+				if isinstance(self.raw_anchor[1], str)
+				else self.raw_anchor[1]
+			),
+		)
+		# Refresh position
+		self.pos = prev_pos
 
 	def enable(self) -> None:  # noqa: D102
 		self.enabled = True
@@ -128,48 +194,57 @@ class Entry(TextEntry, Widget):
 
 	@property  # type: ignore[override]
 	def x(self) -> float:  # noqa: D102
-		return self.x
+		return self._x + self.anchor[0]
 
 	@x.setter
 	def x(self, val: float) -> None:
-		self.x = val
+		self._x = val - self.anchor[0]  # type: ignore[assignment]
+		self._update_position()
 
 	@property  # type: ignore[override]
 	def y(self) -> float:  # noqa: D102
-		return self.y
+		return self._y + self.anchor[1]
 
 	@y.setter
 	def y(self, val: float) -> None:
-		self.y = val
+		self._y = val - self.anchor[1]  # type: ignore[assignment]
+		self._update_position()
 
 	@property
 	def pos(self) -> Point2D:  # noqa: D102
-		return self.x, self.y
+		return self._x + self._anchor[0], self._y + self._anchor[1]
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.x, self.y = val
+		self._x, self._y = val[0] - self._anchor[0], val[1] - self._anchor[1]  # type: ignore[assignment]
+		self._update_position()
 
 	@property
 	def anchor_x(self) -> float:  # noqa: D102
-		return 0
+		return self._anchor[0]
 
 	@anchor_x.setter
-	def anchor_x(self, val: float) -> None: ...
+	def anchor_x(self, val: float) -> None:
+		self.raw_anchor = val, self.raw_anchor[1]
+		self._calc_anchor()
 
 	@property
 	def anchor_y(self) -> float:  # noqa: D102
-		return 0
+		return self._anchor[1]
 
 	@anchor_y.setter
-	def anchor_y(self, val: float) -> None: ...
+	def anchor_y(self, val: float) -> None:
+		self.raw_anchor = self.raw_anchor[0], val
+		self._calc_anchor()
 
 	@property
 	def anchor(self) -> Point2D:  # noqa: D102
-		return 0, 0
+		return self._anchor
 
 	@anchor.setter
-	def anchor(self, val: Anchor) -> None: ...
+	def anchor(self, val: Anchor) -> None:
+		self.raw_anchor = val
+		self._calc_anchor()
 
 	@property
 	def text(self) -> str:

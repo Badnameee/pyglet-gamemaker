@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class Button(_PushButton, Widget):
-	"""A basic 2D button. Supports anchoring with specific pixel values or dynamic.
+	"""A basic 2D button with custom anchor support. Supports anchoring with specific pixel values or dynamic.
 
 	Dynamic Anchors:
 	- `AnchorX`: 'left', 'center', 'right'

@@ -5,8 +5,6 @@ import sys
 
 sys.path.append(os.getcwd())
 
-import pyglet
-
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 from pyglet_gamemaker.types import Color
