@@ -427,3 +427,13 @@ class TextButton(EventDispatcher, Widget):
 	@property
 	def height(self) -> int:  # noqa: D102
 		return self.button.height
+
+	@property
+	def visible(self) -> bool:
+		"""If True, text button will be visible."""
+		return self.button.visible
+
+	@visible.setter
+	def visible(self, val: bool) -> None:
+		self.button.visible = val
+		self.text.visible = val

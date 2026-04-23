@@ -57,6 +57,12 @@ def on_key_press(symbol, modifiers):
 	elif symbol == key.T:
 		button.hover_enlarge = random.randint(0, 25)
 		print(f'Button enlarge changed to {button.hover_enlarge}')
+	elif symbol == key.H:
+		button.visible = not button.visible
+	elif symbol == key.J:
+		button.button.visible = not button.button.visible
+	elif symbol == key.K:
+		button.text.visible = not button.text.visible
 	else:
 		return
 

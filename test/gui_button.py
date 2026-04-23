@@ -51,6 +51,8 @@ def on_key_press(symbol, modifiers):
 		button.anchor_y -= 10
 	elif symbol == key.R:
 		button.reset()
+	elif symbol == key.H:
+		button.visible = not button.visible
 	else:
 		return
 

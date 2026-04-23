@@ -324,3 +324,12 @@ class Button(_PushButton, Widget):
 	@property
 	def height(self) -> int:  # noqa: D102
 		return self.hover_img.height
+
+	@property
+	def visible(self) -> bool:
+		"""If True, button will be visible."""
+		return self._sprite.visible
+
+	@visible.setter
+	def visible(self, val: bool) -> None:
+		self._sprite.visible = val
