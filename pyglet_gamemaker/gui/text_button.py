@@ -69,7 +69,7 @@ class TextButton(EventDispatcher, Widget):
 		image_start: str | int,
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = (0, 0),
-		font_info: FontInfo = (None, None),
+		font_info: FontInfo = (None, None, None),
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
@@ -108,8 +108,8 @@ class TextButton(EventDispatcher, Widget):
 				Anchor position for the text. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				Font name and size.
-				Defaults to (None, None).
+				Font name, size, (and optional weight).
+				Defaults to (None, None, None).
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.

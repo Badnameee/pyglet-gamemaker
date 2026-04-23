@@ -49,7 +49,7 @@ class Text(Label, Widget):
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
-		font_info: FontInfo = (None, None),
+		font_info: FontInfo = (None, None, None),
 		color: Color = Color.WHITE,
 	) -> None:
 		"""Create a text label.
@@ -75,12 +75,14 @@ class Text(Label, Widget):
 				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				Font name and size.
-				Defaults to (None, None).
+				Font name, size, (and optional weight).
+				Defaults to (None, None, None).
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
+		# Pads Nones on right for consistent length
+		font_info = *font_info, *[None for _ in range(3 - len(font_info))]
 		super().__init__(
 			text,
 			x,
@@ -91,6 +93,7 @@ class Text(Label, Widget):
 			color=color.value,
 			batch=batch,
 			group=group,
+			weight=font_info[2] if font_info[2] is not None else "normal" # type: ignore[misc] # Guaranteed 3 items long by here
 		)
 
 		self.window, self.scene = window, scene
@@ -102,7 +105,7 @@ class Text(Label, Widget):
 
 	def reset(self) -> None:  # noqa: D102
 		super().reset()
-		self.font_name, self.font_size = self.font_info  # type: ignore[assignment]
+		self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
 
 	def _calc_anchor(self) -> None:
 		self._anchor = (

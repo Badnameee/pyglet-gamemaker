@@ -90,7 +90,8 @@ button = TextButton(
 	0,
 	('center', 'center'),
 	('center', 'center'),
-	font_info=('Arial', 30),
+	font_info=('Arial', 30, ''),
+	hover_enlarge=3,
 	on_half_click=on_half_click,
 	on_full_click=on_full_click,
 )

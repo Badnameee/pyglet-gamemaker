@@ -50,7 +50,7 @@ class Entry(TextEntry, Widget):
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
-		font_info: FontInfo = (None, None),
+		font_info: FontInfo = (None, None, None),
 		color: Color = Color.WHITE,
 		text_color: Color = Color.BLACK,
 		caret_color: Color = Color.BLACK,
@@ -82,8 +82,8 @@ class Entry(TextEntry, Widget):
 				Anchor position. See `~pgm.gui.Entry` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				The font name and size.
-				Defaults to (None, None).
+				The Font name, size, (and optional weight).
+				Defaults to (None, None, None).
 			color (tuple[int, int, int, int], optional):
 				The color of the outline box in RGBA format.
 				Defaults to (255, 255, 255, 255).
@@ -119,6 +119,9 @@ class Entry(TextEntry, Widget):
 		self.start_anchor = self.anchor = anchor
 		self.initial_text = text
 
+		# Pads Nones on right for consistent length
+		font_info = *font_info, *[None for _ in range(3 - len(font_info))]
+
 		# Restyle for font customization
 		self._doc.set_style(
 			0,
@@ -127,6 +130,7 @@ class Entry(TextEntry, Widget):
 				'color': text_color.value,
 				'font_name': font_info[0],
 				'font_size': font_info[1],
+				'weight': font_info[2] # type: ignore[misc] # Guaranteed 3 items long by here
 			},
 		)
 

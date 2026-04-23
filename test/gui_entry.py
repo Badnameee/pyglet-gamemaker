@@ -22,6 +22,7 @@ class Scene1(Scene):
 			'Test',
 			'Start Test!',
 			250,
+			font_info=(None, None),
 			color=Color.GRAY,
 		)
 

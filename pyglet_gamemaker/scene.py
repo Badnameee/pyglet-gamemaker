@@ -187,7 +187,7 @@ class Scene(ABC, EventDispatcher):
 				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				Font name and size.
+				Font name, size, (and optional weight).
 				Defaults to value in `.default_font_info`.
 			color (Color, optional):
 				Color of text.
@@ -294,7 +294,7 @@ class Scene(ABC, EventDispatcher):
 				Anchor position for the text. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				Font name and size.
+				Font name, size, (and optional weight).
 				Defaults to value in `.default_font_info`.
 			color (Color, optional):
 				Color of text.
@@ -365,7 +365,7 @@ class Scene(ABC, EventDispatcher):
 				Anchor position. See `~pgm.gui.Entry` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				Font name and size.
+				Font name, size, (and optional weight).
 				Defaults to value in `.default_font_info`.
 			color (Color, optional):
 				Color of entry background.

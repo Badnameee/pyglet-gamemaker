@@ -21,9 +21,10 @@ from typing import Any, Callable, Literal
 
 from pyglet.customtypes import AnchorX as _AnchorX
 from pyglet.customtypes import AnchorY as _AnchorY
+from pyglet.text import Weight
 
 Point2D = tuple[float, float]
-FontInfo = tuple[str | None, int | None]
+FontInfo = tuple[str | None, int | None] | tuple[str | None, int | None, Weight | None]
 ButtonStatus = Literal['Unpressed', 'Hover', 'Pressed']
 Axis = Literal['x', 'y']
 AnchorX = _AnchorX | float
