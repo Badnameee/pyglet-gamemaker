@@ -1,2 +1,2 @@
-from .hitbox import Hitbox, HitboxRender, HitboxCircle, HitboxRenderCircle
+from .hitbox import Hitbox, HitboxCircle, HitboxRender, HitboxRenderCircle
 from .rect import Rect

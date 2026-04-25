@@ -46,7 +46,6 @@ exclude = [
 
 [tool.ruff]
 exclude = [
-	"**/__init__.py",
 	"run_demo.py",
 	".venv/*",
 ]
@@ -75,3 +74,6 @@ quote-style = "single"
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"**/__init__.py" = ["I002", "F401", "D"]
