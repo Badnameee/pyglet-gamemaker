@@ -175,7 +175,9 @@ class Scene(ABC, EventDispatcher):
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None),
 		color: Color = Color.WHITE,
-	) -> None:
+		add_to_widget_dict: bool = True,
+		override_ID: str | None = None,
+	) -> None | Text:
 		"""Create a text widget.
 
 		Args:
@@ -192,12 +194,21 @@ class Scene(ABC, EventDispatcher):
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
+			add_to_widget_dict (bool, optional):
+				If False, do not add to main dict of widgets.
+				Defaults to True.
+			override_ID (str, optional):
+				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				Default is None.
+
+		Returns:
+			None | Text: None if add_to_widget_dict is True, else the text object
 		"""
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
 
-		self.widgets[widget_name] = text_obj = Text(
+		text_obj = Text(
 			widget_name,
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
@@ -211,6 +222,14 @@ class Scene(ABC, EventDispatcher):
 			color,
 		)
 		text_obj.disable()
+		if override_ID is not None:
+			text_obj.ID = override_ID
+
+		# Store or return
+		if not add_to_widget_dict:
+			return text_obj
+		self.widgets[widget_name if override_ID is None else override_ID] = text_obj
+		return None
 
 	def create_button(
 		self,
@@ -220,8 +239,10 @@ class Scene(ABC, EventDispatcher):
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		attach_events: bool = True,
+		add_to_widget_dict: bool = True,
+		override_ID: str | None = None,
 		**kwargs: EventHandler,
-	) -> None:
+	) -> None | Button:
 		"""Create a button widget.
 
 		Args:
@@ -241,10 +262,19 @@ class Scene(ABC, EventDispatcher):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
+			add_to_widget_dict (bool, optional):
+				If False, do not add to main dict of widgets.
+				Defaults to True.
+			override_ID (str, optional):
+				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				Default is None.
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
+
+		Returns:
+			None | Button: None if add_to_widget_dict is True, else the button object
 		"""
-		self.widgets[widget_name] = button = Button(
+		button = Button(
 			widget_name,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.height,
@@ -260,6 +290,14 @@ class Scene(ABC, EventDispatcher):
 			**kwargs,
 		)
 		button.disable()
+		if override_ID is not None:
+			button.ID = override_ID
+
+		# Store or return
+		if not add_to_widget_dict:
+			return button
+		self.widgets[widget_name if override_ID is None else override_ID] = button
+		return None
 
 	def create_text_button(
 		self,
@@ -274,8 +312,10 @@ class Scene(ABC, EventDispatcher):
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
 		attach_events: bool = True,
+		add_to_widget_dict: bool = True,
+		override_ID: str | None = None,
 		**kwargs: EventHandler,
-	) -> None:
+	) -> None | TextButton:
 		"""Create a text button widget.
 
 		Args:
@@ -309,14 +349,23 @@ class Scene(ABC, EventDispatcher):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
+			add_to_widget_dict (bool, optional):
+				If False, do not add to main dict of widgets.
+				Defaults to True.
+			override_ID (str, optional):
+				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				Default is None.
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
+
+		Returns:
+			None | TextButton: None if add_to_widget_dict is True, else the text button object
 		"""
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
 
-		self.widgets[widget_name] = text_button = TextButton(
+		text_button = TextButton(
 			widget_name,
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
@@ -338,6 +387,14 @@ class Scene(ABC, EventDispatcher):
 			**kwargs,
 		)
 		text_button.disable()
+		if override_ID is not None:
+			text_button.ID = override_ID
+
+		# Store or return
+		if not add_to_widget_dict:
+			return text_button
+		self.widgets[widget_name if override_ID is None else override_ID] = text_button
+		return None
 
 	def create_entry(
 		self,
@@ -350,8 +407,10 @@ class Scene(ABC, EventDispatcher):
 		text_color: Color = Color.BLACK,
 		caret_color: Color = Color.BLACK,
 		dispatch: bool = True,
+		add_to_widget_dict: bool = True,
+		override_ID: str | None = None,
 		**kwargs: EventHandler,
-	) -> None:
+	) -> None | Entry:
 		"""Create an entry widget.
 
 		Args:
@@ -379,14 +438,23 @@ class Scene(ABC, EventDispatcher):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
+			add_to_widget_dict (bool, optional):
+				If False, do not add to main dict of widgets.
+				Defaults to True.
+			override_ID (str, optional):
+				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				Default is None.
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
+
+		Returns:
+			None | Entry: None if add_to_widget_dict is True, else the entry object
 		"""
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
 
-		self.widgets[widget_name] = entry = Entry(
+		entry = Entry(
 			widget_name,
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
@@ -405,6 +473,14 @@ class Scene(ABC, EventDispatcher):
 			**kwargs,
 		)
 		entry.disable()
+		if override_ID is not None:
+			entry.ID = override_ID
+
+		# Store or return
+		if not add_to_widget_dict:
+			return entry
+		self.widgets[widget_name if override_ID is None else override_ID] = entry
+		return None
 
 	@abstractmethod
 	def initialize(self) -> None:
