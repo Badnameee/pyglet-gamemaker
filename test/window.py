@@ -5,8 +5,8 @@ import sys
 
 sys.path.append(os.getcwd())
 
+from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
@@ -21,8 +21,6 @@ class TestScene(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1)
-
 		self.bg = self.create_bg(self.bg_color)
 		self.create_text(
 			'Test1',
@@ -31,14 +29,14 @@ class TestScene(Scene):
 		)
 		self.create_button(
 			'Test2',
-			self.sheet,
+			DefaultResources.button,
 			0,
 			('center', 'center'),
 		)
 		self.create_text_button(
 			'Test3',
 			'Hi2',
-			self.sheet,
+			DefaultResources.button,
 			0,
 			('center', 'center'),
 			('center', 'center'),
@@ -83,8 +81,6 @@ class TestScene2(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1)
-
 		self.bg = self.create_bg(self.bg_color)
 		self.create_text(
 			'Test1',
@@ -93,14 +89,14 @@ class TestScene2(Scene):
 		)
 		self.create_button(
 			'Test2',
-			self.sheet,
+			DefaultResources.button,
 			0,
 			('center', 'center'),
 		)
 		self.create_text_button(
 			'Test3',
 			'Hi2',
-			self.sheet,
+			DefaultResources.button,
 			0,
 			('center', 'center'),
 			('center', 'center'),

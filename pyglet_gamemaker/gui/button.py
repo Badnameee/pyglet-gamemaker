@@ -9,14 +9,15 @@ from typing import TYPE_CHECKING
 
 from pyglet.gui import PushButton as _PushButton
 
+from ..sprite.sprite_sheet import SpriteSheet
 from .widget import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 	from pyglet.image import AbstractImage
 
+	from ..resources import DefaultResources
 	from ..scene import Scene
-	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import Anchor, AnchorX, AnchorY, ButtonStatus, EventHandler, Point2D
 	from ..window import Window
 
@@ -62,7 +63,7 @@ class Button(_PushButton, Widget):
 		ID: str,
 		x: float,
 		y: float,
-		image_sheet: SpriteSheet,
+		image_sheet: SpriteSheet | DefaultResources,
 		image_start: str | int,
 		window: Window,
 		scene: Scene,
@@ -108,7 +109,10 @@ class Button(_PushButton, Widget):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		# Extract images from sheet
-		self._parse_sheet(image_sheet, image_start)
+		self._parse_sheet(
+			image_sheet if isinstance(image_sheet, SpriteSheet) else image_sheet.value,
+			image_start,
+		)
 
 		super().__init__(
 			x,  # type: ignore[arg-type]

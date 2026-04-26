@@ -17,6 +17,7 @@ from .widget import Widget
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
+	from ..resources import DefaultResources
 	from ..scene import Scene
 	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import (
@@ -65,7 +66,7 @@ class TextButton(EventDispatcher, Widget):
 		batch: Batch,
 		button_group: Group,
 		text_group: Group,
-		image_sheet: SpriteSheet,
+		image_sheet: SpriteSheet | DefaultResources,
 		image_start: str | int,
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = (0, 0),
