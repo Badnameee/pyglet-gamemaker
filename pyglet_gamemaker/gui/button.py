@@ -123,6 +123,7 @@ class Button(_PushButton, Widget):
 			batch,
 			group,
 		)
+		Widget.__init__(self)
 
 		self.window, self.scene = window, scene
 		self.ID = ID
@@ -137,7 +138,7 @@ class Button(_PushButton, Widget):
 		if attach_events:
 			self._bind_mouse()
 
-		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
+		self._bind_events(**kwargs)
 
 	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
 		"""Update the sheet of the button."""
@@ -176,12 +177,12 @@ class Button(_PushButton, Widget):
 				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.hover_img.width
 				if isinstance(self.raw_anchor[0], str)
 				else self.raw_anchor[0]
-			),
+			) * self.scale,
 			(
 				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.hover_img.height
 				if isinstance(self.raw_anchor[1], str)
 				else self.raw_anchor[1]
-			),
+			) * self.scale,
 		)
 		# Refresh position
 		self.pos = prev_pos
@@ -323,11 +324,11 @@ class Button(_PushButton, Widget):
 
 	@property
 	def width(self) -> int:  # noqa: D102
-		return self.hover_img.width
+		return self._width
 
 	@property
 	def height(self) -> int:  # noqa: D102
-		return self.hover_img.height
+		return self._height
 
 	@property
 	def visible(self) -> bool:
@@ -337,3 +338,15 @@ class Button(_PushButton, Widget):
 	@visible.setter
 	def visible(self, val: bool) -> None:
 		self._sprite.visible = val
+
+	@property
+	def scale(self) -> float:
+		"""The scale factor of the button."""
+		return self._sprite.scale
+
+	@scale.setter
+	def scale(self, val: float) -> None:
+		self._width = int(self.unpressed_img.width * val)
+		self._height = int(self.unpressed_img.height * val)
+		self._sprite.scale = val
+		self._calc_anchor()

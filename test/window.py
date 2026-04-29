@@ -14,7 +14,7 @@ from pyglet_gamemaker.window import Window
 class TestScene(Scene):
 	WIDGET_POS = {'Test1': (0.2, 0.1), 'Test2': (0.5, 0.5), 'Test3': (0.7, 0.7)}
 
-	default_font_info = None, 40
+	DEFAULT_FONT_INFO = None, 40, None
 
 	def __init__(self, name, bg_color):
 		super().__init__(name)
@@ -74,7 +74,7 @@ class TestScene2(Scene):
 		'Test3': (0.6, 0.8),
 	}
 
-	default_font_info = None, 40
+	DEFAULT_FONT_INFO = None, 40, None
 
 	def __init__(self, name, bg_color):
 		super().__init__(name)

@@ -12,12 +12,15 @@ from pyglet.event import EventDispatcher
 
 if TYPE_CHECKING:
 	from ..scene import Scene
-	from ..types import Anchor, AnchorX, AnchorY, Point2D
+	from ..types import Anchor, AnchorX, AnchorY, EventHandler, FontInfo, Point2D
 	from ..window import Window
 
 
 class Widget(ABC):
 	"""The base class for a Widget. Inherit to create own widget.
+
+	NOTE: Must call `~pgm.gui.Widget.__init__(self)` for names to automatically be registered.
+		Currently must be called manually unless manually added.
 
 	Required Methods:
 	- `._calc_anchor()`: Calculate the static anchor with raw_anchor
@@ -33,6 +36,9 @@ class Widget(ABC):
 	Optional Methods:
 	- `_on_mouse_...`: `...press`, `...release`, `...motion`, `...drag`
 		- Mouse events to attach when creating widget.
+
+	Optional Properties:
+	- `.EVENT_TYPES`: Put event names that may be dispatched
 	"""
 
 	CONVERT_DYNAMIC: dict[AnchorX | AnchorY, float] = {
@@ -43,14 +49,10 @@ class Widget(ABC):
 		'top': 1,
 	}
 	"""Converts dynamic anchor to multiplier"""
-	_ALL_EVENT_TYPES: tuple[str, ...] = 'on_half_click', 'on_full_click', 'on_submit'
-	"""Holds all event types in all widgets to register them, used internally"""
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
-
-	# Register all event types beforehand
-	# 	Comprehension prevents name clashing with multiinheritance
-	[EventDispatcher.register_event_type(event) for event in _ALL_EVENT_TYPES]
+	DEFAULT_FONT_INFO: FontInfo = None, None, None
+	"""The default font info, can be overwritten by `~pgm.Scene`."""
 
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
@@ -72,6 +74,21 @@ class Widget(ABC):
 	attach_events: bool = True
 	"""If False, don't attach events to window"""
 
+	def __init__(self) -> None:
+		"""Initialize widget by registering event types."""
+		# Catches widgets without events (in case they don't subclass EventDispatcher) and Widget class
+		if not self.EVENT_TYPES:
+			return
+
+		if not isinstance(self, EventDispatcher):
+			raise NotImplementedError(
+				f'"{self.__class__.__name__}" must be of type EventDispatcher to bind events.'
+			)
+
+		# Register all event types beforehand
+		for asd in self.EVENT_TYPES:
+			self.__class__.register_event_type(asd)
+
 	def offset(self, val: Point2D) -> None:  # noqa: D102
 		"""Add offset to widget."""
 		self.x += val[0]
@@ -85,6 +102,7 @@ class Widget(ABC):
 		"""Reset widget to initial state."""
 		self.pos = self.start_pos
 		self.anchor = self.start_anchor
+		self.scale = 1
 
 	def _bind_mouse(self) -> None:
 		self.window.push_handlers(
@@ -94,7 +112,7 @@ class Widget(ABC):
 			on_mouse_drag=self._on_mouse_drag,
 		)
 
-	def _bind_events(self, **kwargs: EventDispatcher) -> None:
+	def _bind_events(self, **kwargs: EventHandler) -> None:
 		"""Bind scene and kwarg events to widget.
 
 		Args:
@@ -108,7 +126,7 @@ class Widget(ABC):
 		# First check for kwargs to overwrite
 		for event, func in kwargs.items():
 			if event in self.EVENT_TYPES:
-				self.set_handler(event, func) # type: ignore[arg-type] # Why do kwargs do this???
+				self.set_handler(event, func)
 			else:
 				raise ValueError(
 					f'Event name {event} not in {self.__class__.__name__}.EVENT_TYPES = {self.EVENT_TYPES}.'
@@ -117,7 +135,7 @@ class Widget(ABC):
 		# Next check for scene-wide implementation
 		for event in set(self.EVENT_TYPES).difference(kwargs):
 			# Check if scene has an implementation with same name
-			if callable(func := getattr(self.scene, event, None)): # type: ignore[assignment]
+			if callable(func := getattr(self.scene, event, None)):  # type: ignore[assignment]
 				self.set_handler(event, func)
 
 	@abstractmethod
@@ -236,3 +254,12 @@ class Widget(ABC):
 	@abstractmethod
 	def height(self) -> int | float:
 		"""Height of widget."""
+
+	@property
+	@abstractmethod
+	def scale(self) -> float:
+		"""Scale of widget."""
+
+	@scale.setter
+	@abstractmethod
+	def scale(self, val: float) -> float: ...

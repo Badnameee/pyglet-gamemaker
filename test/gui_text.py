@@ -26,7 +26,7 @@ def on_mouse_motion(x, y, dx, dy):
 	# txt.pos = x, y
 	txt.offset((dx, dy))
 	txt_anchor.position = txt.pos
-	print(f'New pos of {txt.ID} ("{txt.text}"): {txt.pos}')
+	print(f'{txt.ID} ("{txt.text}") is at {txt.pos} @ {txt.scale}x scale')
 
 
 @window.event
@@ -34,7 +34,7 @@ def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
 	# txt.pos = x, y
 	txt.offset((dx, dy))
 	txt_anchor.position = txt.pos
-	print(f'New pos of {txt.ID} ("{txt.text}"): {txt.pos}')
+	print(f'{txt.ID} ("{txt.text}") is at {txt.pos} @ {txt.scale}x scale')
 
 
 @window.event
@@ -58,10 +58,14 @@ def on_key_press(symbol, modifiers):
 		txt.text += random.choice(string.ascii_lowercase)
 	elif symbol == key.O:
 		txt.text = txt.text[:-1]
+	elif symbol == key.BRACKETLEFT:
+		txt.scale -= 1
+	elif symbol == key.BRACKETRIGHT:
+		txt.scale += 1
 	else:
 		return
 
-	print(f'New txt pos: {txt.pos}')
+	print(f'{txt.ID} ("{txt.text}") is at {txt.pos} @ {txt.scale}x scale')
 	txt_anchor.position = txt.pos
 
 

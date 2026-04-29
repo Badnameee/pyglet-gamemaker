@@ -16,7 +16,13 @@ if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
 	from ..scene import Scene
-	from ..types import Anchor, AnchorX, AnchorY, FontInfo, Point2D
+	from ..types import (
+		Anchor,
+		AnchorX,
+		AnchorY,
+		FontInfo,
+		Point2D,
+	)
 	from ..window import Window
 
 
@@ -35,8 +41,8 @@ class Text(Label, Widget):
 	_text: str = ''
 	_pos: Point2D = 0, 0
 
-	font_info: FontInfo
-	"""(name, size)"""
+	font_info: FontInfo = None, None, None
+	"""The font information"""
 
 	def __init__(
 		self,
@@ -81,26 +87,35 @@ class Text(Label, Widget):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
-		# Pads Nones on right for consistent length
-		font_info = *font_info, *[None for _ in range(3 - len(font_info))]
+		# Applies defaults to font info if needed
+		new_font_info = []
+		for i, default in enumerate(self.DEFAULT_FONT_INFO):
+			# In range, choose default is info is None
+			if i < len(font_info):
+				new_font_info.append(font_info[i] or default)
+			# Out of range, choose default
+			else:
+				new_font_info.append(default)
+		self.font_info = tuple(new_font_info)  # type: ignore[assignment]
+
 		super().__init__(
 			text,
 			x,
 			y,
 			0,
-			font_name=font_info[0],
-			font_size=font_info[1],
+			font_name=self.font_info[0],
+			font_size=self.font_info[1],
 			color=color.value,
 			batch=batch,
 			group=group,
-			weight=font_info[2] if font_info[2] is not None else "normal" # type: ignore[misc] # Guaranteed 3 items long by here
+			weight=self.font_info[2] if self.font_info[2] is not None else 'normal',  # type: ignore[misc] # Guaranteed 3 items long by here
 		)
+		Widget.__init__(self)
 
 		self.window, self.scene = window, scene
 		self.ID = ID
 		self.start_anchor = self.anchor = anchor
 		self.start_pos = self.pos = x, y
-		self.font_info = font_info
 		self.text = text
 
 	def reset(self) -> None:  # noqa: D102
@@ -268,3 +283,20 @@ class Text(Label, Widget):
 		used.
 		"""
 		return Label.width.fget(self)  # type: ignore[attr-defined, no-any-return]
+
+	@property
+	def scale(self) -> float:
+		"""Scale of widget.
+
+		NOTE: Will account for `TextButton.hover_enlarge` if using `~pgm.gui.TextButton`.
+		"""
+		# 12 is default font size, in pt.
+		return self.font_size / (self.font_info[1] or 12)
+
+	@scale.setter
+	def scale(self, val: float) -> None:
+		if val <= 0:
+			raise ValueError(f'"Text.scale" must be a positive number, not {val}.')
+		# 12 is default font size, in pt.
+		self.font_size = (self.font_info[1] or 12) * val
+		self._calc_anchor()

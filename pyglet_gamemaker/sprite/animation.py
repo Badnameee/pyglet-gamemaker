@@ -175,8 +175,8 @@ class AnimationList:
 	- `col-padding:` - Pixels of padding between sprite columns (not including left-most side)
 	- `top-down:` - If True, parse spritesheet from top-to-bottom. If False, parse from bottom-to-top.
 
-	- `Delimiter`: - The character that goes between animation name-alias and frame number
-	- `void:` - The character denoting no sprite. Can = delimiter.
+	- `delimiter`: - The character that goes between animation name-alias and frame number
+	- `void:` - The character denoting no sprite. Can be the same as delimiter.
 
 	- `anim-data:` - A dictionary containing the data for each animation
 		- `{name}:` - Each nested key will be the alias name

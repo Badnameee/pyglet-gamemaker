@@ -1,7 +1,7 @@
 """Stores all custom types used in library.
 
 - Point2D: (float, float) - for 2D points
-- FontInfo: (type, size)
+- FontInfo: (type, size, weight)
 - ButtonStatus: A status for button widgets. See `~pgm.gui.button.Button`
 - Axis: Either 'x' or 'y'
 - AnchorX: Dynamic or static anchor on x-axis

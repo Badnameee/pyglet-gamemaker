@@ -39,11 +39,14 @@ class TextButton(EventDispatcher, Widget):
 	Note: `.text` holds Text object, `.button` holds Button object
 
 	Use kwargs to attach event handlers.
+
+	Note: Be cautious if editing button or text attributes directly, as it can cause weird behavior
+		with getting attributes from textbutton object, or with setting as it will likely overwrite custom changes.
 	"""
 
-	EVENT_TYPES = Button.EVENT_TYPES
+	EVENT_TYPES = Button.EVENT_TYPES + Text.EVENT_TYPES
 
-	_hover_enlarge: int = 0
+	_hover_enlarge: float = 0
 
 	button: Button
 	"""Button object"""
@@ -142,7 +145,6 @@ class TextButton(EventDispatcher, Widget):
 			False,
 			**kwargs,
 		)
-		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 
 		self.text = Text(
 			ID,
@@ -157,9 +159,11 @@ class TextButton(EventDispatcher, Widget):
 			font_info,
 			color,
 		)
+		Widget.__init__(self)
 
 		self.window, self.scene = window, scene
 		self.ID = ID
+		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 		self.status = 'Unpressed'
 		self.dispatch = dispatch
 		self.attach_events = attach_events
@@ -167,7 +171,7 @@ class TextButton(EventDispatcher, Widget):
 		if attach_events:
 			self._bind_mouse()
 
-		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
+		self._bind_events(**kwargs)
 
 	def reset(self) -> None:  # noqa: D102
 		self.text.reset()
@@ -177,20 +181,35 @@ class TextButton(EventDispatcher, Widget):
 		self._on_mouse_motion(*self.button._last_mouse_pos, 0, 0)
 
 	def _update_status(self, x: int, y: int) -> None:
-		# Update the status of the button given mouse position
+		# Update the status of the button
+
+		# Pressed
 		if self.button.value:
-			if self.dispatch and self.status != 'Pressed':
-				self.dispatch_event('on_half_click', self)
-			self.status = 'Pressed'
+			if self.status != 'Pressed':
+				self._enlarge()
+				self.status = 'Pressed'
+
+				if self.dispatch:
+					self.dispatch_event('on_half_click', self)
+
+		# Hovered
 		elif self.button._check_hit(x, y):
 			if self.dispatch and self.status == 'Pressed':
 				self.dispatch_event('on_full_click', self)
-			self.status = 'Hover'
+
+			if self.status != 'Hover':
+				self._enlarge()
+				self.status = 'Hover'
+
+		# Unpressed
 		else:
-			self.status = 'Unpressed'
+			if self.status != 'Unpressed':
+				self._enlarge()
+				self.status = 'Unpressed'
 
 	def _calc_anchor(self) -> None:
 		self.button._calc_anchor()
+		self.text._calc_anchor()
 
 	def _enlarge(self) -> None:
 		# Enlarge the text based on button status
@@ -396,12 +415,12 @@ class TextButton(EventDispatcher, Widget):
 		self.anchor_x, self.anchor_y = val
 
 	@property
-	def hover_enlarge(self) -> int:
+	def hover_enlarge(self) -> float:
 		"""How much to enlarge text when hovered over."""
 		return self._hover_enlarge
 
 	@hover_enlarge.setter
-	def hover_enlarge(self, size: int) -> None:
+	def hover_enlarge(self, size: float) -> None:
 		# If need to be resized and synced
 		if self._enlarged:
 			# Trick: Can unhover and rehover button to make changes automatically.
@@ -438,3 +457,19 @@ class TextButton(EventDispatcher, Widget):
 	def visible(self, val: bool) -> None:
 		self.button.visible = val
 		self.text.visible = val
+
+	@property
+	def scale(self) -> float:
+		"""The scale factor of the button."""
+		return self.button.scale
+
+	@scale.setter
+	def scale(self, val: float) -> None:
+		self.button.scale = val
+		# Text scale reflects hover
+		# 	Therefore, setting text.scale also automatically scales hover_enlarge
+		# 	Have to remove enlarge then add it back after scaling
+		self.hover_enlarge = 0
+		self.text.scale = val
+		self.hover_enlarge = self.start_hover_enlarge * val
+		self._update_status(*self.button._last_mouse_pos)

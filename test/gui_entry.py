@@ -41,32 +41,39 @@ class Scene1(Scene):
 	def on_key_press(self, symbol, modifiers):
 		if self.widgets['Test'].focus:
 			return
+		
+		entry = self.widgets['Test']
+
 		if symbol == key.A:
-			self.widgets['Test'].offset((-10, 0))
+			entry.offset((-10, 0))
 		elif symbol == key.D:
-			self.widgets['Test'].offset((10, 0))
+			entry.offset((10, 0))
 		elif symbol == key.W:
-			self.widgets['Test'].offset((0, 10))
+			entry.offset((0, 10))
 		elif symbol == key.S:
-			self.widgets['Test'].offset((0, -10))
+			entry.offset((0, -10))
 		elif symbol == key.LEFT:
-			self.widgets['Test'].anchor_x -= 10
+			entry.anchor_x -= 10
 		elif symbol == key.RIGHT:
-			self.widgets['Test'].anchor_x += 10
+			entry.anchor_x += 10
 		elif symbol == key.UP:
-			self.widgets['Test'].anchor_y += 10
+			entry.anchor_y += 10
 		elif symbol == key.DOWN:
-			self.widgets['Test'].anchor_y -= 10
+			entry.anchor_y -= 10
 		elif symbol == key.C:
-			self.widgets['Test'].clear()
+			entry.clear()
 		elif symbol == key.V:
-			self.widgets['Test'].reset(pos=False)
+			entry.reset(pos=False)
 		elif symbol == key.R:
-			self.widgets['Test'].reset()
+			entry.reset()
+		elif symbol == key.BRACKETLEFT:
+			entry.scale -= 1
+		elif symbol == key.BRACKETRIGHT:
+			entry.scale += 1
 		else:
 			return
 
-		print(f'New entry pos: {self.widgets["Test"].pos}')
+		print(f'{entry.ID} ("{entry.text}") is at {entry.pos} @ {entry.scale}x scale')
 		self.anchor.position = self.widgets['Test'].pos
 
 	def on_submit(self, entry, text):

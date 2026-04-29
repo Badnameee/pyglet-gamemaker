@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.getcwd())
 
 import pyglet
+from pyglet.gl import *
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
 from pyglet.window import Window, key
@@ -21,6 +22,8 @@ UI_group = Group(1)
 
 sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1)
 sheet.name('Unpressed', 'Hover', 'Pressed')
+glBindTexture(GL_TEXTURE_2D, 1)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
 
 def on_half_click(button):
@@ -53,6 +56,10 @@ def on_key_press(symbol, modifiers):
 		button.reset()
 	elif symbol == key.H:
 		button.visible = not button.visible
+	elif symbol == key.BRACKETLEFT:
+		button.scale -= 1
+	elif symbol == key.BRACKETRIGHT:
+		button.scale += 1
 	else:
 		return
 

@@ -63,6 +63,10 @@ def on_key_press(symbol, modifiers):
 		button.button.visible = not button.button.visible
 	elif symbol == key.K:
 		button.text.visible = not button.text.visible
+	elif symbol == key.BRACKETLEFT:
+		button.scale -= 1
+	elif symbol == key.BRACKETRIGHT:
+		button.scale += 1
 	else:
 		return
 

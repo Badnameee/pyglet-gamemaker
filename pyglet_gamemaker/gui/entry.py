@@ -33,10 +33,19 @@ class Entry(TextEntry, Widget):
 
 	EVENT_TYPES = ('on_submit',)
 
+	_color: Color
+	_scale: float = 1
+
 	initial_text: str
 	"""Initial text to display"""
 	edited: bool = False
 	"""If True, text has been edited. If False, remove default text when focused"""
+	font_info: FontInfo
+	"""The font information"""
+	base_width: int
+	"""The width without scaling"""
+	base_height: int
+	"""The height without scaling"""
 
 	def __init__(
 		self,
@@ -84,13 +93,13 @@ class Entry(TextEntry, Widget):
 			font_info (FontInfo, optional):
 				The Font name, size, (and optional weight).
 				Defaults to (None, None, None).
-			color (tuple[int, int, int, int], optional):
+			color (Color, optional):
 				The color of the outline box in RGBA format.
 				Defaults to (255, 255, 255, 255).
-			text_color (tuple[int, int, int, int], optional):
+			text_color (Color, optional):
 				The color of the text in RGBA format.
 				Defaults to (0, 0, 0, 255).
-			caret_color (tuple[int, int, int, int], optional):
+			caret_color (Color, optional):
 				The color of the caret (when it is visible) in RGBA or RGB format.
 				Defaults to (0, 0, 0, 255).
 			dispatch (bool, optional):
@@ -115,9 +124,14 @@ class Entry(TextEntry, Widget):
 		self.ID = ID
 		self.window, self.scene = window, scene
 		self.dispatch = dispatch
-		self.start_pos = x, y
+		self._color = color
+		self.font_info = font_info
 		self.start_anchor = self.anchor = anchor
 		self.initial_text = text
+
+		self.start_pos = x, y
+		self.base_width = width
+		self.base_height = self._height
 
 		# Pads Nones on right for consistent length
 		font_info = *font_info, *[None for _ in range(3 - len(font_info))]
@@ -130,7 +144,7 @@ class Entry(TextEntry, Widget):
 				'color': text_color.value,
 				'font_name': font_info[0],
 				'font_size': font_info[1],
-				'weight': font_info[2] # type: ignore[misc] # Guaranteed 3 items long by here
+				'weight': font_info[2],  # type: ignore[misc] # Guaranteed 3 items long by here
 			},
 		)
 
@@ -140,7 +154,7 @@ class Entry(TextEntry, Widget):
 
 		# Attach events
 		self.window.push_handlers(self)
-		self._bind_events(**kwargs)  # type: ignore[arg-type] # Mypy has some kwarg issues :P
+		self._bind_events(**kwargs)
 
 	def clear(self) -> None:
 		"""Clear the entry."""
@@ -166,7 +180,7 @@ class Entry(TextEntry, Widget):
 
 	def _set_focus(self, value: bool) -> None:
 		super()._set_focus(value)
-		if not self.edited:
+		if value and not self.edited:
 			self.edited = True
 			self.clear()
 
@@ -254,3 +268,64 @@ class Entry(TextEntry, Widget):
 	def text(self) -> str:
 		"""The text currently in the entry. Can return default text."""
 		return self._layout.document.text
+
+	@property
+	def font_name(self) -> str | list[str]:
+		"""Font family name.
+
+		The font name, as passed to :py:func:`pyglet.font.load`.  A list of names can
+		optionally be given: the first matching font will be used.
+		"""
+		return self._doc.get_style('font_name')  # type: ignore[no-any-return]
+
+	@font_name.setter
+	def font_name(self, val: str | list[str]) -> None:
+		self._doc.set_style(0, len(self._doc.text), {'font_name': val})
+
+	@property
+	def font_size(self) -> float:
+		"""Font size, in points."""
+		return self._doc.get_style('font_size')  # type: ignore[no-any-return]
+
+	@font_size.setter
+	def font_size(self, val: float) -> None:
+		self._doc.set_style(0, len(self._doc.text), {'font_size': val})
+
+	@property
+	def weight(self) -> str:
+		"""The font weight (boldness or thickness), as a string.
+
+		See the :py:class:`~Weight` enum for valid cross-platform
+		string values.
+		"""
+		return self._doc.get_style('weight')  # type: ignore[no-any-return]
+
+	@weight.setter
+	def weight(self, val: str) -> None:
+		self._doc.set_style(0, len(self._doc.text), {'weight': str(val)})
+
+	@property
+	def color(self) -> Color:
+		"""The color of the text, as a `~pgm.types.Color`."""
+		return self._color
+
+	@color.setter
+	def color(self, val: Color) -> None:
+		self._color = val
+		self._doc.set_style(0, len(self._doc.text), {'weight': str(val.value)})
+
+	@property
+	def scale(self) -> float:  # noqa: D102
+		return self._scale
+
+	@scale.setter
+	def scale(self, val: float) -> None:
+		if val <= 0:
+			raise ValueError(f'"Text.scale" must be a positive number, not {val}.')
+
+		# 12 is default font size, in pt.
+		self.font_size = (self.font_info[1] or 12) * val
+		self.width = int(self.base_width * val)
+		self.height = int(self.base_height * val)
+		self._scale = val
+		self._calc_anchor()

@@ -28,16 +28,7 @@ if TYPE_CHECKING:
 class Scene(ABC, EventDispatcher):
 	"""Abstract class for a Scene in the game, inherit to create own scenes.
 
-	`Window` object should hold all scenes in window.scenes dictionary.
-
-	Required Methods (**do not override `.__init__`**):
-	- `.initialize()`: The initializer that runs when adding scene to window
-	- `.enable()`: Enable scene (not rendering, just logic)
-	- `.disable()`: Disable scene (not rendering, just logic)
-
-	Constants to set:
-	- `.WIDGET_POS`: Positions of widgets as scale to window (see `.WIDGET_POS`)
-	- `.default_font_info`: The default font information used if none passed into methods
+	`~pgm.Window` object should hold all scenes in window.scenes dictionary.
 
 	Creates its own batch and groups:
 	- `.batch`
@@ -48,11 +39,20 @@ class Scene(ABC, EventDispatcher):
 		- `.button_group`
 		- `.text_group`
 
+	Required Variables:
+	- `.WIDGET_POS`: Positions of widgets as scale to window (see `.WIDGET_POS`)
+	- `.DEFAULT_FONT_INFO`: The default font information used if none passed into methods
+
+	Required Methods (**do not override `.__init__`**):
+	- `.initialize()`: The initializer that runs when adding scene to window
+	- `.enable()`: Enable scene (not rendering, just logic)
+	- `.disable()`: Disable scene (not rendering, just logic)
+
 	Dispatches:
 	- `on_scene_change` (to window) when program wishes to switch scenes.
 		- Args:
 			- Name of new scene to switch to
-			- Any args for extra data. Note scenes have access to window and can retrieve data manually from there.
+			- Any args for extra data to be sent to `.enable(...)`. Note scenes have access to window and can retrieve data manually from there.
 
 	Use kwargs to attach event handlers.
 	"""
@@ -62,8 +62,8 @@ class Scene(ABC, EventDispatcher):
 
 	Ex. `'Test': (0.5, 0.5)` is the center of the window.
 	"""
-	default_font_info: FontInfo = None, None
-	"""The default font info if none is passed to gui methods"""
+	DEFAULT_FONT_INFO: FontInfo = None, None, None
+	"""The default font info if none is passed to gui methods, overrides `~pgm.gui.Widget.DEFAULT_FONT_INFO`"""
 
 	name: str
 	"""The name of the scene"""
@@ -173,7 +173,7 @@ class Scene(ABC, EventDispatcher):
 		widget_name: str,
 		text: str,
 		anchor: Anchor = (0, 0),
-		font_info: FontInfo = (None, None),
+		font_info: FontInfo = (None, None, None),
 		color: Color = Color.WHITE,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
@@ -190,7 +190,7 @@ class Scene(ABC, EventDispatcher):
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name, size, (and optional weight).
-				Defaults to value in `.default_font_info`.
+				Defaults to value in `.DEFAULT_FONT_INFO`.
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
@@ -205,8 +205,8 @@ class Scene(ABC, EventDispatcher):
 			None | Text: None if add_to_widget_dict is True, else the text object
 		"""
 		# Use default if none provided
-		if font_info == (None, None):
-			font_info = self.default_font_info
+		if font_info in ((None, None), (None, None, None)):
+			font_info = self.DEFAULT_FONT_INFO
 
 		text_obj = Text(
 			widget_name,
@@ -307,7 +307,7 @@ class Scene(ABC, EventDispatcher):
 		image_start: str | int,
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = (0, 0),
-		font_info: FontInfo = (None, None),
+		font_info: FontInfo = (None, None, None),
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
@@ -335,7 +335,7 @@ class Scene(ABC, EventDispatcher):
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name, size, (and optional weight).
-				Defaults to value in `.default_font_info`.
+				Defaults to value in `.DEFAULT_FONT_INFO`.
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
@@ -362,8 +362,8 @@ class Scene(ABC, EventDispatcher):
 			None | TextButton: None if add_to_widget_dict is True, else the text button object
 		"""
 		# Use default if none provided
-		if font_info == (None, None):
-			font_info = self.default_font_info
+		if font_info in ((None, None), (None, None, None)):
+			font_info = self.DEFAULT_FONT_INFO
 
 		text_button = TextButton(
 			widget_name,
@@ -425,7 +425,7 @@ class Scene(ABC, EventDispatcher):
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name, size, (and optional weight).
-				Defaults to value in `.default_font_info`.
+				Defaults to value in `.DEFAULT_FONT_INFO`.
 			color (Color, optional):
 				Color of entry background.
 				Defaults to Color.WHITE.
@@ -451,8 +451,8 @@ class Scene(ABC, EventDispatcher):
 			None | Entry: None if add_to_widget_dict is True, else the entry object
 		"""
 		# Use default if none provided
-		if font_info == (None, None):
-			font_info = self.default_font_info
+		if font_info in ((None, None), (None, None, None)):
+			font_info = self.DEFAULT_FONT_INFO
 
 		entry = Entry(
 			widget_name,

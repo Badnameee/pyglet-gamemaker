@@ -14,7 +14,7 @@ class Demo(pgm.Scene):
 	WIDGET_POS = {'Text': (0.5, 0.1), 'Button': (0.5, 0.4), 'TextButton': (0.5, 0.6)}
 
 	# Set default font information here
-	default_font_info = None, 40
+	DEFAULT_FONT_INFO = None, 40
 
 	def create_widgets(self):
 		# Create a sprite sheet with image assets
