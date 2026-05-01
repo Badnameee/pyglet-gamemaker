@@ -260,9 +260,6 @@ class TextButton(EventDispatcher, Widget):
 		self._update_status(x, y)
 		self._enlarge()
 
-		# Check for successful hit: Do not allow click to propagate through handlers
-		return self.status == 'Pressed'
-
 	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.button.enabled:
 			return False
@@ -270,17 +267,12 @@ class TextButton(EventDispatcher, Widget):
 		self._update_status(x, y)
 		self._enlarge()
 
-		# Check for successful hit: Do not allow click to propagate through handlers
-		return self.status == 'Hover'
-
 	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
 			return False
 		self.button._on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
 		self._enlarge()
-
-		return False
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
@@ -290,9 +282,6 @@ class TextButton(EventDispatcher, Widget):
 		self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
 		self._enlarge()
-
-		# Check for successful hit: Do not allow click to propagate through handlers
-		return self.status == 'Hover'
 
 	def enable(self) -> None:  # noqa: D102
 		self.button.enable()

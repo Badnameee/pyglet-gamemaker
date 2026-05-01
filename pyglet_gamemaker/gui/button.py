@@ -194,9 +194,6 @@ class Button(_PushButton, Widget):
 		super().on_mouse_press(x, y, buttons, modifiers)
 		self._update_status(x, y)
 
-		# Check for successful hit: Do not allow click to propagate through handlers
-		return self.status == 'Pressed'
-
 	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.enabled:
 			return False
@@ -204,17 +201,12 @@ class Button(_PushButton, Widget):
 		super().on_mouse_motion(x, y, dx, dy)
 		self._update_status(x, y)
 
-		# Check for successful hit: Do not allow click to propagate through handlers
-		return self.status == 'Hover'
-
 	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.enabled:
 			return False
 		self._last_mouse_pos = x, y
 		super().on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
-
-		return False
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
@@ -224,9 +216,6 @@ class Button(_PushButton, Widget):
 		self._last_mouse_pos = x, y
 		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
-
-		# Check for successful hit: Do not allow click to propagate through handlers
-		return self.status == 'Hover'
 
 	def enable(self) -> None:  # noqa: D102
 		self.enabled = True
