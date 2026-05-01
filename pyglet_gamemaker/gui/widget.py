@@ -52,10 +52,10 @@ class Widget(ABC):
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
 	DEFAULT_FONT_INFO: FontInfo = None, None, None
-	"""The default font info, can be overwritten by `~pgm.Scene`."""
+	"""The default font info, can be overwritten by `~pgm.Scene`"""
 
-	_anchor: Point2D = 0, 0
-	"""Internally holds anchor offset of widget"""
+	_events_registered = False
+	"""Holds whether events have been registered yet"""
 
 	window: Window
 	"""Window widget is associated with. Currently has no functionality."""
@@ -71,23 +71,29 @@ class Widget(ABC):
 	"""Original anchor offset of widget"""
 	dispatch: bool = True
 	"""If False, don't dispatch events to handlers"""
-	attach_events: bool = True
-	"""If False, don't attach events to window"""
+	attach_mouse_events: bool = True
+	"""If False, don't attach mouse events to window"""
 
-	def __init__(self) -> None:
-		"""Initialize widget by registering event types."""
+	_anchor: Point2D = 0, 0
+	"""Internally holds anchor offset of widget"""
+
+	@classmethod
+	def register_events(cls) -> None:
+		"""Register event types for widget type."""
 		# Catches widgets without events (in case they don't subclass EventDispatcher) and Widget class
-		if not self.EVENT_TYPES:
+		if cls._events_registered or not cls.EVENT_TYPES:
 			return
 
-		if not isinstance(self, EventDispatcher):
+		if not issubclass(cls, EventDispatcher):
 			raise NotImplementedError(
-				f'"{self.__class__.__name__}" must be of type EventDispatcher to bind events.'
+				f'"{cls.__name__}" must be of type EventDispatcher to bind events.'
 			)
 
 		# Register all event types beforehand
-		for asd in self.EVENT_TYPES:
-			self.__class__.register_event_type(asd)
+		cls._events_registered = True
+		for event in cls.EVENT_TYPES:
+			if event not in cls.event_types:
+				cls.register_event_type(event)
 
 	def offset(self, val: Point2D) -> None:  # noqa: D102
 		"""Add offset to widget."""

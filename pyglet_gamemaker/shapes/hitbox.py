@@ -1,5 +1,7 @@
 """Module holding all hitbox classes.
 
+Currently holds `.Hitbox`, `.HitboxCircle`, `.HitboxRender`, `.HitboxRenderCircle`.
+
 Use `~pgm.shapes.{class}` instead of `~pgm.shapes.hitbox.{class}`
 """
 

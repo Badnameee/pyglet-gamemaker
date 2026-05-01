@@ -71,7 +71,7 @@ class Button(_PushButton, Widget):
 		group: Group,
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
-		attach_events: bool = True,
+		attach_mouse_events: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button.
@@ -101,7 +101,7 @@ class Button(_PushButton, Widget):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
+			attach_mouse_events (bool, optional):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
@@ -123,7 +123,6 @@ class Button(_PushButton, Widget):
 			batch,
 			group,
 		)
-		Widget.__init__(self)
 
 		self.window, self.scene = window, scene
 		self.ID = ID
@@ -132,10 +131,13 @@ class Button(_PushButton, Widget):
 		self.start_pos = x, y
 		self.start_anchor = self.anchor = anchor
 		self.dispatch = dispatch
-		self.attach_events = attach_events
+		self.attach_mouse_events = attach_mouse_events
+
+		# Register events
+		self.register_events()
 
 		# Adds event handler for mouse events
-		if attach_events:
+		if attach_mouse_events:
 			self._bind_mouse()
 
 		self._bind_events(**kwargs)
@@ -177,12 +179,14 @@ class Button(_PushButton, Widget):
 				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.hover_img.width
 				if isinstance(self.raw_anchor[0], str)
 				else self.raw_anchor[0]
-			) * self.scale,
+			)
+			* self.scale,
 			(
 				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.hover_img.height
 				if isinstance(self.raw_anchor[1], str)
 				else self.raw_anchor[1]
-			) * self.scale,
+			)
+			* self.scale,
 		)
 		# Refresh position
 		self.pos = prev_pos

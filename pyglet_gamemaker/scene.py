@@ -238,7 +238,7 @@ class Scene(ABC, EventDispatcher):
 		image_start: str | int,
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
-		attach_events: bool = True,
+		attach_mouse_events: bool = True,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
 		**kwargs: EventHandler,
@@ -258,7 +258,7 @@ class Scene(ABC, EventDispatcher):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
+			attach_mouse_events (bool, optional):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
@@ -286,7 +286,7 @@ class Scene(ABC, EventDispatcher):
 			self.button_group,
 			anchor,
 			dispatch,
-			attach_events,
+			attach_mouse_events,
 			**kwargs,
 		)
 		button.disable()
@@ -311,7 +311,7 @@ class Scene(ABC, EventDispatcher):
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
-		attach_events: bool = True,
+		attach_mouse_events: bool = True,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
 		**kwargs: EventHandler,
@@ -345,7 +345,7 @@ class Scene(ABC, EventDispatcher):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
+			attach_mouse_events (bool, optional):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
@@ -383,7 +383,7 @@ class Scene(ABC, EventDispatcher):
 			color,
 			hover_enlarge,
 			dispatch,
-			attach_events,
+			attach_mouse_events,
 			**kwargs,
 		)
 		text_button.disable()

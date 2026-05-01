@@ -77,7 +77,7 @@ class TextButton(EventDispatcher, Widget):
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
-		attach_events: bool = True,
+		attach_mouse_events: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button with text.
@@ -123,7 +123,7 @@ class TextButton(EventDispatcher, Widget):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
+			attach_mouse_events (bool, optional):
 				If False, don't attach mouse events to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
@@ -166,9 +166,9 @@ class TextButton(EventDispatcher, Widget):
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 		self.status = 'Unpressed'
 		self.dispatch = dispatch
-		self.attach_events = attach_events
+		self.attach_mouse_events = attach_mouse_events
 		# Adds event handler for mouse events
-		if attach_events:
+		if attach_mouse_events:
 			self._bind_mouse()
 
 		self._bind_events(**kwargs)
