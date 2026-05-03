@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pyglet.event import EventDispatcher
-
 from ..types import Color
 from .button import Button
 from .text import Text
@@ -31,7 +29,7 @@ if TYPE_CHECKING:
 	from ..window import Window
 
 
-class TextButton(EventDispatcher, Widget):
+class TextButton(Widget):
 	"""Both a 2D button and 2D text in one. Refer to `~pgm.gui.Button` and `~pgm.gui.Text`.
 
 	Dispatches: Refer to `~pgm.gui.Button`.
@@ -143,7 +141,6 @@ class TextButton(EventDispatcher, Widget):
 			button_anchor,
 			False,
 			False,
-			**kwargs,
 		)
 
 		self.text = Text(
@@ -159,7 +156,6 @@ class TextButton(EventDispatcher, Widget):
 			font_info,
 			color,
 		)
-		Widget.__init__(self)
 
 		self.window, self.scene = window, scene
 		self.ID = ID
@@ -167,11 +163,15 @@ class TextButton(EventDispatcher, Widget):
 		self.status = 'Unpressed'
 		self.dispatch = dispatch
 		self.attach_mouse_events = attach_mouse_events
+
+		# Register events
+		self.register_events()
 		# Adds event handler for mouse events
 		if attach_mouse_events:
 			self._bind_mouse()
-
-		self._bind_events(**kwargs)
+		# Bind user kwargs
+		if dispatch:
+			self._bind_events(**kwargs)
 
 	def reset(self) -> None:  # noqa: D102
 		self.text.reset()

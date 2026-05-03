@@ -42,8 +42,10 @@ class YAMLValidator:
 		"""Create a YAMLValidator.
 
 		Args:
-			file_path (Path): Path to the .yaml file
-			validation_mode (YAMLValidationMode): The mode of validation. See `~pgm.types.YAMLValidationMode` for all supposed modes.
+			file_path (Path):
+				Path to the .yaml file
+			validation_mode (YAMLValidationMode):
+				The mode of validation. See `~pgm.types.YAMLValidationMode` for all supposed modes.
 		"""
 		self.file_path, self.validation_mode = file_path, validation_mode
 

@@ -164,8 +164,10 @@ class Entry(TextEntry, Widget):
 		"""Reset entry to initial state. Optional arguments control which parts get reset.
 
 		Args:
-			pos (bool, optional): If True, reset the position and anchoring. Defaults to True.
-			text (bool, optional): If True, reset the text. Defaults to True.
+			pos (bool, optional):
+				If True, reset the position and anchoring. Defaults to True.
+			text (bool, optional):
+				If True, reset the text. Defaults to True.
 		"""
 		if pos:
 			super().reset()

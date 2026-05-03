@@ -135,12 +135,12 @@ class Button(_PushButton, Widget):
 
 		# Register events
 		self.register_events()
-
 		# Adds event handler for mouse events
 		if attach_mouse_events:
 			self._bind_mouse()
-
-		self._bind_events(**kwargs)
+		# Bind user kwargs
+		if dispatch:
+			self._bind_events(**kwargs)
 
 	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
 		"""Update the sheet of the button."""

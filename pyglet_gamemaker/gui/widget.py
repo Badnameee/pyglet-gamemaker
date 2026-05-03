@@ -8,15 +8,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from pyglet.event import EventDispatcher
+from ..event_dispatcher import EventDispatcher
 
 if TYPE_CHECKING:
-	from ..scene import Scene
-	from ..types import Anchor, AnchorX, AnchorY, EventHandler, FontInfo, Point2D
-	from ..window import Window
+	from ..types import Anchor, AnchorX, AnchorY, FontInfo, Point2D
 
 
-class Widget(ABC):
+class Widget(EventDispatcher, ABC):
 	"""The base class for a Widget. Inherit to create own widget.
 
 	NOTE: Must call `~pgm.gui.Widget.__init__(self)` for names to automatically be registered.
@@ -49,18 +47,9 @@ class Widget(ABC):
 		'top': 1,
 	}
 	"""Converts dynamic anchor to multiplier"""
-	EVENT_TYPES: tuple[str, ...] = ()
-	"""The event names that a widget can dispatch"""
 	DEFAULT_FONT_INFO: FontInfo = None, None, None
 	"""The default font info, can be overwritten by `~pgm.Scene`"""
 
-	_events_registered = False
-	"""Holds whether events have been registered yet"""
-
-	window: Window
-	"""Window widget is associated with. Currently has no functionality."""
-	scene: Scene
-	"""The scene the widget is from. None if widget is a template."""
 	ID: str
 	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
@@ -76,24 +65,6 @@ class Widget(ABC):
 
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
-
-	@classmethod
-	def register_events(cls) -> None:
-		"""Register event types for widget type."""
-		# Catches widgets without events (in case they don't subclass EventDispatcher) and Widget class
-		if cls._events_registered or not cls.EVENT_TYPES:
-			return
-
-		if not issubclass(cls, EventDispatcher):
-			raise NotImplementedError(
-				f'"{cls.__name__}" must be of type EventDispatcher to bind events.'
-			)
-
-		# Register all event types beforehand
-		cls._events_registered = True
-		for event in cls.EVENT_TYPES:
-			if event not in cls.event_types:
-				cls.register_event_type(event)
 
 	def offset(self, val: Point2D) -> None:  # noqa: D102
 		"""Add offset to widget."""
@@ -117,32 +88,6 @@ class Widget(ABC):
 			on_mouse_motion=self._on_mouse_motion,
 			on_mouse_drag=self._on_mouse_drag,
 		)
-
-	def _bind_events(self, **kwargs: EventHandler) -> None:
-		"""Bind scene and kwarg events to widget.
-
-		Args:
-			kwargs (EventDispatcher): The event handlers to attach. Has priority over scene implementation.
-		"""
-		if not isinstance(self, EventDispatcher):
-			raise NotImplementedError(
-				f'Widget "{self.__class__.__name__}" cannot have events bound to it.'
-			)
-
-		# First check for kwargs to overwrite
-		for event, func in kwargs.items():
-			if event in self.EVENT_TYPES:
-				self.set_handler(event, func)
-			else:
-				raise ValueError(
-					f'Event name {event} not in {self.__class__.__name__}.EVENT_TYPES = {self.EVENT_TYPES}.'
-				)
-
-		# Next check for scene-wide implementation
-		for event in set(self.EVENT_TYPES).difference(kwargs):
-			# Check if scene has an implementation with same name
-			if callable(func := getattr(self.scene, event, None)):  # type: ignore[assignment]
-				self.set_handler(event, func)
 
 	@abstractmethod
 	def _calc_anchor(self) -> None:

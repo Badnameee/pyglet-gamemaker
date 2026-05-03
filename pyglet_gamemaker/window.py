@@ -171,8 +171,10 @@ class Window(PygletWin):
 		"""Add a scene to the game.
 
 		Args:
-			name (str): The name of the scene
-			obj (Scene): The Scene object
+			name (str):
+				The name of the scene
+			obj (Scene):
+				The Scene object
 		"""
 		self.scenes[name] = obj
 		obj.set_window(self)
@@ -186,7 +188,8 @@ class Window(PygletWin):
 		"""Pop and return a scene from the game.
 
 		Args:
-			name (str): The name of the scene
+			name (str):
+				The name of the scene
 
 		Returns:
 			Scene: The Scene object removed

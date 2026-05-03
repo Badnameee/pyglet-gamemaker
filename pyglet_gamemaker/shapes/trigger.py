@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..event_dispatcher import EventDispatcher
 from ..gui.widget import Widget
 from . import Hitbox
 

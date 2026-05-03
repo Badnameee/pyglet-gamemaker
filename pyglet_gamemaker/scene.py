@@ -8,9 +8,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from pyglet.event import EventDispatcher
 from pyglet.graphics import Batch, Group
 
+from .event_dispatcher import EventDispatcher
 from .gui.button import Button
 from .gui.entry import Entry
 from .gui.text import Text
@@ -19,13 +19,15 @@ from .shapes.rect import Rect
 from .types import Color
 
 if TYPE_CHECKING:
+	from typing import Any
+
 	from .gui.widget import Widget
 	from .sprite.sprite_sheet import SpriteSheet
 	from .types import Anchor, EventHandler, FontInfo
 	from .window import Window
 
 
-class Scene(ABC, EventDispatcher):
+class Scene(EventDispatcher, ABC):
 	"""Abstract class for a Scene in the game, inherit to create own scenes.
 
 	`~pgm.Window` object should hold all scenes in window.scenes dictionary.
@@ -64,14 +66,10 @@ class Scene(ABC, EventDispatcher):
 	"""
 	DEFAULT_FONT_INFO: FontInfo = None, None, None
 	"""The default font info if none is passed to gui methods, overrides `~pgm.gui.Widget.DEFAULT_FONT_INFO`"""
+	EVENT_TYPES = ('on_scene_change',)
 
 	name: str
 	"""The name of the scene"""
-	event_handlers: dict[str, EventHandler]
-	"""All manually attached event handlers for this scene.
-	
-	**Do not modify**; use `.add_event_handlers` and `.remove_event_handlers` instead.
-	"""
 	window: Window
 	"""Window scene is a part of"""
 	batch: Batch
@@ -113,7 +111,8 @@ class Scene(ABC, EventDispatcher):
 		self.text_group = Group(2, self.UI_group)
 
 		# Adds any event handlers passed through kwargs
-		self.add_event_handlers(**kwargs)
+		self.register_events(**kwargs)
+		self.set_handlers(**kwargs)
 
 	def set_window(self, window: Window) -> None:
 		"""Set the window the Scene will use.
@@ -123,30 +122,9 @@ class Scene(ABC, EventDispatcher):
 				The screen window
 		"""
 		self.window = window
-		self.add_event_handlers(on_scene_change=window._on_scene_change)
+
+		# Call user method initialize
 		self.initialize()
-
-	def add_event_handlers(self, **kwargs: EventHandler) -> None:
-		"""Add event handlers to this scene.
-
-		Args:
-			**kwargs (EventHandler):
-				Event handlers to attach (name=func)
-		"""
-		for name, handler in kwargs.items():
-			self.event_handlers[name] = handler
-			self.register_event_type(name)
-		self.set_handlers(**kwargs)
-
-	def remove_event_handlers(self, *args: str) -> None:
-		"""Remove event handlers from this scene.
-
-		Args:
-			*args (name):
-				Names of handler(s) to remove
-		"""
-		for name in args:
-			self.remove_handler(name, self.event_handlers.pop(name))
 
 	def create_bg(self, color: Color) -> Rect:
 		"""Create a solid background for the menu.
@@ -481,6 +459,19 @@ class Scene(ABC, EventDispatcher):
 			return entry
 		self.widgets[widget_name if override_ID is None else override_ID] = entry
 		return None
+
+	def on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
+		"""A middleman between event dispatch and `window._on_scene_change`.
+
+		Args:
+			new_scene (str):
+				The new scene name
+			*args (Any):
+				Any extra data
+			**kwargs (Any):
+				Any extra data
+		"""  # noqa: D401
+		self.window._on_scene_change(new_scene, *args, **kwargs)
 
 	@abstractmethod
 	def initialize(self) -> None:
