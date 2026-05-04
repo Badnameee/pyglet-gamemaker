@@ -55,7 +55,7 @@ class Entry(TextEntry, Widget):
 		y: float,
 		width: int,
 		window: Window,
-		scene: Scene,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
@@ -74,24 +74,24 @@ class Entry(TextEntry, Widget):
 			text (str):
 				Initial text to display
 			x (int):
-				X coordinate of the text entry widget
+				Anchored x coordinate of text entry widget
 			y (int):
-				Y coordinate of the text entry widget
+				Anchored y coordinate of text entry widget
 			width (int):
-				The width of the text entry widget
+				The width of text entry widget
 			window (Window):
 				Window for attaching self
-			scene (Scene):
-				Scene entry is attached to
+			scene (Scene | None):
+				The scene the widget is from. None if widget is a template or not in a scene.
 			batch (Batch):
-				Optional batch to add the text entry widget to
+				Batch for rendering
 			group (Group):
-				Optional parent group of text entry widget
+				Group for rendering
 			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Entry` for more info on anchor values.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
-				The Font name, size, (and optional weight).
+				Font name, size, (and optional weight).
 				Defaults to (None, None, None).
 			color (Color, optional):
 				The color of the outline box in RGBA format.

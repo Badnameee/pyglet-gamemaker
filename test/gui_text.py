@@ -13,7 +13,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
 from pyglet.window import Window, key
 
-from pyglet_gamemaker.gui import Text
+from pyglet_gamemaker.gui.text import Text
 
 window = Window(640, 480, caption=__name__)
 batch = Batch()

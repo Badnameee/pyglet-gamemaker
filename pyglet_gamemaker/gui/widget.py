@@ -11,7 +11,9 @@ from typing import TYPE_CHECKING
 from ..event_dispatcher import EventDispatcher
 
 if TYPE_CHECKING:
+	from ..scene import Scene
 	from ..types import Anchor, AnchorX, AnchorY, FontInfo, Point2D
+	from ..window import Window
 
 
 class Widget(EventDispatcher, ABC):
@@ -62,6 +64,10 @@ class Widget(EventDispatcher, ABC):
 	"""If False, don't dispatch events to handlers"""
 	attach_mouse_events: bool = True
 	"""If False, don't attach mouse events to window"""
+	window: Window
+	"""Window widget is associated with"""
+	scene: Scene | None
+	"""The scene the widget is from. None if widget is a template or not in a scene."""
 
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
@@ -81,7 +87,8 @@ class Widget(EventDispatcher, ABC):
 		self.anchor = self.start_anchor
 		self.scale = 1
 
-	def _bind_mouse(self) -> None:
+	def bind_mouse(self) -> None:
+		"""Bind mouse events to widget."""
 		self.window.push_handlers(
 			on_mouse_press=self._on_mouse_press,
 			on_mouse_release=self._on_mouse_release,

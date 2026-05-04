@@ -38,7 +38,6 @@ class Text(Label, Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	_text: str = ''
 	_pos: Point2D = 0, 0
 
 	font_info: FontInfo = None, None, None
@@ -51,7 +50,7 @@ class Text(Label, Widget):
 		x: float,
 		y: float,
 		window: Window,
-		scene: Scene,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
@@ -71,7 +70,7 @@ class Text(Label, Widget):
 				Anchored y position
 			window (Window):
 				Window for attaching self
-			scene (Scene):
+			scene (Scene | None):
 				The scene the widget is from. None if widget is a template.
 			batch (Batch):
 				Batch for rendering
@@ -90,7 +89,7 @@ class Text(Label, Widget):
 		# Applies defaults to font info if needed
 		new_font_info = []
 		for i, default in enumerate(self.DEFAULT_FONT_INFO):
-			# In range, choose default is info is None
+			# In range, choose default if info is None
 			if i < len(font_info):
 				new_font_info.append(font_info[i] or default)
 			# Out of range, choose default
@@ -147,11 +146,11 @@ class Text(Label, Widget):
 	@property
 	def text(self) -> str:
 		"""The text string."""
-		return self._text
+		return self.document.text
 
 	@text.setter
 	def text(self, txt: str | int) -> None:
-		self.document.text = self._text = str(txt)
+		self.document.text = str(txt)
 		self._calc_anchor()
 
 	@property

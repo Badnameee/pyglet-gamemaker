@@ -9,7 +9,7 @@ import pyglet
 from pyglet.graphics import Batch, Group
 from pyglet.window import Window, key
 
-from pyglet_gamemaker.shapes import HitboxRenderCircle
+from pyglet_gamemaker.shapes.hitbox import HitboxRenderCircle
 from pyglet_gamemaker.types import Color
 
 window = Window(640, 480, caption=__name__)

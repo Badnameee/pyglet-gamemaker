@@ -8,14 +8,19 @@ Use `~pgm.shapes.{class}` instead of `~pgm.shapes.hitbox.{class}`
 from __future__ import annotations
 
 import math
-from typing import Literal, Self
+from typing import TYPE_CHECKING
 
 import pyglet
 from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
-from ..types import Axis, Color, Point2D
+if TYPE_CHECKING:
+	from typing import Literal, Self
+
+	from ..scene import Scene
+	from ..types import Axis, Color, Point2D
+	from ..window import Window
 
 
 class Hitbox:
@@ -43,8 +48,14 @@ class Hitbox:
 	_anchor: Point2D = 0, 0
 	_angle: float = 0
 
+	ID: str
+	"""The unique ID of the hitbox to distinguish it"""
 	coords: tuple[Point2D, ...]
 	"""The final coordinates of the hitbox"""
+	window: Window
+	"""Window hitbox is associated with"""
+	scene: Scene | None
+	"""The scene the hitbox is from. None if hitbox is a template or not in a scene."""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
 	subtype: str | None
@@ -52,7 +63,10 @@ class Hitbox:
 
 	def __init__(
 		self,
+		ID: str,
 		coords: tuple[Point2D, ...],
+		window: Window,
+		scene: Scene | None,
 		anchor_pos: Point2D = (0, 0),
 		*,
 		_subtype: str | None = None,
@@ -60,8 +74,14 @@ class Hitbox:
 		"""Create a hitbox.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			coords (tuple[Point2D, ...]):
-				The coordinates of the hitbox
+				The coordinates of the hitbox. Can create point by putting a single coordinate.
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
 			anchor_pos (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
@@ -69,11 +89,8 @@ class Hitbox:
 				The subtype of the hitbox. Ex: 'rect', 'circle'.
 				Defaults to None.
 		"""
-		if len(coords) < 2:
-			raise ValueError(
-				f'Hitbox needs at least 2 coordinates ({len(coords)} passed).'
-			)
-
+		self.ID = ID
+		self.window, self.scene = window, scene
 		self._trans_pos = coords[0]
 		self._raw_coords = coords
 		self.anchor = anchor_pos
@@ -81,11 +98,21 @@ class Hitbox:
 
 	@classmethod
 	def from_rect(
-		cls, x: float, y: float, width: float, height: float, anchor_pos: Point2D
+		cls,
+		ID: str,
+		x: float,
+		y: float,
+		width: float,
+		height: float,
+		window: Window,
+		scene: Scene | None,
+		anchor_pos: Point2D = (0, 0),
 	) -> Self:
 		"""Create a hitbox from rectangle args.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			x (float):
 				x position
 			y (float):
@@ -94,17 +121,29 @@ class Hitbox:
 				Width of rect
 			height (float):
 				Height of rect
-			anchor_pos (Point2D):
-				Anchor position
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
+			anchor_pos (Point2D, optional):
+				Anchor position.
+				Defaults to (0, 0).
 		"""
 		return cls(
+			ID,
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
+			window,
+			scene,
 			anchor_pos,
 			_subtype='rect',
 		)
 
 	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
 		# Get the normal axes of the hitbox as Vec2 (for SAT).
+
+		# * Special case: point hitbox has no axes
+		if len(self.coords) == 1:
+			return []
 
 		axes = []
 
@@ -213,7 +252,7 @@ class Hitbox:
 		if not isinstance(other, Hitbox):
 			other = other.hitbox
 
-		# Get special circle collision axis
+		# Get circle collision axis
 		if isinstance(self, HitboxCircle):
 			self._set_collision_axis(other)
 		if isinstance(other, HitboxCircle):
@@ -421,22 +460,37 @@ class HitboxCircle(Hitbox):
 	"""The radius of the circle"""
 
 	def __init__(
-		self, x: float, y: float, radius: float, anchor_pos: Point2D = (0, 0)
+		self,
+		ID: str,
+		x: float,
+		y: float,
+		radius: float,
+		window: Window,
+		scene: Scene | None,
+		anchor_pos: Point2D = (0, 0),
 	) -> None:
 		"""Create a hitbox from a circle.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			x (float):
 				Center x
 			y (float):
 				Center y
 			radius (float):
 				The radius of the circle
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
 			anchor_pos (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
 		"""
-		super().__init__(((x, y), (radius, 0)), anchor_pos, _subtype='circle')
+		super().__init__(
+			ID, ((x, y), (radius, 0)), window, scene, anchor_pos, _subtype='circle'
+		)
 		self.axis = Vec2(0, 0)
 		self.radius = radius
 
@@ -465,11 +519,7 @@ class HitboxCircle(Hitbox):
 
 		Args:
 			hitbox (Hitbox | HitboxRender | HitboxRenderCircle):
-				Hitbox to check collision with
-
-		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-				collision passed and MTV (None if no collision)
+				Hitbox to get axis to
 		"""
 
 		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
@@ -485,30 +535,29 @@ class HitboxCircle(Hitbox):
 		# * Special case: circle-circle collision
 		# *	To calculate collision axis, use line between centers
 		if isinstance(hitbox, HitboxCircle):
-			# Get vector pointing from the center of circle #1 to...
+			# Get vector pointing from the center of circle #1 to the edge of circle #2
 			self.axis = Vec2(
 				self.coords[0][0] - hitbox.coords[0][0],
 				self.coords[0][1] - hitbox.coords[0][1],
 			)
-			# ... the edge of circle #2
 			self.axis = self.axis.normalize() * (self.axis.length() - hitbox.radius)
 			return
 
 		# Get closest point to other hitbox
 		least = Vec2(0, 0), float('inf')
+		# Loop through each axis on polygon
 		for i in range(len(hitbox.coords)):
-			# Loop through each axis on polygon
-			# Grabbing vertex positions
+			# Grab vertex positions
 			p1, p2 = hitbox.coords[i], hitbox.coords[(i + 1) % len(hitbox.coords)]
 
-			# Calculates the vector between vertices
+			# Calculate the vector between vertices
 			vec = Vec2(p2[0] - p1[0], p2[1] - p1[1])
 
 			# Vector from vertex to center of circle
 			pre_proj = Vec2(self.coords[0][0] - p1[0], self.coords[0][1] - p1[1])
 
 			# Proj holds the vector from p1 to the closest point
-			# on the polygon to the circle center
+			# 	on the polygon to the circle center
 			proj = get_projection(pre_proj, vec)
 			# Subtracting pre_proj gives vector from circle center to closest point
 			diff = proj - pre_proj
@@ -551,6 +600,8 @@ class HitboxRender:
 
 	_hitbox_color: Color
 
+	ID: str
+	"""The unique ID of the hitbox to distinguish it"""
 	hitbox: Hitbox
 	"""The hitbox object"""
 	render: Polygon
@@ -560,8 +611,11 @@ class HitboxRender:
 
 	def __init__(
 		self,
+		ID: str,
 		coords: tuple[Point2D, ...],
 		color: Color,
+		window: Window,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor_pos: Point2D = (0, 0),
@@ -571,10 +625,16 @@ class HitboxRender:
 		"""Create a hitbox render.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			coords (tuple[Point2D, ...]):
 				The coordinates of the hitbox
 			color (Color):
 				The color of the hitbox render
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -593,7 +653,7 @@ class HitboxRender:
 				Defaults to None.
 		"""
 		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
-		self.hitbox = Hitbox(coords, anchor_pos, _subtype=subtype)
+		self.hitbox = Hitbox(ID, coords, window, scene, anchor_pos, _subtype=subtype)
 
 		self.subtype = subtype
 		self._hitbox_color = color
@@ -601,11 +661,14 @@ class HitboxRender:
 	@classmethod
 	def from_rect(
 		cls,
+		ID: str,
 		x: float,
 		y: float,
 		width: float,
 		height: float,
 		color: Color,
+		window: Window,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor_pos: Point2D = (0, 0),
@@ -613,6 +676,8 @@ class HitboxRender:
 		"""Create a hitbox render from rectangle dimensions.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			x (float):
 				x position
 			y (float):
@@ -623,6 +688,10 @@ class HitboxRender:
 				Height of rect
 			color (Color):
 				The color of the hitbox render
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -631,8 +700,11 @@ class HitboxRender:
 				Anchor position
 		"""
 		return cls(
+			ID,
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
 			color,
+			window,
+			scene,
 			batch,
 			group,
 			anchor_pos,
@@ -789,6 +861,8 @@ class HitboxRenderCircle:
 
 	_hitbox_color: Color
 
+	ID: str
+	"""The unique ID of the hitbox to distinguish it"""
 	hitbox: HitboxCircle
 	"""The hitbox object"""
 	render: Circle
@@ -798,10 +872,13 @@ class HitboxRenderCircle:
 
 	def __init__(
 		self,
+		ID: str,
 		x: float,
 		y: float,
 		radius: float,
 		color: Color,
+		window: Window,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor_pos: Point2D = (0, 0),
@@ -809,6 +886,8 @@ class HitboxRenderCircle:
 		"""Create a circular hitbox render.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			x (float):
 				Center x
 			y (float):
@@ -817,6 +896,10 @@ class HitboxRenderCircle:
 				The radius of the circle
 			color (Color):
 				The color of the hitbox render
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -826,7 +909,7 @@ class HitboxRenderCircle:
 				Defaults to (0, 0).
 		"""
 		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
-		self.hitbox = HitboxCircle(x, y, radius, anchor_pos)
+		self.hitbox = HitboxCircle(ID, x, y, radius, window, scene, anchor_pos)
 
 		self.subtype = 'circle'
 		self._hitbox_color = color

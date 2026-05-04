@@ -25,4 +25,4 @@ tests = [
 clear_terminal()
 for test_num, test in enumerate(tests, 1):
 	print(f'\n-----------------------------\nStarting test #{test_num}: "{test}"\n\n')
-	exec(f'import test.{test}')  # Run actual test
+	exec(f'import {test}')  # Run actual test

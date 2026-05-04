@@ -99,7 +99,6 @@ class Scene(EventDispatcher, ABC):
 				Event handlers to attach (name=func)
 		"""
 		self.name = name
-		self.event_handlers = {}
 		self.widgets = {}
 
 		self.batch = Batch()
@@ -126,10 +125,12 @@ class Scene(EventDispatcher, ABC):
 		# Call user method initialize
 		self.initialize()
 
-	def create_bg(self, color: Color) -> Rect:
+	def create_bg(self, ID: str, color: Color) -> Rect:
 		"""Create a solid background for the menu.
 
 		Args:
+			ID (str):
+				Name/ID of bg
 			color (Color):
 				The color of the background.
 
@@ -137,11 +138,14 @@ class Scene(EventDispatcher, ABC):
 			Rect: The bg
 		"""
 		return Rect(
+			ID,
 			0,
 			0,
 			self.window.width,
 			self.window.height,
 			color,
+			self.window,
+			self,
 			self.batch,
 			self.bg_group,
 		)

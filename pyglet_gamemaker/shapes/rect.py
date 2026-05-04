@@ -5,10 +5,16 @@ Use `~pgm.shapes.Rect` instead of `~pgm.shapes.rect.Rect`
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pyglet.graphics import Batch, Group
 
 from ..types import Color, Point2D
 from .hitbox import HitboxRender
+
+if TYPE_CHECKING:
+	from ..scene import Scene
+	from ..window import Window
 
 
 class Rect(HitboxRender):
@@ -21,11 +27,14 @@ class Rect(HitboxRender):
 
 	def __init__(
 		self,
+		ID: str,
 		x: float,
 		y: float,
 		width: float,
 		height: float,
 		color: Color,
+		window: Window,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor_pos: Point2D = (0, 0),
@@ -33,6 +42,8 @@ class Rect(HitboxRender):
 		"""Create a rectangle.
 
 		Args:
+			ID (str):
+				Name/ID of hitbox
 			x (float):
 				x position
 			y (float):
@@ -43,6 +54,10 @@ class Rect(HitboxRender):
 				Height of rect
 			color (Color):
 				The color of the hitbox render
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -52,8 +67,11 @@ class Rect(HitboxRender):
 				Defaults to (0, 0).
 		"""
 		super().__init__(
+			ID,
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
 			color,
+			window,
+			scene,
 			batch,
 			group,
 			anchor_pos,

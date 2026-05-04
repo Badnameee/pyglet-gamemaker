@@ -12,7 +12,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
 from pyglet.window import Window, key
 
-from pyglet_gamemaker.gui import TextButton
+from pyglet_gamemaker.gui.text_button import TextButton
 from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 
 window = Window(640, 480, caption=__name__)

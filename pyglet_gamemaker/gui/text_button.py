@@ -63,7 +63,7 @@ class TextButton(Widget):
 		x: float,
 		y: float,
 		window: Window,
-		scene: Scene,
+		scene: Scene | None,
 		batch: Batch,
 		button_group: Group,
 		text_group: Group,
@@ -91,8 +91,8 @@ class TextButton(Widget):
 				Anchored y position of button
 			window (Window):
 				Window for attaching self
-			scene (Scene):
-				The scene the widget is from. None if widget is a template.
+			scene (Scene | None):
+				The scene the widget is from. None if widget is a template or not in a scene.
 			batch (Batch):
 				Batch for rendering
 			button_group (Group):
@@ -168,7 +168,7 @@ class TextButton(Widget):
 		self.register_events()
 		# Adds event handler for mouse events
 		if attach_mouse_events:
-			self._bind_mouse()
+			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
 			self._bind_events(**kwargs)
@@ -259,6 +259,7 @@ class TextButton(Widget):
 		self.button._on_mouse_press(x, y, buttons, modifiers)
 		self._update_status(x, y)
 		self._enlarge()
+		return False
 
 	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.button.enabled:
@@ -266,6 +267,7 @@ class TextButton(Widget):
 		self.button._on_mouse_motion(x, y, dx, dy)
 		self._update_status(x, y)
 		self._enlarge()
+		return False
 
 	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
@@ -273,6 +275,7 @@ class TextButton(Widget):
 		self.button._on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
 		self._enlarge()
+		return False
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
@@ -282,6 +285,7 @@ class TextButton(Widget):
 		self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
 		self._enlarge()
+		return False
 
 	def enable(self) -> None:  # noqa: D102
 		self.button.enable()

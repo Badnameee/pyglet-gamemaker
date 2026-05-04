@@ -2,7 +2,9 @@
 
 """Module holding Animation class.
 
-Use `~pgm.sprite.Animation` instead of `~pgm.sprite.animation.Animation`
+Currently holds `.Animation`, `.AnimationFrame`, `.AnimationList`.
+
+Use `~pgm.sprite.{class}` instead of `~pgm.sprite.animation.{class}`
 """
 
 from __future__ import annotations

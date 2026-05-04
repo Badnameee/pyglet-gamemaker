@@ -18,9 +18,9 @@ class EventDispatcher(_EventDispatcher):
 	"""Holds whether events have been registered yet"""
 
 	window: Window
-	"""Window widget is associated with."""
-	scene: Scene
-	"""The scene the widget is from. None if widget is a template."""
+	"""Window dispatcher is associated with"""
+	scene: Scene | None
+	"""The scene the dispatcher is from. None if part of a template or not in a scene."""
 
 	@classmethod
 	def register_events(cls) -> None:

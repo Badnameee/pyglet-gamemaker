@@ -66,7 +66,7 @@ class Button(_PushButton, Widget):
 		image_sheet: SpriteSheet | DefaultResources,
 		image_start: str | int,
 		window: Window,
-		scene: Scene,
+		scene: Scene | None,
 		batch: Batch,
 		group: Group,
 		anchor: Anchor = (0, 0),
@@ -89,8 +89,8 @@ class Button(_PushButton, Widget):
 				The starting index of the button images.
 			window (Window):
 				Window for attaching self
-			scene (Scene):
-				The scene the widget is from. None if widget is a template.
+			scene (Scene | None):
+				The scene the widget is from. None if widget is a template or not in a scene.
 			batch (Batch):
 				Batch for rendering
 			group (Group):
@@ -137,7 +137,7 @@ class Button(_PushButton, Widget):
 		self.register_events()
 		# Adds event handler for mouse events
 		if attach_mouse_events:
-			self._bind_mouse()
+			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
 			self._bind_events(**kwargs)
@@ -161,14 +161,19 @@ class Button(_PushButton, Widget):
 	def _update_status(self, x: int, y: int) -> None:
 		# Update the status of the button given mouse position
 
+		# Pressed
 		if self.value:
 			if self.dispatch and self.status != 'Pressed':
 				self.dispatch_event('on_half_click', self)
-			self.status = 'Pressed'
+				self.status = 'Pressed'
+
+		# Hovered
 		elif self._check_hit(x, y):
 			if self.dispatch and self.status == 'Pressed':
 				self.dispatch_event('on_full_click', self)
-			self.status = 'Hover'
+				self.status = 'Hover'
+
+		# Unpressed
 		else:
 			self.status = 'Unpressed'
 
@@ -197,6 +202,7 @@ class Button(_PushButton, Widget):
 		self._last_mouse_pos = x, y
 		super().on_mouse_press(x, y, buttons, modifiers)
 		self._update_status(x, y)
+		return False
 
 	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
 		if not self.enabled:
@@ -204,6 +210,7 @@ class Button(_PushButton, Widget):
 		self._last_mouse_pos = x, y
 		super().on_mouse_motion(x, y, dx, dy)
 		self._update_status(x, y)
+		return False
 
 	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.enabled:
@@ -211,6 +218,7 @@ class Button(_PushButton, Widget):
 		self._last_mouse_pos = x, y
 		super().on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
+		return False
 
 	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
@@ -220,6 +228,7 @@ class Button(_PushButton, Widget):
 		self._last_mouse_pos = x, y
 		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
+		return False
 
 	def enable(self) -> None:  # noqa: D102
 		self.enabled = True
