@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 import pyglet
 from pyglet.window import Window as PygletWin
 
+from .camera import Camera
+
 if TYPE_CHECKING:
 	from typing import Any
 
@@ -58,6 +60,7 @@ class Window(PygletWin):
 		config: Config | None = None,
 		context: Context | None = None,
 		mode: ScreenMode | None = None,
+		camera: Camera | None = None,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a Window object.
@@ -111,6 +114,9 @@ class Window(PygletWin):
 				The screen will be switched to this mode if `fullscreen` is True.
 				If None, an appropriate mode is selected to accommodate ``width``
 				and ``height``.
+			camera (Camera, optional):
+				Optional Camera object to be used with the window.
+				If None, uses defalut Camera.
 			**kwargs (EventHandler):
 				Any extra arguments to add to pyglet window constructor.
 				Read `pyglet.window.Window` documentation or see
@@ -142,6 +148,13 @@ class Window(PygletWin):
 				(self.screen.width - self.width) // 2,
 				(self.screen.height - self.height) // 2,
 			)
+
+		# Set camera to either user-provided one or new one
+		if camera:
+			self.camera = camera
+			camera.set_window(self)
+		else:
+			self.camera = Camera(self)
 
 	def run(self, start_scene: str | None = None) -> None:
 		"""Run the game.
