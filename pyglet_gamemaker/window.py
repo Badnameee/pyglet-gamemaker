@@ -180,22 +180,15 @@ class Window(PygletWin):
 		self.clear()
 		self.scenes[self.scene].batch.draw()
 
-	def add_scene(self, name: str, obj: Scene) -> None:
-		"""Add a scene to the game.
-
-		Args:
-			name (str):
-				The name of the scene
-			obj (Scene):
-				The Scene object
-		"""
-		self.scenes[name] = obj
+	def add_scene(self, obj: Scene) -> None:
+		"""Add a scene to the game."""
+		self.scenes[obj.name] = obj
 		obj.set_window(self)
 		obj.disable()
 
 		# Sets default scene
 		if self.scene == '':
-			self.scene = name
+			self.scene = obj.name
 
 	def pop_scene(self, name: str) -> Scene:
 		"""Pop and return a scene from the game.
@@ -210,7 +203,7 @@ class Window(PygletWin):
 		return self.scenes.pop(name)
 
 	def _on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
-		# Runs when the scene needs to be changed to a new one
+		# Run when the scene needs to be changed to a new one
 		# 	Arbitrary data can be passed if more information is needed
 
 		# Disable previous scene

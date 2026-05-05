@@ -16,10 +16,13 @@ tests = [
 	'gui_button',
 	'gui_text',
 	'gui_text_button',
+	'gui_entry',
 	'shapes_hitbox',
 	'shapes_rect',
 	'shapes_circle',
+	'shapes_trigger',
 	'window',
+	'camera',
 ]
 
 clear_terminal()

@@ -46,13 +46,13 @@ t = Trigger.from_rect(
 	on_mouse_trigger_enter=on_mouse_trigger_enter,
 	on_mouse_trigger_exit=on_mouse_trigger_exit,
 )
-l = []
+objs = []
 
 
 def update(dt):
 	# print(t._last_mouse_info)
 	if t.mouse_in:
-		l.append(Rectangle(*t._last_mouse_info[:2], 1, 1, batch=batch))
+		objs.append(Rectangle(*t._last_mouse_info[:2], 1, 1, batch=batch))
 
 
 @window.event

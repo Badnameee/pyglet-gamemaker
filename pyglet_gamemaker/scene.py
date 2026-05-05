@@ -125,20 +125,14 @@ class Scene(EventDispatcher, ABC):
 		# Call user method initialize
 		self.initialize()
 
-	def create_bg(self, ID: str, color: Color) -> Rect:
-		"""Create a solid background for the menu.
-
-		Args:
-			ID (str):
-				Name/ID of bg
-			color (Color):
-				The color of the background.
+	def create_bg(self, color: Color) -> Rect:
+		"""Create a solid background for the menu. ID is `"{scene name} BG"`.
 
 		Returns:
 			Rect: The bg
 		"""
 		return Rect(
-			ID,
+			f'{self.name} BG',
 			0,
 			0,
 			self.window.width,

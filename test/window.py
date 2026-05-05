@@ -126,6 +126,6 @@ test1 = TestScene('TestScene', Color.ORANGE)
 test2 = TestScene2('TestScene2', Color.WHITE)
 
 window = Window(640, 480)
-window.add_scene('TestScene', test1)
-window.add_scene('TestScene2', test2)
+window.add_scene(test1)
+window.add_scene(test2)
 window.run()

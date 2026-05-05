@@ -55,5 +55,5 @@ class Scene1(Scene):
 
 
 scene1 = Scene1('Scene1')
-window.add_scene('Scene1', scene1)
+window.add_scene(scene1)
 window.run()
