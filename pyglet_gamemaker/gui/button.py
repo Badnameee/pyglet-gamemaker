@@ -140,7 +140,7 @@ class Button(_PushButton, Widget):
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
-			self._bind_events(**kwargs)
+			self.bind_events(**kwargs)
 
 	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
 		"""Update the sheet of the button."""

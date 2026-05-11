@@ -16,7 +16,7 @@ from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
 if TYPE_CHECKING:
-	from typing import Literal, Self
+	from typing import Self
 
 	from ..scene import Scene
 	from ..types import Axis, Color, Point2D
@@ -231,7 +231,7 @@ class Hitbox:
 		self,
 		other: Hitbox | HitboxRender | HitboxRenderCircle,
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
 
 		The object method is invoked on should be the one that will move after
@@ -245,7 +245,7 @@ class Hitbox:
 				Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
 		# Get hitbox if not subclass
@@ -289,7 +289,7 @@ class Hitbox:
 		self,
 		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others.
 
 		Args:
@@ -300,7 +300,7 @@ class Hitbox:
 				Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
 		for rect in others:
@@ -505,7 +505,7 @@ class HitboxCircle(Hitbox):
 		self,
 		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		for rect in others:
 			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
 				return collision_info
@@ -715,7 +715,7 @@ class HitboxRender:
 		self,
 		other: Hitbox | HitboxRender | HitboxRenderCircle,
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
 
 		The object method is invoked on should be the one that will move after
@@ -729,7 +729,7 @@ class HitboxRender:
 				Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
@@ -738,7 +738,7 @@ class HitboxRender:
 		self,
 		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others.
 
 		Args:
@@ -749,7 +749,7 @@ class HitboxRender:
 				Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
@@ -918,7 +918,7 @@ class HitboxRenderCircle:
 		self,
 		other: Hitbox | HitboxRender | HitboxRenderCircle,
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
 
 		The object method is invoked on should be the one that will move after
@@ -932,7 +932,7 @@ class HitboxRenderCircle:
 				Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
@@ -941,7 +941,7 @@ class HitboxRenderCircle:
 		self,
 		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others.
 
 		Args:
@@ -952,7 +952,7 @@ class HitboxRenderCircle:
 				Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)

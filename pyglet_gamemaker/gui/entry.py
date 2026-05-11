@@ -154,7 +154,7 @@ class Entry(TextEntry, Widget):
 
 		# Attach events
 		self.window.push_handlers(self)
-		self._bind_events(**kwargs)
+		self.bind_events(**kwargs)
 
 	def clear(self) -> None:
 		"""Clear the entry."""

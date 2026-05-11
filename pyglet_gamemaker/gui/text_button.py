@@ -171,9 +171,10 @@ class TextButton(Widget):
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
-			self._bind_events(**kwargs)
+			self.bind_events(**kwargs)
 
-	def reset(self) -> None:  # noqa: D102
+	def reset(self) -> None:
+		"""Reset text and button to initial state."""
 		self.text.reset()
 		self.button.reset()
 		self.hover_enlarge = self.start_hover_enlarge

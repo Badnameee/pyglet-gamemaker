@@ -1,3 +1,5 @@
+"""Module holding event dispatcher class."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,6 +13,13 @@ if TYPE_CHECKING:
 
 
 class EventDispatcher(_EventDispatcher):
+	"""Fork of `pyglet.event.EventDispatcher` allowing for automatic integration with pgm.
+
+	Methods:
+	- `.register_events` : register several events at once
+	- `.bind_events` : Bind **kwargs and scene methods
+	"""
+
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
 
@@ -34,8 +43,8 @@ class EventDispatcher(_EventDispatcher):
 		for event in cls.EVENT_TYPES:
 			cls.register_event_type(event)
 
-	def _bind_events(self, **kwargs: EventHandler) -> None:
-		"""Bind scene and kwarg events to widget.
+	def bind_events(self, **kwargs: EventHandler) -> None:
+		"""Bind scene and kwarg events to widget. **kwargs must be in `.EVENT_TYPES`.
 
 		Args:
 			kwargs (EventDispatcher):

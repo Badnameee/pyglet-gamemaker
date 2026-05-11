@@ -32,6 +32,9 @@ class Widget(EventDispatcher, ABC):
 	- `.anchor_x`
 	- `.anchor_y`
 	- `.anchor`
+	- `.width`
+	- `.height`
+	- `.scale`
 
 	Optional Methods:
 	- `_on_mouse_...`: `...press`, `...release`, `...motion`, `...drag`

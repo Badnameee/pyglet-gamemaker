@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class Rect(HitboxRender):
-	"""A rendered rectangle.
+	"""A rendered rectangular hitbox.
 
 	Has attributes for each vertex position (`.bottomleft`, `.bottomright`, `.topright`, `.topleft`)
 

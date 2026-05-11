@@ -1,3 +1,8 @@
+"""Module holding trigger class.
+
+Use `~pgm.shapes.Trigger` instead of `~pgm.shapes.trigger.Trigger`
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,6 +19,11 @@ if TYPE_CHECKING:
 
 
 class Trigger(Hitbox, EventDispatcher):
+	"""An invisible hitbox that dispatches events on mouse events that interact with it.
+
+	Cannot detect other hitboxes for now.
+	"""
+
 	EVENT_TYPES = (
 		'on_mouse_trigger_press',
 		'on_mouse_trigger_release',
@@ -48,6 +58,33 @@ class Trigger(Hitbox, EventDispatcher):
 		_subtype: str | None = None,
 		**kwargs: EventHandler,
 	) -> None:
+		"""Create a trigger.
+
+		Args:
+			ID (str):
+				Name/ID of trigger.
+			coords (tuple[Point2D, ...]):
+				The coordinates of the hitbox. Can create point by putting a single coordinate.
+			window (Window):
+				Window for attaching self
+			scene (Scene | None):
+				The scene the hitbox is from. None if hitbox is a template or not in a scene.
+			anchor_pos (Point2D, optional):
+				The starting anchor position.
+				Defaults to (0, 0).
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			attach_mouse_events (bool, optional):
+				If False, don't attach mouse events to window.
+				Event handlers can still be manually invoked.
+				Defaults to True.
+			_subtype (str, optional)
+				The subtype of the hitbox. Ex: 'rect', 'circle'.
+				Defaults to None.
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
+		"""
 		super().__init__(ID, coords, window, scene, anchor_pos, _subtype=_subtype)
 
 		self.window, self.scene = window, scene
@@ -61,7 +98,7 @@ class Trigger(Hitbox, EventDispatcher):
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
-			self._bind_events(**kwargs)
+			self.bind_events(**kwargs)
 
 	@classmethod
 	def from_rect(
@@ -117,7 +154,7 @@ class Trigger(Hitbox, EventDispatcher):
 			dispatch,
 			attach_mouse_events,
 			_subtype='rect',
-			**kwargs
+			**kwargs,
 		)
 
 	def colliding_point(self, x: float, y: float) -> bool:
