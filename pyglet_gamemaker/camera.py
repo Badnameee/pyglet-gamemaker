@@ -104,6 +104,9 @@ class Camera:
 
 	def update(self) -> None:
 		"""Update the camera view with previously changed values."""
+		if self.og_mat is None:
+			raise TypeError('"Camera.og_mat" must be set using "Camera.set_window(...)".')
+
 		# SRT: Scale, rotate, translate
 		# 	However, in order to rotate around a point, translate so the point is @ (0, 0),
 		# 	then rotate, then translate back
@@ -112,9 +115,9 @@ class Camera:
 		self.window.view = (
 			self.og_mat.scale(Vec3(*self._scale))
 			.translate(Vec3(*self._anchor))
-			.rotate(self._angle[0], (1, 0, 0))
-			.rotate(self._angle[1], (0, 1, 0))
-			.rotate(self._angle[2], (0, 0, 1))
+			.rotate(self._angle[0], Vec3(1, 0, 0))
+			.rotate(self._angle[1], Vec3(0, 1, 0))
+			.rotate(self._angle[2], Vec3(0, 0, 1))
 			.translate(-Vec3(*self._anchor))
 			.translate(-Vec3(*self._pos))
 		)
