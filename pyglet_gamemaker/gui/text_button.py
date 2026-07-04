@@ -20,8 +20,6 @@ if TYPE_CHECKING:
 	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import (
 		Anchor,
-		AnchorX,
-		AnchorY,
 		EventHandler,
 		FontInfo,
 		Point2D,
@@ -38,8 +36,8 @@ class TextButton(Widget):
 
 	Use kwargs to attach event handlers.
 
-	Note: Be cautious if editing button or text attributes directly, as it can cause weird behavior
-		with getting attributes from textbutton object, or with setting as it will likely overwrite custom changes.
+	Note: Be cautious if editing button or text attributes directly, as it can cause desync between individual components and tetbutton object
+	- ex. do not set position of text manually, set position of TextButton or set anchor of text
 	"""
 
 	EVENT_TYPES = Button.EVENT_TYPES + Text.EVENT_TYPES
@@ -70,12 +68,12 @@ class TextButton(Widget):
 		image_sheet: SpriteSheet | DefaultResources,
 		image_start: str | int,
 		button_anchor: Anchor = (0, 0),
-		text_anchor: Anchor = (0, 0),
+		text_anchor: Anchor = ('center', 'center'),
 		font_info: FontInfo = (None, None, None),
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
-		attach_mouse_events: bool = True,
+		attach_events: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button with text.
@@ -108,7 +106,7 @@ class TextButton(Widget):
 				Defaults to (0, 0).
 			text_anchor (Anchor, optional):
 				Anchor position for the text. See `~pgm.gui.Text` for more info on anchor values.
-				Defaults to (0, 0).
+				Defaults to ('center', 'center').
 			font_info (FontInfo, optional):
 				Font name, size, (and optional weight).
 				Defaults to (None, None, None).
@@ -119,10 +117,10 @@ class TextButton(Widget):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				If False, don't dispatch events to handlers (may also improve performance). See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_mouse_events (bool, optional):
-				If False, don't attach mouse events to window.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			**kwargs (EventHandler):
@@ -142,12 +140,12 @@ class TextButton(Widget):
 			False,
 			False,
 		)
+		self.button._will_update_status = False
 
 		self.text = Text(
 			ID,
 			text,
-			x,
-			y,
+			*self._shifted_text_pos,
 			window,
 			scene,
 			batch,
@@ -162,12 +160,12 @@ class TextButton(Widget):
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 		self.status = 'Unpressed'
 		self.dispatch = dispatch
-		self.attach_mouse_events = attach_mouse_events
+		self.attach_events = attach_events
 
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
-		if attach_mouse_events:
+		if attach_events:
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
@@ -219,40 +217,12 @@ class TextButton(Widget):
 			# First frame hover: enlarge text
 			if not self._enlarged:
 				self._enlarged = True
-				prev = self.text.width, self.text.height
 				self.text.font_size += self._hover_enlarge
-				self._sync_text_anchor(prev)
 		else:
 			# First frame unhover: unenlarge text
 			if self._enlarged:
 				self._enlarged = False
-				prev = self.text.width, self.text.height
 				self.text.font_size -= self._hover_enlarge
-				self._sync_text_anchor(prev)
-
-	def _sync_text_anchor(self, prev: tuple[int, int]) -> None:
-		# Sync anchor of text widget using dimensions before resize
-
-		# Only sync if dynamic anchor
-		# Use _anchor to circumvent auto setting of raw_anchor to static
-
-		if isinstance(self.text.raw_anchor[0], str):
-			self.text._anchor = (
-				self.text.anchor_x + (self.text.width - prev[0]) / 2,
-				self.text.anchor_y,
-			)
-			# Refresh position
-			self.button.pos = self.button.pos
-			self.text.pos = self.text.pos
-
-		if isinstance(self.text.raw_anchor[1], str):
-			self.text._anchor = (
-				self.text.anchor_x,
-				self.text.anchor_y + (self.text.height - prev[1]) / 2,
-			)
-			# Refresh position
-			self.button.pos = self.button.pos
-			self.text.pos = self.text.pos
 
 	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:
@@ -304,7 +274,8 @@ class TextButton(Widget):
 
 	@x.setter
 	def x(self, val: float) -> None:
-		self.button.x = self.text.x = val
+		self.button.x = val
+		self.text.x = self._shifted_text_x
 		self._enlarge()
 
 	@property
@@ -317,7 +288,8 @@ class TextButton(Widget):
 
 	@y.setter
 	def y(self, val: float) -> None:
-		self.button.y = self.text.y = val
+		self.button.y = val
+		self.text.y = self._shifted_text_y
 		self._enlarge()
 
 	@property
@@ -327,78 +299,43 @@ class TextButton(Widget):
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.button.pos = self.text.pos = val
+		self.button.pos = val
+		self.text.pos = self._shifted_text_pos
 		self._enlarge()
 
 	@property
 	def anchor_x(self) -> float:
-		"""The x position of the button anchor point. Setting sets text AND button.
+		"""The x position of the button anchor point. Equivalent to `.button.anchor_x`.
 
-		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
+		Can be set in px or dynamic (see `~pgm.gui.Button`)
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self.button.anchor_x
 
 	@anchor_x.setter
-	def anchor_x(self, val: AnchorX) -> None:
+	def anchor_x(self, val: float) -> None:
 		self.button.anchor_x = val
-
-		# Just overwrite anchor if dynamic
-		# 	If static, use _anchor to circumvent auto setting of
-		# 	possible dynamic raw_anchor to static
-		if isinstance(val, str):
-			self.text.anchor_x = val
-		else:
-			self.text._anchor = val, self.text.anchor_y
-
-		# Subtract half of width diff between items (because text centered in button)
-		# 	to correct for different sized text
-		self.text._anchor = (
-			self.text.anchor_x - (self.button.width - self.text.width) / 2,
-			self.text.anchor_y,
-		)
-		# Refresh position
-		self.pos = self.pos
-
-		# * Do not call ._enlarge as refreshing position calls it already
+		self.text.x = self._shifted_text_x
 
 	@property
 	def anchor_y(self) -> float:
-		"""The x position of the button anchor point. Setting sets text AND button.
+		"""The y position of the button anchor point. Equivalent to `.button.anchor_y`.
 
-		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
+		Can be set in px or dynamic (see `~pgm.gui.Button`)
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self.button.anchor_y
 
 	@anchor_y.setter
-	def anchor_y(self, val: AnchorY) -> None:
+	def anchor_y(self, val: float) -> None:
 		self.button.anchor_y = val
-
-		# Just overwrite anchor if dynamic
-		# 	If static, use _anchor to circumvent auto setting of
-		# 	possible dynamic raw_anchor to static
-		if isinstance(val, str):
-			self.text.anchor_y = val
-		else:
-			self.text._anchor = self.text.anchor_x, val
-
-		# Subtract half of height diff between items (because text centered in button)
-		# 	to correct for different sized text
-		self.text._anchor = (
-			self.text.anchor_x,
-			self.text.anchor_y - (self.button.height - self.text.height) / 2,
-		)
-		# Refresh position
-		self.pos = self.pos
-
-		# * Do not call ._enlarge as refreshing position calls it already
+		self.text.y = self._shifted_text_y
 
 	@property
 	def anchor(self) -> Point2D:
-		"""The anchor position of the button. Setting sets text AND button.
+		"""The anchor position of the button. Equivalent to `.button.anchor`.
 
 		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
 		"""
@@ -406,7 +343,8 @@ class TextButton(Widget):
 
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
-		self.anchor_x, self.anchor_y = val
+		self.button.anchor = val
+		self.text.pos = self._shifted_text_pos
 
 	@property
 	def hover_enlarge(self) -> float:
@@ -467,3 +405,15 @@ class TextButton(Widget):
 		self.text.scale = val
 		self.hover_enlarge = self.start_hover_enlarge * val
 		self._update_status(*self.button._last_mouse_pos)
+
+	@property
+	def _shifted_text_x(self) -> float:
+		return self.button.x - self.button.anchor_x + self.button.width / 2
+
+	@property
+	def _shifted_text_y(self) -> float:
+		return self.button.y - self.button.anchor_y + self.button.height / 2
+
+	@property
+	def _shifted_text_pos(self) -> Point2D:
+		return self._shifted_text_x, self._shifted_text_y

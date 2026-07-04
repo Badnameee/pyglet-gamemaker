@@ -53,7 +53,7 @@ class Trigger(Hitbox, EventDispatcher):
 		scene: Scene | None,
 		anchor_pos: Point2D = (0, 0),
 		dispatch: bool = True,
-		attach_mouse_events: bool = True,
+		attach_events: bool = True,
 		*,
 		_subtype: str | None = None,
 		**kwargs: EventHandler,
@@ -75,8 +75,8 @@ class Trigger(Hitbox, EventDispatcher):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_mouse_events (bool, optional):
-				If False, don't attach mouse events to window.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			_subtype (str, optional)
@@ -89,12 +89,12 @@ class Trigger(Hitbox, EventDispatcher):
 
 		self.window, self.scene = window, scene
 		self.dispatch = dispatch
-		self.attach_mouse_events = attach_mouse_events
+		self.attach_events = attach_events
 
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
-		if attach_mouse_events:
+		if attach_events:
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
@@ -112,7 +112,7 @@ class Trigger(Hitbox, EventDispatcher):
 		scene: Scene | None,
 		anchor_pos: Point2D = (0, 0),
 		dispatch: bool = True,
-		attach_mouse_events: bool = True,
+		attach_events: bool = True,
 		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a hitbox from rectangle args.
@@ -138,8 +138,8 @@ class Trigger(Hitbox, EventDispatcher):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.shapes.Trigger` for more info.
 				Defaults to True.
-			attach_mouse_events (bool, optional):
-				If False, don't attach mouse events to window.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			kwargs (EventHandler):
@@ -152,7 +152,7 @@ class Trigger(Hitbox, EventDispatcher):
 			scene,
 			anchor_pos,
 			dispatch,
-			attach_mouse_events,
+			attach_events,
 			_subtype='rect',
 			**kwargs,
 		)

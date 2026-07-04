@@ -214,7 +214,7 @@ class Scene(EventDispatcher, ABC):
 		image_start: str | int,
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
-		attach_mouse_events: bool = True,
+		attach_events: bool = True,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
 		**kwargs: EventHandler,
@@ -234,8 +234,8 @@ class Scene(EventDispatcher, ABC):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_mouse_events (bool, optional):
-				If False, don't attach mouse events to window.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			add_to_widget_dict (bool, optional):
@@ -262,7 +262,7 @@ class Scene(EventDispatcher, ABC):
 			self.button_group,
 			anchor,
 			dispatch,
-			attach_mouse_events,
+			attach_events,
 			**kwargs,
 		)
 		button.disable()
@@ -287,7 +287,7 @@ class Scene(EventDispatcher, ABC):
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
-		attach_mouse_events: bool = True,
+		attach_events: bool = True,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
 		**kwargs: EventHandler,
@@ -321,8 +321,8 @@ class Scene(EventDispatcher, ABC):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_mouse_events (bool, optional):
-				If False, don't attach mouse events to window.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			add_to_widget_dict (bool, optional):
@@ -359,7 +359,7 @@ class Scene(EventDispatcher, ABC):
 			color,
 			hover_enlarge,
 			dispatch,
-			attach_mouse_events,
+			attach_events,
 			**kwargs,
 		)
 		text_button.disable()
@@ -382,6 +382,7 @@ class Scene(EventDispatcher, ABC):
 		color: Color = Color.WHITE,
 		text_color: Color = Color.BLACK,
 		caret_color: Color = Color.BLACK,
+		attach_events: bool = True,
 		dispatch: bool = True,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
@@ -411,8 +412,12 @@ class Scene(EventDispatcher, ABC):
 			caret_color (Color, optional):
 				Color of text.
 				Defaults to Color.BLACK.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
+				Event handlers can still be manually invoked.
+				Defaults to True.
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				If False, don't dispatch events to handlers. See `~pgm.gui.Entry` for more info.
 				Defaults to True.
 			add_to_widget_dict (bool, optional):
 				If False, do not add to main dict of widgets.
@@ -445,6 +450,7 @@ class Scene(EventDispatcher, ABC):
 			color,
 			text_color,
 			caret_color,
+			attach_events,
 			dispatch,
 			**kwargs,
 		)

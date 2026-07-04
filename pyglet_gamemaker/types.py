@@ -4,9 +4,13 @@
 - FontInfo: (type, size, weight)
 - ButtonStatus: A status for button widgets. See `~pgm.gui.button.Button`
 - Axis: Either 'x' or 'y'
+- AnchorXDynamicType: The possible **values** of the dynamic anchor on x-axis
+- AnchorYDynamicType: The possible **values** of the dynamic anchor on y-axis
+- AnchorXDynamicType: Only the dynamic anchor on x-axis
+- AnchorYDynamicType: Only the dynamic anchor on y-axis
 - AnchorX: Dynamic or static anchor on x-axis
 - AnchorY: Dynamic or static anchor on y-axis
-- Anchor: (AnchorX, AnchorY)
+- Anchor: (`.AnchorX`, `.AnchorY`)
 - Color: Enum that stores a bunch of preset colors. See `~pgm.types.Color`
 - Eventhandler: Type for user-made event handlers
 - YAMLDict: Type for parsed YAML files
@@ -17,23 +21,26 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Literal, SupportsFloat
 
-from pyglet.customtypes import AnchorX as _AnchorX
-from pyglet.customtypes import AnchorY as _AnchorY
 from pyglet.text import Weight
 
 Point2D = tuple[float, float]
 FontInfo = tuple[str | None, int | None] | tuple[str | None, int | None, Weight | None]
 ButtonStatus = Literal['Unpressed', 'Hover', 'Pressed']
 Axis = Literal['x', 'y']
-AnchorX = _AnchorX | float
-AnchorY = _AnchorY | float
+AnchorXDynamicValues = "left", "center", "right"
+AnchorYDynamicValues = "top", "bottom", "center"
+AnchorXDynamicType = Literal["left", "center", "right"]
+AnchorYDynamicType = Literal["top", "bottom", "center"]
+AnchorX = AnchorXDynamicType | SupportsFloat | float
+AnchorY = AnchorYDynamicType | SupportsFloat | float
 Anchor = tuple[AnchorX, AnchorY]
 EventHandler = Callable[..., Any]
 YAMLDict = dict[Any, Any] | None
-YAMLIterable = dict | list  # type: ignore[type-arg]
+YAMLIterable = dict[Any, Any] | list[Any]
 YAMLValidationMode = Literal['Anim']
+FLOAT_REGEX = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
 
 
 class Color(Enum):

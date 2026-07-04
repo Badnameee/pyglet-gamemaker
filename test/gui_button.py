@@ -31,7 +31,7 @@ def on_half_click(button):
 
 
 def on_full_click(button):
-	print(f'{button.ID} fully pressed and releaased!')
+	print(f'{button.ID} fully pressed and released!')
 
 
 @window.event
@@ -72,7 +72,6 @@ def on_draw():
 	window.clear()
 	batch.draw()
 
-
 button = Button(
 	'Hi',
 	320,
@@ -83,8 +82,8 @@ button = Button(
 	None,
 	batch,
 	button_group,
-	('center', 'center'),
-	on_half_click=on_half_click,
+	('.25', '.25'),
+	#on_half_click=on_half_click,
 	on_full_click=on_full_click,
 )
 button_anchor = Circle(

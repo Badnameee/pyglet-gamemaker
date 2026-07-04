@@ -39,9 +39,9 @@ class EventDispatcher(_EventDispatcher):
 			return
 
 		# Register all event types beforehand
-		cls._events_registered = True
 		for event in cls.EVENT_TYPES:
 			cls.register_event_type(event)
+		cls._events_registered = True
 
 	def bind_events(self, **kwargs: EventHandler) -> None:
 		"""Bind scene and kwarg events to widget. **kwargs must be in `.EVENT_TYPES`.

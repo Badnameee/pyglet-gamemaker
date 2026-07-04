@@ -5,11 +5,12 @@ Use `~pgm.gui.Text` instead of `~pgm.gui.text.Text`.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from pyglet.text import Label
 
-from ..types import Color
+from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues, Color
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -40,7 +41,7 @@ class Text(Label, Widget):
 
 	_pos: Point2D = 0, 0
 
-	font_info: FontInfo = None, None, None
+	font_info: FontInfo
 	"""The font information"""
 
 	def __init__(
@@ -122,22 +123,45 @@ class Text(Label, Widget):
 		self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
 
 	def _calc_anchor(self) -> None:
-		self._anchor = (
-			(
-				# Convert if AnchorX, else use raw int value
-				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.content_width
-				if isinstance(self.raw_anchor[0], str)
-				else self.raw_anchor[0]
-			),
-			(
-				# Convert if AnchorY, else use raw int value
-				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.content_height
-				if isinstance(self.raw_anchor[1], str)
-				else self.raw_anchor[1]
-			),
-		)
+		anchor_x: float = self._anchor[0]
+		anchor_y: float = self._anchor[1]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[0], str):
+			# Original dynamic anchor
+			if self.raw_anchor[0] in AnchorXDynamicValues:
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.content_width
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
+				anchor_x = float(self.raw_anchor[0]) * self.content_width
+			else:
+				raise ValueError(
+					f'"Text.anchor_x" must be either one of {AnchorXDynamicValues} or a string representing a float, not "{self.raw_anchor[0]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[0], float | int):
+			anchor_x = self.raw_anchor[0]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[1], str):
+			# Original dynamic anchor
+			if self.raw_anchor[1] in AnchorYDynamicValues:
+				anchor_y = (
+					self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.content_height
+				)
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
+				anchor_y = float(self.raw_anchor[1]) * self.content_height
+			else:
+				raise ValueError(
+					f'"Text.anchor_y" must be either one of {AnchorYDynamicValues} or a string representing a float, not "{self.raw_anchor[1]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[1], float | int):
+			anchor_y = self.raw_anchor[1]
+
+		self._anchor = anchor_x, anchor_y
+
 		# Refresh position
-		self.pos = self.pos
+		self.pos = self._pos
 
 	def enable(self) -> None: ...  # noqa: D102
 
@@ -220,7 +244,7 @@ class Text(Label, Widget):
 		"""
 		return self._anchor[1]
 
-	@anchor_y.setter
+	@anchor_y.setter  # type: ignore[override]
 	def anchor_y(self, val: AnchorY) -> None:
 		self.raw_anchor = self.raw_anchor[0], val
 		self._calc_anchor()
@@ -244,11 +268,11 @@ class Text(Label, Widget):
 
 		To get `~pyglet.text.Label.width`, use `.label_width()`.
 		"""
-		return Label.content_width.fget(self)  # type: ignore[attr-defined, no-any-return]
+		return self.content_width
 
 	@width.setter
-	def width(self, val: int) -> None:
-		return Label.content_width.fset(self, val)  # type: ignore[attr-defined, no-any-return]
+	def width(self, _: int) -> None:
+		raise NotImplementedError('"Text.width" cannot be set.')
 
 	@property
 	def height(self) -> int:
@@ -256,15 +280,17 @@ class Text(Label, Widget):
 
 		To get `~pyglet.text.Label.height`, use `.label_height()`.
 		"""
-		return Label.content_height.fget(self)  # type: ignore[attr-defined, no-any-return]
+		return self.content_height
 
 	@height.setter
-	def height(self, val: int) -> None:
-		return Label.content_height.fset(self, val)  # type: ignore[attr-defined, no-any-return]
+	def height(self, _: int) -> None:
+		raise NotImplementedError('"Text.height" cannot be set.')
 
 	@property
 	def label_width(self) -> int | None:
-		"""The defined maximum width of the layout in pixels, or None.
+		"""Equivalent to `~pyglet.text.Label.width`.
+
+		The defined maximum width of the layout in pixels, or None.
 
 		If `multiline` and `wrap_lines` is True, the `width` defines where the
 		text will be wrapped. If `multiline` is False or `wrap_lines` is False,
@@ -274,7 +300,9 @@ class Text(Label, Widget):
 
 	@property
 	def label_height(self) -> int | None:
-		"""The defined maximum height of the layout in pixels, or None.
+		"""Equivalent to `~pyglet.text.Label.height`.
+
+		The defined maximum height of the layout in pixels, or None.
 
 		When `height` is not None, it affects the positioning of the
 		text when :py:attr:`~pyglet.text.layout.TextLayout.anchor_y` and

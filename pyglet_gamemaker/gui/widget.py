@@ -65,8 +65,8 @@ class Widget(EventDispatcher, ABC):
 	"""Original anchor offset of widget"""
 	dispatch: bool = True
 	"""If False, don't dispatch events to handlers"""
-	attach_mouse_events: bool = True
-	"""If False, don't attach mouse events to window"""
+	attach_events: bool = True
+	"""If False, don't attach events (e.g. mouse) to window"""
 	window: Window
 	"""Window widget is associated with"""
 	scene: Scene | None

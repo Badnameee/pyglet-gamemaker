@@ -5,11 +5,13 @@ Use `~pgm.gui.Button` instead of `~pgm.gui.button.Button`.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from pyglet.gui import PushButton as _PushButton
 
 from ..sprite.sprite_sheet import SpriteSheet
+from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -57,6 +59,7 @@ class Button(_PushButton, Widget):
 
 	_last_mouse_pos: tuple[int, int] = 0, 0
 	"""Holds the last mouse position registered by button"""
+	_will_update_status: bool = True
 
 	def __init__(
 		self,
@@ -71,7 +74,7 @@ class Button(_PushButton, Widget):
 		group: Group,
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
-		attach_mouse_events: bool = True,
+		attach_events: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button.
@@ -99,10 +102,10 @@ class Button(_PushButton, Widget):
 				Anchor position. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				If False, don't dispatch events to handlers (may also improve performance). See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_mouse_events (bool, optional):
-				If False, don't attach mouse events to window.
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
 			kwargs (EventHandler):
@@ -131,12 +134,12 @@ class Button(_PushButton, Widget):
 		self.start_pos = x, y
 		self.start_anchor = self.anchor = anchor
 		self.dispatch = dispatch
-		self.attach_mouse_events = attach_mouse_events
+		self.attach_events = attach_events
 
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
-		if attach_mouse_events:
+		if attach_events:
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:
@@ -161,16 +164,21 @@ class Button(_PushButton, Widget):
 	def _update_status(self, x: int, y: int) -> None:
 		# Update the status of the button given mouse position
 
+		if not self._will_update_status:
+			return
+
 		# Pressed
 		if self.value:
-			if self.dispatch and self.status != 'Pressed':
-				self.dispatch_event('on_half_click', self)
+			if self.status != 'Pressed':
+				if self.dispatch:
+					self.dispatch_event('on_half_click', self)
 				self.status = 'Pressed'
 
 		# Hovered
 		elif self._check_hit(x, y):
-			if self.dispatch and self.status == 'Pressed':
-				self.dispatch_event('on_full_click', self)
+			if self.status == 'Pressed':
+				if self.dispatch:
+					self.dispatch_event('on_full_click', self)
 				self.status = 'Hover'
 
 		# Unpressed
@@ -179,20 +187,42 @@ class Button(_PushButton, Widget):
 
 	def _calc_anchor(self) -> None:
 		prev_pos = self.pos
-		self._anchor = (
-			(
-				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.hover_img.width
-				if isinstance(self.raw_anchor[0], str)
-				else self.raw_anchor[0]
-			)
-			* self.scale,
-			(
-				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.hover_img.height
-				if isinstance(self.raw_anchor[1], str)
-				else self.raw_anchor[1]
-			)
-			* self.scale,
-		)
+
+		anchor_x: float = self._anchor[0]
+		anchor_y: float = self._anchor[1]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[0], str):
+			# Original dynamic anchor
+			if self.raw_anchor[0] in AnchorXDynamicValues:
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self._width
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
+				anchor_x = float(self.raw_anchor[0]) * self._width
+			else:
+				raise ValueError(
+					f'"Text.anchor_x" must be either one of {AnchorXDynamicValues} or a string representing a float, not "{self.raw_anchor[0]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[0], float | int):
+			anchor_x = self.raw_anchor[0]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[1], str):
+			# Original dynamic anchor
+			if self.raw_anchor[1] in AnchorYDynamicValues:
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self._height
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
+				anchor_y = float(self.raw_anchor[1]) * self._height
+			else:
+				raise ValueError(
+					f'"Text.anchor_y" must be either one of {AnchorYDynamicValues} or a string representing a float, not "{self.raw_anchor[1]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[1], float | int):
+			anchor_y = self.raw_anchor[1]
+
+		self._anchor = anchor_x, anchor_y
+
 		# Refresh position
 		self.pos = prev_pos
 

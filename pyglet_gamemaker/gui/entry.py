@@ -5,11 +5,12 @@ Use `~pgm.gui.Entry` instead of `~pgm.gui.entry.Entry`.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from pyglet.gui import TextEntry
 
-from ..types import Color
+from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues, Color
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -63,6 +64,7 @@ class Entry(TextEntry, Widget):
 		color: Color = Color.WHITE,
 		text_color: Color = Color.BLACK,
 		caret_color: Color = Color.BLACK,
+		attach_events: bool = True,
 		dispatch: bool = False,
 		**kwargs: EventHandler,
 	) -> None:
@@ -102,8 +104,12 @@ class Entry(TextEntry, Widget):
 			caret_color (Color, optional):
 				The color of the caret (when it is visible) in RGBA or RGB format.
 				Defaults to (0, 0, 0, 255).
+			attach_events (bool, optional):
+				If False, don't attach events (e.g. mouse) to window.
+				Event handlers can still be manually invoked.
+				Defaults to True.
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				If False, don't dispatch events to handlers. See `~pgm.gui.Entry` for more info.
 				Defaults to True.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
@@ -124,6 +130,7 @@ class Entry(TextEntry, Widget):
 		self.ID = ID
 		self.window, self.scene = window, scene
 		self.dispatch = dispatch
+		self.attach_events = attach_events
 		self._color = color
 		self.font_info = font_info
 		self.start_anchor = self.anchor = anchor
@@ -152,9 +159,14 @@ class Entry(TextEntry, Widget):
 		if font_info[1]:
 			self.height *= font_info[1] / 12  # type: ignore[assignment] # Don't care if it's a float
 
-		# Attach events
-		self.window.push_handlers(self)
-		self.bind_events(**kwargs)
+		# Register events
+		self.register_events()
+		# Adds event handler for mouse events
+		if attach_events:
+			self.window.push_handlers(self)
+		# Bind user kwargs
+		if dispatch:
+			self.bind_events(**kwargs)
 
 	def clear(self) -> None:
 		"""Clear the entry."""
@@ -189,20 +201,42 @@ class Entry(TextEntry, Widget):
 	def _calc_anchor(self) -> None:
 		# Get pos before messing with anchor
 		prev_pos = self.pos
-		self._anchor = (
-			(
-				# Convert if AnchorX, else use raw int value
-				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width
-				if isinstance(self.raw_anchor[0], str)
-				else self.raw_anchor[0]
-			),
-			(
-				# Convert if AnchorY, else use raw int value
-				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height
-				if isinstance(self.raw_anchor[1], str)
-				else self.raw_anchor[1]
-			),
-		)
+
+		anchor_x: float = self._anchor[0]
+		anchor_y: float = self._anchor[1]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[0], str):
+			# Original dynamic anchor
+			if self.raw_anchor[0] in AnchorXDynamicValues:
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
+				anchor_x = float(self.raw_anchor[0]) * self.width
+			else:
+				raise ValueError(
+					f'"Text.anchor_x" must be either one of {AnchorXDynamicValues} or a string representing a float, not "{self.raw_anchor[0]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[0], float | int):
+			anchor_x = self.raw_anchor[0]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[1], str):
+			# Original dynamic anchor
+			if self.raw_anchor[1] in AnchorYDynamicValues:
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
+				anchor_y = float(self.raw_anchor[1]) * self.height
+			else:
+				raise ValueError(
+					f'"Text.anchor_y" must be either one of {AnchorYDynamicValues} or a string representing a float, not "{self.raw_anchor[1]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[1], float | int):
+			anchor_y = self.raw_anchor[1]
+
+		self._anchor = anchor_x, anchor_y
+
 		# Refresh position
 		self.pos = prev_pos
 
