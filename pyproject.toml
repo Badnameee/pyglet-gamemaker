@@ -76,4 +76,4 @@ quote-style = "single"
 required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"**/__init__.py" = ["I002", "F401", "D"]
+"**/__init__.py" = ["F401", "D104"]
