@@ -42,9 +42,9 @@ class Scene1(Scene):
 		if txt == 'k':
 			self.window.camera.zoom(y=1 / 2)
 		if txt == '=':
-			self.window.camera.zoom(2, 2, 0)
+			self.window.camera.zoom(2, 2)
 		if txt == '-':
-			self.window.camera.zoom(1 / 2, 1 / 2, 0)
+			self.window.camera.zoom(1 / 2, 1 / 2)
 		if txt == ',':
 			self.window.camera.rotate(z=-0.1)
 		if txt == '.':

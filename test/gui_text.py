@@ -84,7 +84,7 @@ txt = Text(
 	None,
 	batch,
 	txt_group,
-	('.25', '.25'),
+	('.5', '.5'),
 	('Arial', 50),
 )
 txt.start_pos = 320, 240

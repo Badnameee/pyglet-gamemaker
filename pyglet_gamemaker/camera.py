@@ -25,6 +25,7 @@ class Camera:
 	Call appropriate functions to either transform by an amount or transformation to an amount.
 	- NOTE: These transformations are **relative** to the default settings provided at creation.
 	"""
+
 	def __init__(
 		self,
 		window: Window | None = None,
@@ -42,7 +43,7 @@ class Camera:
 		anchor_z: float | None = None,
 	) -> None:
 		"""Create a Camera object with optional default parameters.
-		
+
 		These default parameters are what the camera resets to when calling `.reset`.
 
 		Args:

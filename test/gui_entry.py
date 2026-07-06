@@ -22,7 +22,7 @@ class Scene1(Scene):
 			'Test',
 			'Start Test!',
 			250,
-			('.25', '.25'),
+			('.5', '.5'),
 			font_info=(None, None),
 			color=Color.GRAY,
 		)
@@ -42,7 +42,7 @@ class Scene1(Scene):
 	def on_key_press(self, symbol, modifiers):
 		if self.widgets['Test'].focus:
 			return
-		
+
 		entry = self.widgets['Test']
 
 		if symbol == key.A:

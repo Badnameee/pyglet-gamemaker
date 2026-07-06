@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 from pyglet.gui import TextEntry
 
+import pyglet_gamemaker as pgm
+
 from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues, Color
 from .widget import Widget
 
@@ -132,16 +134,13 @@ class Entry(TextEntry, Widget):
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 		self._color = color
-		self.font_info = font_info
+		self.font_info = pgm.pad_font_info(font_info, self.DEFAULT_FONT_INFO)
 		self.start_anchor = self.anchor = anchor
 		self.initial_text = text
 
 		self.start_pos = x, y
 		self.base_width = width
 		self.base_height = self._height
-
-		# Pads Nones on right for consistent length
-		font_info = *font_info, *[None for _ in range(3 - len(font_info))]
 
 		# Restyle for font customization
 		self._doc.set_style(

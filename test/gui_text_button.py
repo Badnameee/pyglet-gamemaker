@@ -92,7 +92,7 @@ button = TextButton(
 	txt_group,
 	sheet,
 	0,
-	('.25', '.25'),
+	('.5', '.5'),
 	('.5', '.5'),
 	font_info=('Arial', 30, ''),
 	hover_enlarge=3,

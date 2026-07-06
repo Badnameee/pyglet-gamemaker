@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 from pyglet.text import Label
 
+import pyglet_gamemaker as pgm
+
 from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues, Color
 from .widget import Widget
 
@@ -87,16 +89,7 @@ class Text(Label, Widget):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
-		# Applies defaults to font info if needed
-		new_font_info = []
-		for i, default in enumerate(self.DEFAULT_FONT_INFO):
-			# In range, choose default if info is None
-			if i < len(font_info):
-				new_font_info.append(font_info[i] or default)
-			# Out of range, choose default
-			else:
-				new_font_info.append(default)
-		self.font_info = tuple(new_font_info)  # type: ignore[assignment]
+		self.font_info = pgm.pad_font_info(font_info, self.DEFAULT_FONT_INFO)
 
 		super().__init__(
 			text,

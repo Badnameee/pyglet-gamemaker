@@ -181,7 +181,7 @@ class Scene(EventDispatcher, ABC):
 			None | Text: None if add_to_widget_dict is True, else the text object
 		"""
 		# Use default if none provided
-		if font_info in ((None, None), (None, None, None)):
+		if not any(font_info):
 			font_info = self.DEFAULT_FONT_INFO
 
 		text_obj = Text(
@@ -338,7 +338,7 @@ class Scene(EventDispatcher, ABC):
 			None | TextButton: None if add_to_widget_dict is True, else the text button object
 		"""
 		# Use default if none provided
-		if font_info in ((None, None), (None, None, None)):
+		if not any(font_info):
 			font_info = self.DEFAULT_FONT_INFO
 
 		text_button = TextButton(
@@ -432,7 +432,7 @@ class Scene(EventDispatcher, ABC):
 			None | Entry: None if add_to_widget_dict is True, else the entry object
 		"""
 		# Use default if none provided
-		if font_info in ((None, None), (None, None, None)):
+		if not any(font_info):
 			font_info = self.DEFAULT_FONT_INFO
 
 		entry = Entry(

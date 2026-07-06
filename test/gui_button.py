@@ -72,6 +72,7 @@ def on_draw():
 	window.clear()
 	batch.draw()
 
+
 button = Button(
 	'Hi',
 	320,
@@ -82,8 +83,8 @@ button = Button(
 	None,
 	batch,
 	button_group,
-	('.25', '.25'),
-	#on_half_click=on_half_click,
+	('.5', '.5'),
+	# on_half_click=on_half_click,
 	on_full_click=on_full_click,
 )
 button_anchor = Circle(
