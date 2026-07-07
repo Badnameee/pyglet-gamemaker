@@ -251,7 +251,7 @@ class AnimationList:
 		# Revolse default yaml path
 		if yaml_path is None:
 			yaml_path = Path(file_path).absolute().with_suffix('.yaml')
-		
+
 		self.sprite_sheet = SpriteSheet.from_yaml(
 			file_path,
 			yaml_path,

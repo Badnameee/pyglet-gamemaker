@@ -16,8 +16,12 @@ window = Window(640, 480, caption=__name__)
 batch = Batch()
 group = Group()
 
-circle = HitboxRenderCircle('hbc1', 100, 100, 50, Color.WHITE, window, None, batch, group)
-circle2 = HitboxRenderCircle('hbc2', 300, 300, 50, Color.RED, window, None, batch, group)
+circle = HitboxRenderCircle(
+	'hbc1', 100, 100, 50, Color.WHITE, window, None, batch, group
+)
+circle2 = HitboxRenderCircle(
+	'hbc2', 300, 300, 50, Color.RED, window, None, batch, group
+)
 
 
 @window.event

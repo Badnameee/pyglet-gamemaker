@@ -135,10 +135,10 @@ class Entry(TextEntry, Widget):
 		self.attach_events = attach_events
 		self._color = color
 		self.font_info = pgm.pad_font_info(font_info, self.DEFAULT_FONT_INFO)
-		self.start_anchor = self.anchor = anchor
+		self.initial_anchor = self.anchor = anchor
 		self.initial_text = text
 
-		self.start_pos = x, y
+		self.initial_pos = x, y
 		self.base_width = width
 		self.base_height = self._height
 
@@ -176,9 +176,11 @@ class Entry(TextEntry, Widget):
 
 		Args:
 			pos (bool, optional):
-				If True, reset the position and anchoring. Defaults to True.
+				If True, reset the position and anchoring.
+				Defaults to True.
 			text (bool, optional):
-				If True, reset the text. Defaults to True.
+				If True, reset the text.
+				Defaults to True.
 		"""
 		if pos:
 			super().reset()

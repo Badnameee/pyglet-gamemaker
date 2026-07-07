@@ -59,9 +59,9 @@ class Widget(EventDispatcher, ABC):
 	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic) of widget"""
-	start_pos: Point2D = 0, 0
+	initial_pos: Point2D = 0, 0
 	"""Original (*unanchored* AND *unrotated*) position of widget"""
-	start_anchor: Anchor = 0, 0
+	initial_anchor: Anchor = 0, 0
 	"""Original anchor offset of widget"""
 	dispatch: bool = True
 	"""If False, don't dispatch events to handlers"""
@@ -82,12 +82,12 @@ class Widget(EventDispatcher, ABC):
 
 	def set_offset(self, val: Point2D) -> None:  # noqa: D102
 		"""Set the offset of widget."""
-		self.pos = self.start_pos[0] + val[0], self.start_pos[1] + val[1]
+		self.pos = self.initial_pos[0] + val[0], self.initial_pos[1] + val[1]
 
 	def reset(self) -> None:  # noqa: D102
 		"""Reset widget to initial state."""
-		self.pos = self.start_pos
-		self.anchor = self.start_anchor
+		self.pos = self.initial_pos
+		self.anchor = self.initial_anchor
 		self.scale = 1
 
 	def bind_mouse(self) -> None:

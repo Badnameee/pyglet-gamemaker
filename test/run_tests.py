@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 
 def clear_terminal() -> None:
@@ -10,22 +11,13 @@ def clear_terminal() -> None:
 		os.system('clear')
 
 
-# Holds all imports for tests
-tests = [
-	'sprite',
-	'gui_button',
-	'gui_text',
-	'gui_text_button',
-	'gui_entry',
-	'shapes_hitbox',
-	'shapes_rect',
-	'shapes_circle',
-	'shapes_trigger',
-	'window',
-	'camera',
-]
+skip = {'__init__', 'run_tests'}
 
 clear_terminal()
-for test_num, test in enumerate(tests, 1):
+for test_num, test in enumerate(Path('test').iterdir(), 1):
+	test = test.stem
+	if test in skip:
+		continue
+
 	print(f'\n-----------------------------\nStarting test #{test_num}: "{test}"\n\n')
 	exec(f'import {test}')  # Run actual test

@@ -19,14 +19,16 @@ _button_path = 'Default Button.png'
 _circle_button_path = 'Default Circle Button.png'
 
 pyglet.resource.path.append(str(_package))
-pyglet.resource.reindex() # type: ignore[no-untyped-call]
+pyglet.resource.reindex()  # type: ignore[no-untyped-call]
 
 
 class DefaultResources(Enum):
 	"""The default resources of the package; are instances of SpriteSheet."""
 
 	button = SpriteSheet(
-		Path(str(_media_folder.joinpath(_button_path))).relative_to(str(_package)).as_posix(),
+		Path(str(_media_folder.joinpath(_button_path)))
+		.relative_to(str(_package))
+		.as_posix(),
 		3,
 		1,
 	)

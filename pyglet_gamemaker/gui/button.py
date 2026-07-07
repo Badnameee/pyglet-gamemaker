@@ -131,8 +131,8 @@ class Button(_PushButton, Widget):
 		self.ID = ID
 		self.status = 'Unpressed'
 
-		self.start_pos = x, y
-		self.start_anchor = self.anchor = anchor
+		self.initial_pos = x, y
+		self.initial_anchor = self.anchor = anchor
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 

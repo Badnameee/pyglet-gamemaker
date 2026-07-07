@@ -18,7 +18,9 @@ batch = Batch()
 group = Group()
 
 rect = Rect('r1', 100, 100, 100, 50, Color.WHITE, window, None, batch, group)
-hitbox2 = HitboxRender.from_rect('hb1', 300, 300, 100, 50, Color.RED, window, None, batch, group)
+hitbox2 = HitboxRender.from_rect(
+	'hb1', 300, 300, 100, 50, Color.RED, window, None, batch, group
+)
 
 
 @window.event

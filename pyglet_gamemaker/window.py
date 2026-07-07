@@ -168,7 +168,7 @@ class Window(PygletWin):
 			raise RuntimeError('Window must have at least 1 scene!')
 
 		# Set start scene if needed
-		if start_scene:
+		if start_scene is not None:
 			self.scene = start_scene
 
 		# Enable beginning scene

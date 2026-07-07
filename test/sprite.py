@@ -20,9 +20,7 @@ from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 # Testing SpriteSheet #
 #######################
 
-sheet = SpriteSheet(
-	'media/Button SpriteSheet.png', 3, 1, top_down=False
-)
+sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1, top_down=False)
 print(f'Lookup before naming: {sheet.lookup}')
 sheet.name('Unpressed', 'Hover', 'Pressed')
 print(f'Lookup after naming: {sheet.lookup}')
@@ -45,9 +43,7 @@ anim = PygletAnimation(frames)
 sprite = Sprite(anim, batch=batch)
 sprite.scale = 10
 
-anim2 = Animation.from_file(
-	'media/Button SpriteSheet.png', 3, 1, 1 / 3, loop=True
-)
+anim2 = Animation.from_file('media/Button SpriteSheet.png', 3, 1, 1 / 3, loop=True)
 sprite2 = Sprite(anim2, 0, sprite.height, batch=batch)
 sprite2.scale = 10
 

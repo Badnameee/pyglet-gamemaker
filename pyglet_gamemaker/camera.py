@@ -91,10 +91,10 @@ class Camera:
 		self.window = window
 		self.og_mat = window.view if window else None
 
-		self._start_pos = self._pos = (x or 0), (y or 0), (z or 0)
+		self._initial_pos = self._pos = (x or 0), (y or 0), (z or 0)
 		self._start_scale = self._scale = (scale_x or 1), (scale_y or 1), (scale_z or 1)
 		self._start_angle = self._angle = (angle_x or 0), (angle_y or 0), (angle_z or 0)
-		self._start_anchor = self._anchor = (
+		self._initial_anchor = self._anchor = (
 			(anchor_x or 0),
 			(anchor_y or 0),
 			(anchor_z or 0),
@@ -106,7 +106,9 @@ class Camera:
 	def update(self) -> None:
 		"""Update the camera view with previously changed values."""
 		if self.og_mat is None:
-			raise TypeError('"Camera.og_mat" must be set using "Camera.set_window(...)".')
+			raise TypeError(
+				'"Camera.og_mat" must be set using "Camera.set_window(...)".'
+			)
 
 		# SRT: Scale, rotate, translate
 		# 	However, in order to rotate around a point, translate so the point is @ (0, 0),
@@ -131,10 +133,10 @@ class Camera:
 
 	def reset(self) -> None:
 		"""Reset the camera to default transformation."""
-		self._pos = self._start_pos
+		self._pos = self._initial_pos
 		self._scale = self._start_scale
 		self._angle = self._start_angle
-		self._anchor = self._start_anchor
+		self._anchor = self._initial_anchor
 		self.update()
 
 	def transform(
@@ -274,9 +276,9 @@ class Camera:
 				Defaults to None.
 		"""
 		self._pos = (
-			(self._start_pos[0] + x) if x is not None else self._pos[0],
-			(self._start_pos[1] + y) if y is not None else self._pos[1],
-			(self._start_pos[2] + z) if z is not None else self._pos[2],
+			(self._initial_pos[0] + x) if x is not None else self._pos[0],
+			(self._initial_pos[1] + y) if y is not None else self._pos[1],
+			(self._initial_pos[2] + z) if z is not None else self._pos[2],
 		)
 		self._scale = (
 			(self._start_scale[0] * scale_x) if scale_x is not None else self._scale[0],
@@ -289,9 +291,15 @@ class Camera:
 			(self._start_angle[2] + angle_z) if angle_z is not None else self._angle[2],
 		)
 		self._anchor = (
-			(self._start_anchor[0] + anchor_x) if anchor_x is not None else self._anchor[0],
-			(self._start_anchor[1] + anchor_y) if anchor_y is not None else self._anchor[1],
-			(self._start_anchor[2] + anchor_z) if anchor_z is not None else self._anchor[2],
+			(self._initial_anchor[0] + anchor_x)
+			if anchor_x is not None
+			else self._anchor[0],
+			(self._initial_anchor[1] + anchor_y)
+			if anchor_y is not None
+			else self._anchor[1],
+			(self._initial_anchor[2] + anchor_z)
+			if anchor_z is not None
+			else self._anchor[2],
 		)
 		self.update()
 
@@ -345,9 +353,9 @@ class Camera:
 				Defaults to None.
 		"""
 		self._pos = (
-			(self._start_pos[0] + x) if x is not None else self._pos[0],
-			(self._start_pos[1] + y) if y is not None else self._pos[1],
-			(self._start_pos[2] + z) if z is not None else self._pos[2],
+			(self._initial_pos[0] + x) if x is not None else self._pos[0],
+			(self._initial_pos[1] + y) if y is not None else self._pos[1],
+			(self._initial_pos[2] + z) if z is not None else self._pos[2],
 		)
 		self.update()
 
@@ -401,9 +409,9 @@ class Camera:
 				Defaults to None.
 		"""
 		self._anchor = (
-			(self._start_anchor[0] + x) if x is not None else self._anchor[0],
-			(self._start_anchor[1] + y) if y is not None else self._anchor[1],
-			(self._start_anchor[2] + z) if z is not None else self._anchor[2],
+			(self._initial_anchor[0] + x) if x is not None else self._anchor[0],
+			(self._initial_anchor[1] + y) if y is not None else self._anchor[1],
+			(self._initial_anchor[2] + z) if z is not None else self._anchor[2],
 		)
 		self.update()
 

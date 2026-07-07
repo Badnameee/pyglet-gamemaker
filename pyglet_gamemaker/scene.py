@@ -39,6 +39,7 @@ class Scene(EventDispatcher, ABC):
 		- Create subgroups
 	- `.UI_group` - For all UI
 		- `.button_group`
+		- `.entry_group`
 		- `.text_group`
 
 	Required Variables:
@@ -174,7 +175,7 @@ class Scene(EventDispatcher, ABC):
 				If False, do not add to main dict of widgets.
 				Defaults to True.
 			override_ID (str, optional):
-				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				If not None, override widget ID in widgets dictionary and object attribute. Positioning still based on widget_name.
 				Default is None.
 
 		Returns:
@@ -242,7 +243,7 @@ class Scene(EventDispatcher, ABC):
 				If False, do not add to main dict of widgets.
 				Defaults to True.
 			override_ID (str, optional):
-				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				If not None, override widget ID in widgets dictionary and object attribute. Positioning still based on widget_name.
 				Default is None.
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
@@ -329,7 +330,7 @@ class Scene(EventDispatcher, ABC):
 				If False, do not add to main dict of widgets.
 				Defaults to True.
 			override_ID (str, optional):
-				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				If not None, override widget ID in widgets dictionary and object attribute. Positioning still based on widget_name.
 				Default is None.
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
@@ -423,7 +424,7 @@ class Scene(EventDispatcher, ABC):
 				If False, do not add to main dict of widgets.
 				Defaults to True.
 			override_ID (str, optional):
-				If not None, override widget ID. Only impacts `text.ID` attribute, positioning still based on widget_name.
+				If not None, override widget ID in widgets dictionary and object attribute. Positioning still based on widget_name.
 				Default is None.
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)

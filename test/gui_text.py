@@ -8,86 +8,77 @@ sys.path.append(os.getcwd())
 import random
 import string
 
-import pyglet
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
-from pyglet.window import Window, key
+from pyglet.window import key
 
-from pyglet_gamemaker.gui.text import Text
+from pyglet_gamemaker.scene import Scene
+from pyglet_gamemaker.window import Window
 
-window = Window(640, 480, caption=__name__)
 batch = Batch()
-txt_group = Group()
 UI_group = Group(1)
 
 
-@window.event
-def on_mouse_motion(x, y, dx, dy):
-	# txt.pos = x, y
-	txt.offset((dx, dy))
-	txt_anchor.position = txt.pos
-	print(f'{txt.ID} ("{txt.text}") is at {txt.pos} @ {txt.scale}x scale')
+class Scene1(Scene):
+	WIDGET_POS = {'Test': (0, 0)}
+
+	def initialize(self):
+		self.txt = self.create_text(
+			'Test', 'Hello World', ('.5', '.5'), ('Arial', 50), add_to_widget_dict=False
+		)
+
+		self.txt_anchor = Circle(
+			*self.txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group
+		)
+
+		self.window.push_handlers(self)
+
+	def on_mouse_motion(self, x, y, dx, dy):
+		self.txt.pos = x, y
+		self.txt_anchor.position = self.txt.pos
+		print(self.txt)
+
+	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		self.txt.pos = x, y
+		self.txt_anchor.position = self.txt.pos
+		print(self.txt)
+
+	def on_key_press(self, symbol, modifiers):
+		if symbol == key.LEFT:
+			self.txt.anchor_x -= 10
+		elif symbol == key.RIGHT:
+			self.txt.anchor_x += 10
+		elif symbol == key.UP:
+			self.txt.anchor_y += 10
+		elif symbol == key.DOWN:
+			self.txt.anchor_y -= 10
+		elif symbol == key.A:
+			self.txt.rotation -= 10
+		elif symbol == key.D:
+			self.txt.rotation += 10
+		elif symbol == key.R:
+			self.txt.reset(pos=False)
+		elif symbol == key.P:
+			self.txt.text += random.choice(string.ascii_lowercase)
+		elif symbol == key.O:
+			self.txt.text = self.txt.text[:-1]
+		elif symbol == key.BRACKETLEFT:
+			self.txt.scale -= 1
+		elif symbol == key.BRACKETRIGHT:
+			self.txt.scale += 1
+		else:
+			return
+
+		print(self.txt)
+		self.txt_anchor.position = self.txt.pos
+
+	def disable(self):
+		self.txt.disable()
+
+	def enable(self):
+		self.txt.enable()
 
 
-@window.event
-def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
-	# txt.pos = x, y
-	txt.offset((dx, dy))
-	txt_anchor.position = txt.pos
-	print(f'{txt.ID} ("{txt.text}") is at {txt.pos} @ {txt.scale}x scale')
-
-
-@window.event
-def on_key_press(symbol, modifiers):
-	if symbol == key.LEFT:
-		txt.anchor_x -= 10
-	elif symbol == key.RIGHT:
-		txt.anchor_x += 10
-	elif symbol == key.UP:
-		txt.anchor_y += 10
-	elif symbol == key.DOWN:
-		txt.anchor_y -= 10
-	elif symbol == key.A:
-		txt.rotation -= 10
-	elif symbol == key.D:
-		txt.rotation += 10
-	elif symbol == key.R:
-		txt.reset()
-		txt.text = 'Hello World'
-	elif symbol == key.P:
-		txt.text += random.choice(string.ascii_lowercase)
-	elif symbol == key.O:
-		txt.text = txt.text[:-1]
-	elif symbol == key.BRACKETLEFT:
-		txt.scale -= 1
-	elif symbol == key.BRACKETRIGHT:
-		txt.scale += 1
-	else:
-		return
-
-	print(f'{txt.ID} ("{txt.text}") is at {txt.pos} @ {txt.scale}x scale')
-	txt_anchor.position = txt.pos
-
-
-@window.event
-def on_draw():
-	window.clear()
-	batch.draw()
-
-
-txt = Text(
-	'Test',
-	'Hello World',
-	0,
-	0,
-	window,
-	None,
-	batch,
-	txt_group,
-	('.5', '.5'),
-	('Arial', 50),
-)
-txt.start_pos = 320, 240
-txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
-
-pyglet.app.run()
+window = Window()
+window.add_scene(Scene1('Scene'))
+window.run()

@@ -45,6 +45,8 @@ class Text(Label, Widget):
 
 	font_info: FontInfo
 	"""The font information"""
+	initial_text: str
+	"""Text that Text widget resets to when resetting text"""
 
 	def __init__(
 		self,
@@ -107,13 +109,47 @@ class Text(Label, Widget):
 
 		self.window, self.scene = window, scene
 		self.ID = ID
-		self.start_anchor = self.anchor = anchor
-		self.start_pos = self.pos = x, y
-		self.text = text
+		self.initial_anchor = self.anchor = anchor
+		self.initial_pos = self.pos = x, y
+		self.initial_text = self.text = text
 
-	def reset(self) -> None:  # noqa: D102
-		super().reset()
-		self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
+	def reset(
+		self,
+		pos: bool = True,
+		anchor: bool = True,
+		scale: bool = True,
+		text: bool = True,
+		font: bool = True,
+	) -> None:
+		"""Reset entry to initial state. Optional arguments control which parts get reset.
+
+		Args:
+			pos (bool, optional):
+				If True, reset the position.
+				Defaults to True.
+			anchor (bool, optional):
+				If True, reset the anchoring.
+				Defaults to True.
+			scale (bool, optional):
+				If True, reset the scale.
+				Defaults to True.
+			text (bool, optional):
+				If True, reset the text.
+				Defaults to True.
+			font (bool, optional):
+				If True, reset the font information.
+				Defaults to True.
+		"""
+		if pos:
+			self.pos = self.initial_pos
+		if anchor:
+			self.anchor = self.initial_anchor
+		if scale:
+			self.scale = 1
+		if text:
+			self.text = self.initial_text
+		if font:
+			self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
 
 	def _calc_anchor(self) -> None:
 		anchor_x: float = self._anchor[0]
@@ -123,9 +159,9 @@ class Text(Label, Widget):
 		if isinstance(self.raw_anchor[0], str):
 			# Original dynamic anchor
 			if self.raw_anchor[0] in AnchorXDynamicValues:
-				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.content_width
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
-				anchor_x = float(self.raw_anchor[0]) * self.content_width
+				anchor_x = float(self.raw_anchor[0]) * self.width
 			else:
 				raise ValueError(
 					f'"Text.anchor_x" must be either one of {AnchorXDynamicValues} or a string representing a float, not "{self.raw_anchor[0]}".'
@@ -138,11 +174,9 @@ class Text(Label, Widget):
 		if isinstance(self.raw_anchor[1], str):
 			# Original dynamic anchor
 			if self.raw_anchor[1] in AnchorYDynamicValues:
-				anchor_y = (
-					self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.content_height
-				)
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
-				anchor_y = float(self.raw_anchor[1]) * self.content_height
+				anchor_y = float(self.raw_anchor[1]) * self.height
 			else:
 				raise ValueError(
 					f'"Text.anchor_y" must be either one of {AnchorYDynamicValues} or a string representing a float, not "{self.raw_anchor[1]}".'
@@ -320,3 +354,6 @@ class Text(Label, Widget):
 		# 12 is default font size, in pt.
 		self.font_size = (self.font_info[1] or 12) * val
 		self._calc_anchor()
+
+	def __repr__(self) -> str:
+		return f'Text ({self.ID}): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

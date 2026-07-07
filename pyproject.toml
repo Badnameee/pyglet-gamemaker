@@ -39,9 +39,7 @@ Issues = "https://github.com/Badnameee/pyglet-gamemaker/issues"
 python_version = "3.14"
 strict = true
 exclude = [
-	"^test/.*$",
-	"^run_tests\\.py$",
-	"^run_demo\\.py$",
+	"test/.*",
 ]
 
 [tool.ruff]
@@ -59,6 +57,7 @@ extend-select = [
 ]
 extend-ignore = [
 	"D206",
+	"D105",
 ]
 
 [tool.ruff.lint.pydocstyle]

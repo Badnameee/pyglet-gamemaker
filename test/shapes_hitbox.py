@@ -16,9 +16,15 @@ window = Window(640, 480, caption=__name__)
 batch = Batch()
 group = Group()
 
-hitbox = HitboxRender.from_rect('hb1', 100, 100, 100, 50, Color.WHITE, window, None, batch, group)
-hitbox2 = HitboxRender.from_rect('hb2', 300, 300, 100, 50, Color.RED, window, None, batch, group)
-circle = HitboxRenderCircle('hbc1', 100, 100, 50, Color.WHITE, window, None, batch, group)
+hitbox = HitboxRender.from_rect(
+	'hb1', 100, 100, 100, 50, Color.WHITE, window, None, batch, group
+)
+hitbox2 = HitboxRender.from_rect(
+	'hb2', 300, 300, 100, 50, Color.RED, window, None, batch, group
+)
+circle = HitboxRenderCircle(
+	'hbc1', 100, 100, 50, Color.WHITE, window, None, batch, group
+)
 circle.render.visible = False
 
 mode = 'rect'
