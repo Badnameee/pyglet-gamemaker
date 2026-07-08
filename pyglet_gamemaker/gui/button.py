@@ -54,6 +54,8 @@ class Button(_PushButton, Widget):
 	"""Image of hovered button"""
 	pressed_img: AbstractImage
 	"""Image of pressed button"""
+	image_sheet: SpriteSheet
+	"""Entire sprite sheet used"""
 	status: ButtonStatus
 	"""Status of button"""
 
@@ -113,7 +115,7 @@ class Button(_PushButton, Widget):
 		"""
 		# Extract images from sheet
 		self._parse_sheet(
-			image_sheet if isinstance(image_sheet, SpriteSheet) else image_sheet.value,
+			image_sheet,
 			image_start,
 		)
 
@@ -150,16 +152,18 @@ class Button(_PushButton, Widget):
 		self._parse_sheet(image_sheet, image_start)
 		self._calc_anchor()
 
-	def _parse_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
+	def _parse_sheet(self, image_sheet: SpriteSheet | DefaultResources, image_start: str | int) -> None:
 		"""Parse a sheet into individual images and store them."""
+		self.image_sheet = image_sheet if isinstance(image_sheet, SpriteSheet) else image_sheet.value
+
 		start = (
-			image_sheet.lookup[image_start]
+			self.image_sheet.lookup[image_start]
 			if isinstance(image_start, str)
 			else image_start
 		)
-		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[
+		self.unpressed_img, self.hover_img, self.pressed_img = self.image_sheet[
 			start : start + 3
-		]  # type: ignore[misc] # Because mypy cannot determine I am using slice and it will ALWAYS return a list
+		]  # type: ignore[misc] # Because mypy cannot determine this slice will ALWAYS return a list
 
 	def _update_status(self, x: int, y: int) -> None:
 		# Update the status of the button given mouse position
@@ -382,3 +386,6 @@ class Button(_PushButton, Widget):
 		self._height = int(self.unpressed_img.height * val)
 		self._sprite.scale = val
 		self._calc_anchor()
+
+	def __repr__(self) -> str:
+		return f'Button ({self.ID}): {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'
