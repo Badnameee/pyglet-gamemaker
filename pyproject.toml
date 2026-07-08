@@ -12,7 +12,7 @@ version-file = "_version.py"
 name = "pyglet-gamemaker"
 dynamic = ["version"]
 dependencies = [
-	"pyglet>=2.1.10"
+	"pyglet==2.1.14",
 ]
 authors = [
 	{ name="Steven Robles", email="stevenrrobles13@gmail.com" }
@@ -41,6 +41,7 @@ strict = true
 exclude = [
 	"test/.*",
 ]
+disallow_subclassing_any = false
 
 [tool.ruff]
 exclude = [
