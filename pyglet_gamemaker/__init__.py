@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from . import errors, event_dispatcher, resources, types
+from .camera import Camera
 from .resources import DefaultResources
 from .scene import Scene
 from .window import Window

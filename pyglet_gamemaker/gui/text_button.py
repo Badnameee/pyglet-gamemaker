@@ -157,6 +157,7 @@ class TextButton(Widget):
 
 		self.window, self.scene = window, scene
 		self.ID = ID
+		self.raw_anchor = self.button.raw_anchor
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 		self.status = 'Unpressed'
 		self.dispatch = dispatch
@@ -316,6 +317,7 @@ class TextButton(Widget):
 	@anchor_x.setter
 	def anchor_x(self, val: float) -> None:
 		self.button.anchor_x = val
+		self.raw_anchor = self.button.raw_anchor
 		self.text.x = self._shifted_text_x
 
 	@property
@@ -331,6 +333,7 @@ class TextButton(Widget):
 	@anchor_y.setter
 	def anchor_y(self, val: float) -> None:
 		self.button.anchor_y = val
+		self.raw_anchor = self.button.raw_anchor
 		self.text.y = self._shifted_text_y
 
 	@property
@@ -344,6 +347,7 @@ class TextButton(Widget):
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
 		self.button.anchor = val
+		self.raw_anchor = self.button.raw_anchor
 		self.text.pos = self._shifted_text_pos
 
 	@property
@@ -417,3 +421,10 @@ class TextButton(Widget):
 	@property
 	def _shifted_text_pos(self) -> Point2D:
 		return self._shifted_text_x, self._shifted_text_y
+
+	def __repr__(self) -> str:
+		return (
+			f'TextButton ({self.ID}):\n'
+			f'- Button @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored\n'
+			f'- Text @ {self.text.pos} @ {self.text.scale}x scale | {self.text.raw_anchor} anchored\n'
+		)

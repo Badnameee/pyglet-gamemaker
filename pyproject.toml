@@ -59,6 +59,7 @@ extend-select = [
 extend-ignore = [
 	"D206",
 	"D105",
+	"RUF",
 ]
 
 [tool.ruff.lint.pydocstyle]

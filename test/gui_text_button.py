@@ -5,102 +5,95 @@ import sys
 
 sys.path.append(os.getcwd())
 
-import random
 
-import pyglet
-from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
-from pyglet.window import Window, key
+from pyglet.window import key
 
-from pyglet_gamemaker.gui.text_button import TextButton
-from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
-
-window = Window(640, 480, caption=__name__)
-pyglet.gl.glClearColor(1, 1, 1, 1)
-batch = Batch()
-txt_group = Group()
-button_group = Group()
-UI_group = Group()
-
-sheet = SpriteSheet('media/Button SpriteSheet.png', 3, 1)
-sheet.name('Unpressed', 'Hover', 'Pressed')
+from pyglet_gamemaker.resources import DefaultResources
+from pyglet_gamemaker.scene import Scene
+from pyglet_gamemaker.types import Color
+from pyglet_gamemaker.window import Window
 
 
-def on_half_click(button):
-	print(f'{button.ID} ("{button.text.text}") pressed down on!')
+class Scene1(Scene):
+	WIDGET_POS = {'Test': (0.5, 0.5)}
+
+	def initialize(self):
+		self.bg = self.create_bg(Color.WHITE)
+
+		self.button = self.create_text_button(
+			'Test',
+			'This is text!',
+			DefaultResources.button,
+			0,
+			('.5', '.5'),
+			('.5', '.5'),
+			('Arial', 30),
+			add_to_widget_dict=False,
+		)
+
+		self.button_anchor = Circle(
+			*self.button.pos,
+			10,
+			color=(0, 255, 255),
+			batch=self.batch,
+			group=self.UI_group,
+		)
+		self.txt_anchor = Circle(
+			*self.button.text.pos,
+			5,
+			color=(255, 255, 0),
+			batch=self.batch,
+			group=self.UI_group,
+		)
+
+		self.window.push_handlers(self)
+
+	def on_half_click(self, button):
+		print(f'{button.ID} pressed down on!')
+
+	def on_full_click(self, button):
+		print(f'{button.ID} fully pressed and released!')
+
+	def on_key_press(self, symbol, modifiers):
+		if symbol == key.A:
+			self.button.x -= 10
+		elif symbol == key.D:
+			self.button.x += 10
+		elif symbol == key.W:
+			self.button.y += 10
+		elif symbol == key.S:
+			self.button.y -= 10
+		elif symbol == key.LEFT:
+			self.button.anchor_x -= 10
+		elif symbol == key.RIGHT:
+			self.button.anchor_x += 10
+		elif symbol == key.UP:
+			self.button.anchor_y += 10
+		elif symbol == key.DOWN:
+			self.button.anchor_y -= 10
+		elif symbol == key.R:
+			self.button.reset()
+		elif symbol == key.H:
+			self.button.visible = not self.button.visible
+		elif symbol == key.BRACKETLEFT:
+			self.button.scale -= 1
+		elif symbol == key.BRACKETRIGHT:
+			self.button.scale += 1
+		else:
+			return
+
+		print(self.button)
+		self.button_anchor.position = self.button.pos
+		self.txt_anchor.position = self.button.text.pos
+
+	def disable(self):
+		self.button.disable()
+
+	def enable(self):
+		self.button.enable()
 
 
-def on_full_click(button):
-	print(f'{button.ID} ("{button.text.text}") fully pressed and released!')
-
-
-@window.event
-def on_key_press(symbol, modifiers):
-	if symbol == key.A:
-		button.x -= 10
-	elif symbol == key.D:
-		button.x += 10
-	elif symbol == key.W:
-		button.y += 10
-	elif symbol == key.S:
-		button.y -= 10
-	elif symbol == key.LEFT:
-		button.anchor_x -= 10
-	elif symbol == key.RIGHT:
-		button.anchor_x += 10
-	elif symbol == key.UP:
-		button.anchor_y += 10
-	elif symbol == key.DOWN:
-		button.anchor_y -= 10
-	elif symbol == key.R:
-		button.reset()
-	elif symbol == key.T:
-		button.hover_enlarge = random.randint(0, 25)
-		print(f'Button enlarge changed to {button.hover_enlarge}')
-	elif symbol == key.H:
-		button.visible = not button.visible
-	elif symbol == key.J:
-		button.button.visible = not button.button.visible
-	elif symbol == key.K:
-		button.text.visible = not button.text.visible
-	elif symbol == key.BRACKETLEFT:
-		button.scale -= 1
-	elif symbol == key.BRACKETRIGHT:
-		button.scale += 1
-	else:
-		return
-
-	print(f'New button pos: {button.pos}')
-	button_anchor.position = button.pos
-
-
-@window.event
-def on_draw():
-	window.clear()
-	batch.draw()
-
-
-button = TextButton(
-	'Hi',
-	'This is text!',
-	320,
-	240,
-	window,
-	None,
-	batch,
-	button_group,
-	txt_group,
-	sheet,
-	0,
-	('.5', '.5'),
-	('.5', '.5'),
-	font_info=('Arial', 30, ''),
-	hover_enlarge=3,
-	on_half_click=on_half_click,
-	on_full_click=on_full_click,
-)
-button_anchor = Circle(
-	*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group
-)
-
-pyglet.app.run()
+window = Window(640, 480)
+window.add_scene(Scene1('Scene'))
+window.run()

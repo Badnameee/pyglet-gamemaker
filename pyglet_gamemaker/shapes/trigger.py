@@ -34,7 +34,7 @@ class Trigger(Hitbox, EventDispatcher):
 	enabled: bool = True
 	"""If True, trigger is enabled and dispatches events"""
 	mouse_status = 'None'
-	"""Status of mouse in trigger
+	"""Status of mouse in trigger:
 	- 'None': not in trigger
 	- 'Hover': in trigger.
 	- 'Pressed': pressed and in trigger
@@ -51,7 +51,7 @@ class Trigger(Hitbox, EventDispatcher):
 		coords: tuple[Point2D, ...],
 		window: Window,
 		scene: Scene | None,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		attach_events: bool = True,
 		*,
@@ -69,7 +69,7 @@ class Trigger(Hitbox, EventDispatcher):
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor_pos (Point2D, optional):
+			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
@@ -85,7 +85,7 @@ class Trigger(Hitbox, EventDispatcher):
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
-		super().__init__(ID, coords, window, scene, anchor_pos, _subtype=_subtype)
+		super().__init__(ID, coords, window, scene, anchor, _subtype=_subtype)
 
 		self.window, self.scene = window, scene
 		self.dispatch = dispatch
@@ -110,7 +110,7 @@ class Trigger(Hitbox, EventDispatcher):
 		height: float,
 		window: Window,
 		scene: Scene | None,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		attach_events: bool = True,
 		**kwargs: EventHandler,
@@ -132,7 +132,7 @@ class Trigger(Hitbox, EventDispatcher):
 				Window for attaching self
 			scene (Scene | None):
 				The scene the trigger is from. None if trigger is a template or not in a scene.
-			anchor_pos (Point2D, optional):
+			anchor (Point2D, optional):
 				Anchor position.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
@@ -150,7 +150,7 @@ class Trigger(Hitbox, EventDispatcher):
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
 			window,
 			scene,
-			anchor_pos,
+			anchor,
 			dispatch,
 			attach_events,
 			_subtype='rect',
@@ -174,13 +174,16 @@ class Trigger(Hitbox, EventDispatcher):
 	) -> None:
 		# Update the status of the mouse given new info
 
+		# If true, user just pressed or released button
+		mouse_press_change = pressed and pressed != self._last_mouse_info[-1]
+
 		if pressed is None:
 			pressed = self._last_mouse_info[-1]
 
 		collided = self.colliding_point(x, y)
 
 		# Pressed
-		if pressed and collided:
+		if pressed and mouse_press_change and collided:
 			if self.dispatch and self.mouse_status != 'Pressed':
 				self.dispatch_event('on_mouse_trigger_press', self, x, y)
 				self.mouse_status = 'Pressed'

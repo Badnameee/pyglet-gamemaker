@@ -16,9 +16,33 @@
 - YAMLDict: Type for parsed YAML files
 - YAMLIterable: Type for iterable YAML values for custom parsing
 - YAMLValidationMode: Types of validation currently supposed by custom YAML parser
+
+- Weight: Enum with weight types for fonts
 """
 
 from __future__ import annotations
+
+__all__ = [
+	'Point2D',
+	'FontInfo',
+	'ButtonStatus',
+	'Axis',
+	'AnchorXDynamicValues',
+	'AnchorYDynamicValues',
+	'AnchorXDynamicType',
+	'AnchorYDynamicType',
+	'AnchorX',
+	'AnchorY',
+	'Anchor',
+	'EventHandler',
+	'YAMLDict',
+	'YAMLIterable',
+	'YAMLValidationMode',
+	'FLOAT_REGEX',
+	'Color',
+	'Weight',
+]
+
 
 from enum import Enum
 from typing import Any, Callable, Literal, SupportsFloat

@@ -37,7 +37,7 @@ class Rect(HitboxRender):
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Point2D = (0, 0),
 	) -> None:
 		"""Create a rectangle.
 
@@ -62,7 +62,7 @@ class Rect(HitboxRender):
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor_pos (Point2D, optional):
+			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
 		"""
@@ -74,7 +74,7 @@ class Rect(HitboxRender):
 			scene,
 			batch,
 			group,
-			anchor_pos,
+			anchor,
 			subtype='rect',
 		)
 
@@ -133,3 +133,8 @@ class Rect(HitboxRender):
 			(self.hitbox._raw_coords[3][0], self.hitbox._raw_coords[0][1] + val),
 		)
 		self._calc_coords()
+
+	def __repr__(self) -> str:
+		return (
+			f'Rect ({self.ID}): {self.width}x{self.height} rect @ {self.hitbox._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+		)

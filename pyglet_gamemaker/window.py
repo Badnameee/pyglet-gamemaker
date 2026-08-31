@@ -191,7 +191,7 @@ class Window(PygletWin):
 			self.scene = scene.name
 
 	def pop_scene(self, name: str) -> Scene:
-		"""Pop and return a scene (by name) from the game."""
+		"""Pop and scene (by name) from the game."""
 		return self.scenes.pop(name)
 
 	def _on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
 	from ..scene import Scene
-	from ..types import Anchor, EventHandler, FontInfo, Point2D
+	from ..types import Anchor, EventHandler, FontInfo, Point2D, Weight
 	from ..window import Window
 
 
@@ -171,23 +171,45 @@ class Entry(TextEntry, Widget):
 		"""Clear the entry."""
 		self._layout.document.delete_text(0, len(self._layout.document.text))
 
-	def reset(self, pos: bool = True, text: bool = True) -> None:
+	def reset(
+		self,
+		pos: bool = True,
+		anchor: bool = True,
+		scale: bool = True,
+		text: bool = True,
+		font: bool = True,
+	) -> None:
 		"""Reset entry to initial state. Optional arguments control which parts get reset.
 
 		Args:
 			pos (bool, optional):
-				If True, reset the position and anchoring.
+				If True, reset the position.
+				Defaults to True.
+			anchor (bool, optional):
+				If True, reset the anchoring.
+				Defaults to True.
+			scale (bool, optional):
+				If True, reset the scale.
 				Defaults to True.
 			text (bool, optional):
 				If True, reset the text.
 				Defaults to True.
+			font (bool, optional):
+				If True, reset the font information.
+				Defaults to True.
 		"""
 		if pos:
-			super().reset()
+			self.pos = self.initial_pos
+		if anchor:
+			self.anchor = self.initial_anchor
+		if scale:
+			self.scale = 1
 		if text:
 			self.clear()
 			self._layout.document.insert_text(0, self.initial_text)
 			self.edited = False
+		if font:
+			self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
 
 	def on_commit(self, widget: TextEntry, text: str) -> None:  # noqa: D102
 		if self.dispatch:
@@ -338,8 +360,9 @@ class Entry(TextEntry, Widget):
 		return self._doc.get_style('weight')  # type: ignore[no-any-return]
 
 	@weight.setter
-	def weight(self, val: str) -> None:
-		self._doc.set_style(0, len(self._doc.text), {'weight': str(val)})
+	def weight(self, val: Weight) -> None:
+		self.font_info = *self.font_info[:2], val
+		self._doc.set_style(0, len(self._doc.text), {'weight': val})
 
 	@property
 	def color(self) -> Color:
@@ -366,3 +389,6 @@ class Entry(TextEntry, Widget):
 		self.height = int(self.base_height * val)
 		self._scale = val
 		self._calc_anchor()
+
+	def __repr__(self) -> str:
+		return f'Entry ({self.ID}): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

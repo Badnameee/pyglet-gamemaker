@@ -73,7 +73,7 @@ class YAMLValidator:
 		# See `~pgm.sprite.animation.AnimationList` for more on format
 		# NOTE: I tried to automate this but the validation was too specific
 
-		if self.yaml is None:
+		if self.yaml:
 			raise EmptyConfigFile(self.file_path)
 
 		errors: list[Exception] = []

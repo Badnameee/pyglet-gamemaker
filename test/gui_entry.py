@@ -18,7 +18,7 @@ class Scene1(Scene):
 	WIDGET_POS = {'Test': (0.5, 0.5)}
 
 	def initialize(self):
-		self.create_entry(
+		self.entry = self.create_entry(
 			'Test',
 			'Start Test!',
 			250,
@@ -30,7 +30,7 @@ class Scene1(Scene):
 		self.debug_group = Group(3, self.UI_group)
 
 		self.anchor = Circle(
-			*self.widgets['Test'].pos,
+			*self.entry.pos,
 			10,
 			color=(0, 255, 255),
 			batch=self.batch,
@@ -40,42 +40,40 @@ class Scene1(Scene):
 		self.window.push_handlers(self.on_key_press)
 
 	def on_key_press(self, symbol, modifiers):
-		if self.widgets['Test'].focus:
+		if self.entry.focus:
 			return
 
-		entry = self.widgets['Test']
-
 		if symbol == key.A:
-			entry.offset((-10, 0))
+			self.entry.x -= 10
 		elif symbol == key.D:
-			entry.offset((10, 0))
+			self.entry.x += 10
 		elif symbol == key.W:
-			entry.offset((0, 10))
+			self.entry.y += 10
 		elif symbol == key.S:
-			entry.offset((0, -10))
+			self.entry.y -= 10
 		elif symbol == key.LEFT:
-			entry.anchor_x -= 10
+			self.entry.anchor_x -= 10
 		elif symbol == key.RIGHT:
-			entry.anchor_x += 10
+			self.entry.anchor_x += 10
 		elif symbol == key.UP:
-			entry.anchor_y += 10
+			self.entry.anchor_y += 10
 		elif symbol == key.DOWN:
-			entry.anchor_y -= 10
+			self.entry.anchor_y -= 10
 		elif symbol == key.C:
-			entry.clear()
+			self.entry.clear()
 		elif symbol == key.V:
-			entry.reset(pos=False)
+			self.entry.reset(pos=False)
 		elif symbol == key.R:
-			entry.reset()
+			self.entry.reset()
 		elif symbol == key.BRACKETLEFT:
-			entry.scale -= 1
+			self.entry.scale -= 1
 		elif symbol == key.BRACKETRIGHT:
-			entry.scale += 1
+			self.entry.scale += 1
 		else:
 			return
 
-		print(f'{entry.ID} ("{entry.text}") is at {entry.pos} @ {entry.scale}x scale')
-		self.anchor.position = self.widgets['Test'].pos
+		print(self.entry)
+		self.anchor.position = self.entry.pos
 
 	def on_submit(self, entry, text):
 		print(f'{self.__class__.__name__}: {entry.ID} submitted! "{text}"')

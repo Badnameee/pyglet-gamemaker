@@ -6,57 +6,57 @@ import sys
 sys.path.append(os.getcwd())
 
 import pyglet
-from pyglet.graphics import Batch, Group
-from pyglet.window import Window, key
+from pyglet.window import key
 
+from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.shapes.hitbox import HitboxRenderCircle
 from pyglet_gamemaker.types import Color
-
-window = Window(640, 480, caption=__name__)
-batch = Batch()
-group = Group()
-
-circle = HitboxRenderCircle(
-	'hbc1', 100, 100, 50, Color.WHITE, window, None, batch, group
-)
-circle2 = HitboxRenderCircle(
-	'hbc2', 300, 300, 50, Color.RED, window, None, batch, group
-)
+from pyglet_gamemaker.window import Window
 
 
-@window.event
-def on_mouse_motion(x, y, dx, dy):
-	circle.pos = x, y
+class Scene1(Scene):
+	def initialize(self):
+		self.circle = HitboxRenderCircle(
+			'hbc1', 100, 100, 50, Color.WHITE, window, None, self.batch, self.main_group
+		)
+		self.circle2 = HitboxRenderCircle(
+			'hbc2', 300, 300, 50, Color.RED, window, None, self.batch, self.main_group
+		)
+
+		self.window.push_handlers(self)
+
+	def update(self, dt):
+		if self.circle.collide(self.circle2)[0]:
+			self.circle.render.opacity = 128
+		else:
+			self.circle.render.opacity = 255
+
+	def on_mouse_motion(self, x, y, dx, dy):
+		self.circle.pos = x, y
+		print(self.circle)
+
+	def on_key_press(self, symbol, modifiers):
+		if symbol == key.A:
+			self.circle.anchor_x -= 10
+		elif symbol == key.D:
+			self.circle.anchor_x += 10
+		elif symbol == key.W:
+			self.circle.anchor_y += 10
+		elif symbol == key.S:
+			self.circle.anchor_y -= 10
+		elif symbol == key.LEFT:
+			self.circle.angle -= 0.1
+		elif symbol == key.RIGHT:
+			self.circle.angle += 0.1
+		print(self.circle)
+
+	def disable(self):
+		pyglet.clock.unschedule(self.update)
+
+	def enable(self):
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 
 
-@window.event
-def on_key_press(symbol, modifiers):
-	if symbol == key.A:
-		circle.anchor_x -= 10
-	elif symbol == key.D:
-		circle.anchor_x += 10
-	elif symbol == key.W:
-		circle.anchor_y += 10
-	elif symbol == key.S:
-		circle.anchor_y -= 10
-	elif symbol == key.LEFT:
-		circle.angle -= 0.1
-	elif symbol == key.RIGHT:
-		circle.angle += 0.1
-
-
-def update(dt):
-	if circle.collide(circle2)[0]:
-		circle.render.opacity = 128
-	else:
-		circle.render.opacity = 255
-
-
-@window.event
-def on_draw():
-	window.clear()
-	batch.draw()
-
-
-pyglet.clock.schedule_interval(update, 1 / 60)
-pyglet.app.run()
+window = Window(640, 480)
+window.add_scene(Scene1('Scene'))
+window.run()

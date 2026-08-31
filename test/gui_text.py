@@ -8,15 +8,11 @@ sys.path.append(os.getcwd())
 import random
 import string
 
-from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
 from pyglet.window import key
 
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.window import Window
-
-batch = Batch()
-UI_group = Group(1)
 
 
 class Scene1(Scene):
@@ -24,11 +20,19 @@ class Scene1(Scene):
 
 	def initialize(self):
 		self.txt = self.create_text(
-			'Test', 'Hello World', ('.5', '.5'), ('Arial', 50), add_to_widget_dict=False
+			'Test',
+			'Hello World',
+			('.5', '.5'),
+			('Arial', 50),
+			add_to_widget_dict=False,
 		)
 
 		self.txt_anchor = Circle(
-			*self.txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group
+			*self.txt.pos,
+			10,
+			color=(0, 255, 255),
+			batch=self.batch,
+			group=self.UI_group,
 		)
 
 		self.window.push_handlers(self)
@@ -79,6 +83,6 @@ class Scene1(Scene):
 		self.txt.enable()
 
 
-window = Window()
+window = Window(640, 480)
 window.add_scene(Scene1('Scene'))
 window.run()

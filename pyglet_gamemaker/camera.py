@@ -94,18 +94,15 @@ class Camera:
 		self._initial_pos = self._pos = (x or 0), (y or 0), (z or 0)
 		self._start_scale = self._scale = (scale_x or 1), (scale_y or 1), (scale_z or 1)
 		self._start_angle = self._angle = (angle_x or 0), (angle_y or 0), (angle_z or 0)
-		self._initial_anchor = self._anchor = (
-			(anchor_x or 0),
-			(anchor_y or 0),
-			(anchor_z or 0),
-		)
+		self._initial_anchor = self._anchor = ((anchor_x or 0), (anchor_y or 0), (anchor_z or 0))  # fmt: skip
 
 		# Account for initial conditions
-		self.transform(x, y, z, scale_x, scale_y, scale_z, angle_x, angle_y, angle_z)
+		if window:
+			self.transform(x, y, z, scale_x, scale_y, scale_z, angle_x, angle_y, angle_z)
 
 	def update(self) -> None:
 		"""Update the camera view with previously changed values."""
-		if self.og_mat is None:
+		if not self.og_mat:
 			raise TypeError(
 				'"Camera.og_mat" must be set using "Camera.set_window(...)".'
 			)
@@ -291,16 +288,10 @@ class Camera:
 			(self._start_angle[2] + angle_z) if angle_z is not None else self._angle[2],
 		)
 		self._anchor = (
-			(self._initial_anchor[0] + anchor_x)
-			if anchor_x is not None
-			else self._anchor[0],
-			(self._initial_anchor[1] + anchor_y)
-			if anchor_y is not None
-			else self._anchor[1],
-			(self._initial_anchor[2] + anchor_z)
-			if anchor_z is not None
-			else self._anchor[2],
-		)
+			(self._initial_anchor[0] + anchor_x) if anchor_x is not None else self._anchor[0],
+			(self._initial_anchor[1] + anchor_y) if anchor_y is not None else self._anchor[1],
+			(self._initial_anchor[2] + anchor_z) if anchor_z is not None else self._anchor[2],
+		)  # fmt: skip
 		self.update()
 
 	def move(

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 	from typing import Self
 
 	from ..scene import Scene
-	from ..types import Axis, Color, Point2D
+	from ..types import Anchor, Axis, Color, Point2D
 	from ..window import Window
 
 
@@ -67,7 +67,7 @@ class Hitbox:
 		coords: tuple[Point2D, ...],
 		window: Window,
 		scene: Scene | None,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		*,
 		_subtype: str | None = None,
 	) -> None:
@@ -82,7 +82,7 @@ class Hitbox:
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor_pos (Point2D, optional):
+			anchor (Anchor, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
 			_subtype (str, optional)
@@ -93,7 +93,7 @@ class Hitbox:
 		self.window, self.scene = window, scene
 		self._trans_pos = coords[0]
 		self._raw_coords = coords
-		self.anchor = anchor_pos
+		self.anchor = anchor
 		self.subtype = _subtype
 
 	@classmethod
@@ -106,7 +106,7 @@ class Hitbox:
 		height: float,
 		window: Window,
 		scene: Scene | None,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 	) -> Self:
 		"""Create a hitbox from rectangle args.
 
@@ -125,7 +125,7 @@ class Hitbox:
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor_pos (Point2D, optional):
+			anchor (Anchor, optional):
 				Anchor position.
 				Defaults to (0, 0).
 		"""
@@ -134,7 +134,7 @@ class Hitbox:
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
 			window,
 			scene,
-			anchor_pos,
+			anchor,
 			_subtype='rect',
 		)
 
@@ -310,7 +310,7 @@ class Hitbox:
 		return False, None
 
 	def _calc_coords(self) -> None:
-		# Updates coordinates based on new position, angle, and/or anchor_pos.
+		# Updates coordinates based on new position, angle, and/or anchor.
 
 		# Steps:
 		# 1. Update local coords
@@ -447,6 +447,15 @@ class Hitbox:
 		self._angle = val
 		self._calc_coords()
 
+	def __repr__(self) -> str:
+		if isinstance(self, HitboxCircle):
+			return f'Hitbox ({self.ID}): Subtype "Circle" @ {self._trans_pos} @ {self.radius} size @ {self.angle} rad | {self.anchor} anchored\n'
+		else:
+			return (
+				f'Hitbox ({self.ID}): Subtype "{self.subtype}" @ {self._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+				f'- Coords: {self.coords}'
+			)
+
 
 class HitboxCircle(Hitbox):
 	"""Holds a hitbox for circle-polygon collisions.
@@ -467,7 +476,7 @@ class HitboxCircle(Hitbox):
 		radius: float,
 		window: Window,
 		scene: Scene | None,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 	) -> None:
 		"""Create a hitbox from a circle.
 
@@ -484,12 +493,12 @@ class HitboxCircle(Hitbox):
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor_pos (Point2D, optional):
+			anchor (Anchor, optional):
 				The anchor position.
 				Defaults to (0, 0).
 		"""
 		super().__init__(
-			ID, ((x, y), (radius, 0)), window, scene, anchor_pos, _subtype='circle'
+			ID, ((x, y), (radius, 0)), window, scene, anchor, _subtype='circle'
 		)
 		self.axis = Vec2(0, 0)
 		self.radius = radius
@@ -618,7 +627,7 @@ class HitboxRender:
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		*,
 		subtype: str | None = None,
 	) -> None:
@@ -639,7 +648,7 @@ class HitboxRender:
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor_pos (Point2D, optional):
+			anchor (Anchor, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
 			circle (bool, optional):
@@ -653,8 +662,9 @@ class HitboxRender:
 				Defaults to None.
 		"""
 		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
-		self.hitbox = Hitbox(ID, coords, window, scene, anchor_pos, _subtype=subtype)
+		self.hitbox = Hitbox(ID, coords, window, scene, anchor, _subtype=subtype)
 
+		self.ID = ID
 		self.subtype = subtype
 		self._hitbox_color = color
 
@@ -671,7 +681,7 @@ class HitboxRender:
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 	) -> Self:
 		"""Create a hitbox render from rectangle dimensions.
 
@@ -696,7 +706,7 @@ class HitboxRender:
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor_pos (Point2D):
+			anchor (Anchor):
 				Anchor position
 		"""
 		return cls(
@@ -707,7 +717,7 @@ class HitboxRender:
 			scene,
 			batch,
 			group,
-			anchor_pos,
+			anchor,
 			subtype='rect',
 		)
 
@@ -855,6 +865,9 @@ class HitboxRender:
 		self._hitbox_color = val
 		self.render.color = val.value
 
+	def __repr__(self) -> str:
+		return repr(self.hitbox)
+
 
 class HitboxRenderCircle:
 	"""Holds a Circle Hitbox with `.hitbox` and `.render` objects."""
@@ -881,7 +894,7 @@ class HitboxRenderCircle:
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor_pos: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 	) -> None:
 		"""Create a circular hitbox render.
 
@@ -904,13 +917,14 @@ class HitboxRenderCircle:
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor_pos (Point2D, optional):
+			anchor (Anchor, optional):
 				The anchor position.
 				Defaults to (0, 0).
 		"""
 		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
-		self.hitbox = HitboxCircle(ID, x, y, radius, window, scene, anchor_pos)
+		self.hitbox = HitboxCircle(ID, x, y, radius, window, scene, anchor)
 
+		self.ID = ID
 		self.subtype = 'circle'
 		self._hitbox_color = color
 
@@ -1052,3 +1066,6 @@ class HitboxRenderCircle:
 	def hitbox_color(self, val: Color) -> None:
 		self._hitbox_color = val
 		self.render.color = val.value
+
+	def __repr__(self) -> str:
+		return repr(self.hitbox)

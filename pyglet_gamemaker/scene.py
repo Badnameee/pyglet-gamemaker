@@ -34,9 +34,8 @@ class Scene(EventDispatcher, ABC):
 
 	Creates its own batch and groups:
 	- `.batch`
-	- `.main_group` - For everything not UI
-		- `.bg_group`
-		- Create subgroups
+	- `.bg_group` - For backgrounds and stuff in the back
+	- `.main_group` - Main purpose group
 	- `.UI_group` - For all UI
 		- `.button_group`
 		- `.entry_group`
@@ -103,9 +102,9 @@ class Scene(EventDispatcher, ABC):
 		self.widgets = {}
 
 		self.batch = Batch()
-		self.main_group = Group(0)
-		self.bg_group = Group(0, self.main_group)
-		self.UI_group = Group(1)
+		self.bg_group = Group(0)
+		self.main_group = Group(1)
+		self.UI_group = Group(2)
 		self.button_group = Group(0, self.UI_group)
 		self.entry_group = Group(1, self.UI_group)
 		self.text_group = Group(2, self.UI_group)
@@ -179,7 +178,7 @@ class Scene(EventDispatcher, ABC):
 				Default is None.
 
 		Returns:
-			None | Text: None if add_to_widget_dict is True, else the text object
+			Text: Text object
 		"""
 		# Use default if none provided
 		if not any(font_info):
@@ -203,10 +202,9 @@ class Scene(EventDispatcher, ABC):
 			text_obj.ID = override_ID
 
 		# Store or return
-		if not add_to_widget_dict:
-			return text_obj
-		self.widgets[widget_name if override_ID is None else override_ID] = text_obj
-		return None
+		if add_to_widget_dict:
+			self.widgets[widget_name if override_ID is None else override_ID] = text_obj
+		return text_obj
 
 	def create_button(
 		self,
@@ -249,7 +247,7 @@ class Scene(EventDispatcher, ABC):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 
 		Returns:
-			None | Button: None if add_to_widget_dict is True, else the button object
+			Button: Button object
 		"""
 		button = Button(
 			widget_name,
@@ -271,10 +269,9 @@ class Scene(EventDispatcher, ABC):
 			button.ID = override_ID
 
 		# Store or return
-		if not add_to_widget_dict:
-			return button
-		self.widgets[widget_name if override_ID is None else override_ID] = button
-		return None
+		if add_to_widget_dict:
+			self.widgets[widget_name if override_ID is None else override_ID] = button
+		return button
 
 	def create_text_button(
 		self,
@@ -336,7 +333,7 @@ class Scene(EventDispatcher, ABC):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 
 		Returns:
-			None | TextButton: None if add_to_widget_dict is True, else the text button object
+			TextButton: TextButton object
 		"""
 		# Use default if none provided
 		if not any(font_info):
@@ -368,10 +365,11 @@ class Scene(EventDispatcher, ABC):
 			text_button.ID = override_ID
 
 		# Store or return
-		if not add_to_widget_dict:
-			return text_button
-		self.widgets[widget_name if override_ID is None else override_ID] = text_button
-		return None
+		if add_to_widget_dict:
+			self.widgets[widget_name if override_ID is None else override_ID] = (
+				text_button
+			)
+		return text_button
 
 	def create_entry(
 		self,
@@ -388,7 +386,7 @@ class Scene(EventDispatcher, ABC):
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
 		**kwargs: EventHandler,
-	) -> None | Entry:
+	) -> Entry:
 		"""Create an entry widget.
 
 		Args:
@@ -430,7 +428,7 @@ class Scene(EventDispatcher, ABC):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 
 		Returns:
-			None | Entry: None if add_to_widget_dict is True, else the entry object
+			Entry: Entry object
 		"""
 		# Use default if none provided
 		if not any(font_info):
@@ -460,10 +458,9 @@ class Scene(EventDispatcher, ABC):
 			entry.ID = override_ID
 
 		# Store or return
-		if not add_to_widget_dict:
-			return entry
-		self.widgets[widget_name if override_ID is None else override_ID] = entry
-		return None
+		if add_to_widget_dict:
+			self.widgets[widget_name if override_ID is None else override_ID] = entry
+		return entry
 
 	def on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
 		"""A middleman between event dispatch and `window._on_scene_change`.
