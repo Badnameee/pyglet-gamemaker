@@ -59,7 +59,7 @@ class InvalidConfigKeyType(TypeError):
 
 		s += '  |  Expected key type '
 		if isinstance(self.expected, tuple):
-			s += ' | '.join(map(lambda type: type.__name__, self.expected))
+			s += ' | '.join(type.__name__ for type in self.expected)
 		else:
 			s += self.expected.__name__
 
@@ -95,7 +95,7 @@ class InvalidConfigValueType(ValueError):
 
 		s += '  |  Expected value type '
 		if isinstance(self.expected, tuple):
-			s += '|'.join(map(lambda type: type.__name__, self.expected))
+			s += ' | '.join(type.__name__ for type in self.expected)
 		else:
 			s += self.expected.__name__
 

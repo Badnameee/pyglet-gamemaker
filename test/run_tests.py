@@ -20,4 +20,4 @@ for test_num, test in enumerate(Path('test').iterdir(), 1):
 		continue
 
 	print(f'\n-----------------------------\nStarting test #{test_num}: "{test}"\n\n')
-	exec(f'import {test}')  # Run actual test
+	exec(f'import {test}')  # Run actual test # noqa: S102

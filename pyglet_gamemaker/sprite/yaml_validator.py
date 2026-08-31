@@ -14,8 +14,8 @@ from ..errors import (
 )
 
 if TYPE_CHECKING:
+	from collections.abc import Callable
 	from pathlib import Path
-	from typing import Callable
 
 	from ..types import YAMLDict, YAMLValidationMode
 
@@ -71,9 +71,9 @@ class YAMLValidator:
 
 	def _validate_anim(self) -> list[Exception]:
 		# See `~pgm.sprite.animation.AnimationList` for more on format
-		# NOTE: I tried to automate this but the validation was too specific
+		# NOTE: Tried to automate this but the validation was too specific
 
-		if self.yaml:
+		if not self.yaml:
 			raise EmptyConfigFile(self.file_path)
 
 		errors: list[Exception] = []
@@ -87,6 +87,21 @@ class YAMLValidator:
 			'anim-data': False,
 		}
 
+		self._validate_anim_row_col(conditions, errors)
+
+		self._validate_anim_padding(conditions, errors)
+
+		self._validate_anim_misc_settings(conditions, errors)
+
+		self._validate_anim_anim_data(conditions, errors)
+
+		self._validate_anim_data(conditions, errors)
+
+		return errors
+
+	def _validate_anim_row_col(
+		self, conditions: dict[str, bool], errors: list[Exception]
+	) -> None:
 		# rows: {int > 0}
 		if 'rows' not in self.yaml:
 			errors.append(MissingConfigKey('rows'))
@@ -107,6 +122,9 @@ class YAMLValidator:
 		else:
 			conditions['cols'] = True
 
+	def _validate_anim_padding(
+		self, conditions: dict[str, bool], errors: list[Exception]
+	) -> None:
 		# row-padding: {int >= 0}
 		if 'row-padding' not in self.yaml:
 			errors.append(MissingConfigKey('row-padding'))
@@ -139,6 +157,9 @@ class YAMLValidator:
 				)
 			)
 
+	def _validate_anim_misc_settings(
+		self, conditions: dict[str, bool], errors: list[Exception]
+	) -> None:
 		# top-down: {bool}
 		if 'top-down' not in self.yaml:
 			errors.append(MissingConfigKey('top-down'))
@@ -165,6 +186,9 @@ class YAMLValidator:
 		else:
 			conditions['void'] = True
 
+	def _validate_anim_anim_data(  # noqa: C901
+		self, conditions: dict[str, bool], errors: list[Exception]
+	) -> None:
 		# anim-data: {dict}
 		if 'anim-data' not in self.yaml:
 			errors.append(MissingConfigKey('anim-data'))
@@ -218,6 +242,9 @@ class YAMLValidator:
 							)
 						)
 
+	def _validate_anim_data(  # noqa: C901
+		self, conditions: dict[str, bool], errors: list[Exception]
+	) -> None:
 		# data: {list}
 		if 'data' not in self.yaml:
 			errors.append(MissingConfigKey('data'))
@@ -299,5 +326,3 @@ class YAMLValidator:
 										id,
 									)
 								)
-
-		return errors

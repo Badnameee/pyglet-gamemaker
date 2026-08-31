@@ -44,8 +44,9 @@ __all__ = [
 ]
 
 
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Literal, SupportsFloat
+from typing import Any, Literal, SupportsFloat
 
 from pyglet.text import Weight
 

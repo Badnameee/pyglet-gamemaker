@@ -35,15 +35,15 @@ class Hitbox:
 	- anchored: Shifting global position to account for anchor position of hitbox
 	"""
 
-	_local_coords: tuple[Point2D, ...] = tuple()
+	_local_coords: tuple[Point2D, ...] = ()
 	"""Holds the *untransformed* coords relative to first coordinate"""
-	_raw_coords: tuple[Point2D, ...] = tuple()
+	_raw_coords: tuple[Point2D, ...] = ()
 	"""Holds the *unrotated* AND *unanchored*, but *translated/global* coords"""
-	_unanchored_coords: tuple[Point2D, ...] = tuple()
+	_unanchored_coords: tuple[Point2D, ...] = ()
 	"""Holds the *unanchored*, *translated/global* coords"""
-	_anchor_coords: tuple[Point2D, ...] = tuple()
+	_anchor_coords: tuple[Point2D, ...] = ()
 	"""Holds the *untransformed* coords relative to anchor pos"""
-	_rotation_amount: tuple[Point2D, ...] = tuple()
+	_rotation_amount: tuple[Point2D, ...] = ()
 	"""Holds the translation due to rotation of each point"""
 	_anchor: Point2D = 0, 0
 	_angle: float = 0
@@ -192,7 +192,7 @@ class Hitbox:
 			return True
 
 		# Line2 completely inside line1
-		if l1[0] < l2[0] and l1[1] > l2[1]:
+		if l1[0] < l2[0] and l1[1] > l2[1]:  # noqa: SIM103
 			return True
 
 		return False
@@ -218,7 +218,6 @@ class Hitbox:
 				return -(l1[1] - l2[0])
 			return l2[1] - l1[0]
 
-		#! Should only return 0 if no intersection, should never happen
 		return 0
 
 	@staticmethod
