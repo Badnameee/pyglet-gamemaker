@@ -8,11 +8,25 @@ source = "vcs"
 [tool.hatch.build.hooks.vcs]
 version-file = "_version.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+	"/.github",
+	"/media",
+	".gitignore",
+	"google.mustache",
+	"/.ruff_cache",
+	"/dist",
+]
+
+[tool.hatch.build.targets.wheel]
+only-packages = true
+
 [project]
 name = "pyglet-gamemaker"
 dynamic = ["version"]
 dependencies = [
 	"pyglet==2.1.14",
+	"PyYAML==6.0.3",
 ]
 authors = [
 	{ name="Steven Robles", email="stevenrrobles13@gmail.com" }
@@ -26,7 +40,8 @@ classifiers = [
 	"Programming Language :: Python :: 3.12",
 	"Programming Language :: Python :: 3.13",
 	"Programming Language :: Python :: 3.14",
-	"Operating System :: OS Independent",
+	"Operating System :: Microsoft :: Windows :: Windows 10",
+	"Operating System :: Microsoft :: Windows :: Windows 11",
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
