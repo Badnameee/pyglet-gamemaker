@@ -152,9 +152,13 @@ class Button(_PushButton, Widget):
 		self._parse_sheet(image_sheet, image_start)
 		self._calc_anchor()
 
-	def _parse_sheet(self, image_sheet: SpriteSheet | DefaultResources, image_start: str | int) -> None:
+	def _parse_sheet(
+		self, image_sheet: SpriteSheet | DefaultResources, image_start: str | int
+	) -> None:
 		"""Parse a sheet into individual images and store them."""
-		self.image_sheet = image_sheet if isinstance(image_sheet, SpriteSheet) else image_sheet.value
+		self.image_sheet = (
+			image_sheet if isinstance(image_sheet, SpriteSheet) else image_sheet.value
+		)
 
 		start = (
 			self.image_sheet.lookup[image_start]

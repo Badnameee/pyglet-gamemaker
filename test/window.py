@@ -5,9 +5,9 @@ import sys
 
 sys.path.append(os.getcwd())
 
+from pyglet_gamemaker import colors
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
 
@@ -122,8 +122,8 @@ class TestScene2(Scene):
 			widget.disable()
 
 
-test1 = TestScene('TestScene', Color.ORANGE)
-test2 = TestScene2('TestScene2', Color.WHITE)
+test1 = TestScene('TestScene', colors.ORANGE)
+test2 = TestScene2('TestScene2', colors.WHITE)
 
 window = Window(640, 480)
 window.add_scene(test1)

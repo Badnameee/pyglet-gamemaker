@@ -10,20 +10,20 @@ from typing import TYPE_CHECKING
 
 from pyglet.graphics import Batch, Group
 
+from . import colors
 from .event_dispatcher import EventDispatcher
 from .gui.button import Button
 from .gui.entry import Entry
 from .gui.text import Text
 from .gui.text_button import TextButton
 from .shapes.rect import Rect
-from .types import Color
 
 if TYPE_CHECKING:
 	from typing import Any
 
 	from .gui.widget import Widget
 	from .sprite.sprite_sheet import SpriteSheet
-	from .types import Anchor, EventHandler, FontInfo
+	from .types import Anchor, Color, EventHandler, FontInfo
 	from .window import Window
 
 
@@ -150,7 +150,7 @@ class Scene(EventDispatcher, ABC):
 		text: str,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
-		color: Color = Color.WHITE,
+		color: Color = colors.WHITE,
 		add_to_widget_dict: bool = True,
 		override_ID: str | None = None,
 	) -> None | Text:
@@ -169,7 +169,7 @@ class Scene(EventDispatcher, ABC):
 				Defaults to value in `.DEFAULT_FONT_INFO`.
 			color (Color, optional):
 				Color of text.
-				Defaults to Color.WHITE.
+				Defaults to colors.WHITE.
 			add_to_widget_dict (bool, optional):
 				If False, do not add to main dict of widgets.
 				Defaults to True.
@@ -282,7 +282,7 @@ class Scene(EventDispatcher, ABC):
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
-		color: Color = Color.WHITE,
+		color: Color = colors.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
 		attach_events: bool = True,
@@ -312,7 +312,7 @@ class Scene(EventDispatcher, ABC):
 				Defaults to value in `.DEFAULT_FONT_INFO`.
 			color (Color, optional):
 				Color of text.
-				Defaults to Color.WHITE.
+				Defaults to colors.WHITE.
 			hover_enlarge (int, optional):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
@@ -378,9 +378,9 @@ class Scene(EventDispatcher, ABC):
 		width: int,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None),
-		color: Color = Color.WHITE,
-		text_color: Color = Color.BLACK,
-		caret_color: Color = Color.BLACK,
+		color: Color = colors.WHITE,
+		text_color: Color = colors.BLACK,
+		caret_color: Color = colors.BLACK,
 		attach_events: bool = True,
 		dispatch: bool = True,
 		add_to_widget_dict: bool = True,
@@ -404,13 +404,13 @@ class Scene(EventDispatcher, ABC):
 				Defaults to value in `.DEFAULT_FONT_INFO`.
 			color (Color, optional):
 				Color of entry background.
-				Defaults to Color.WHITE.
+				Defaults to colors.WHITE.
 			text_color (Color, optional):
 				Color of text.
-				Defaults to Color.BLACK.
+				Defaults to colors.BLACK.
 			caret_color (Color, optional):
 				Color of text.
-				Defaults to Color.BLACK.
+				Defaults to colors.BLACK.
 			attach_events (bool, optional):
 				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.

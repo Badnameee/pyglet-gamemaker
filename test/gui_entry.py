@@ -9,8 +9,8 @@ from pyglet.graphics import Group
 from pyglet.shapes import Circle
 from pyglet.window import key
 
+from pyglet_gamemaker import colors
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
 
@@ -24,7 +24,7 @@ class Scene1(Scene):
 			250,
 			('.5', '.5'),
 			font_info=(None, None),
-			color=Color.GRAY,
+			color=colors.GRAY,
 		)
 
 		self.debug_group = Group(3, self.UI_group)

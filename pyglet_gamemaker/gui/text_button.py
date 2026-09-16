@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..types import Color
+from .. import colors
 from .button import Button
 from .text import Text
 from .widget import Widget
@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import (
 		Anchor,
+		Color,
 		EventHandler,
 		FontInfo,
 		Point2D,
@@ -70,7 +71,7 @@ class TextButton(Widget):
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = ('center', 'center'),
 		font_info: FontInfo = (None, None, None),
-		color: Color = Color.WHITE,
+		color: Color = colors.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
 		attach_events: bool = True,

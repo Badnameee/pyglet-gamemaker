@@ -11,10 +11,12 @@ def clear_terminal() -> None:
 		os.system('clear')
 
 
-skip = {'__init__', 'run_tests'}
+skip = '__init__', 'run_tests', 'demo'
 
 clear_terminal()
 for test_num, test in enumerate(Path('test').iterdir(), 1):
+	if not test.is_file():
+		continue
 	test = test.stem
 	if test in skip:
 		continue

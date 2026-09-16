@@ -10,16 +10,21 @@ from typing import TYPE_CHECKING
 
 from pyglet.gui import TextEntry
 
-import pyglet_gamemaker as pgm
+from pyglet_gamemaker.utils import pad_font_info
 
-from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues, Color
+from .. import colors
+from ..types import (
+	FLOAT_REGEX,
+	AnchorXDynamicValues,
+	AnchorYDynamicValues,
+)
 from .widget import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
 	from ..scene import Scene
-	from ..types import Anchor, EventHandler, FontInfo, Point2D, Weight
+	from ..types import Anchor, Color, EventHandler, FontInfo, Point2D, Weight
 	from ..window import Window
 
 
@@ -63,9 +68,9 @@ class Entry(TextEntry, Widget):
 		group: Group,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
-		color: Color = Color.WHITE,
-		text_color: Color = Color.BLACK,
-		caret_color: Color = Color.BLACK,
+		color: Color = colors.WHITE,
+		text_color: Color = colors.BLACK,
+		caret_color: Color = colors.BLACK,
 		attach_events: bool = True,
 		dispatch: bool = False,
 		**kwargs: EventHandler,
@@ -122,9 +127,9 @@ class Entry(TextEntry, Widget):
 			x,  # type: ignore[arg-type]
 			y,  # type: ignore[arg-type]
 			width,
-			color.value,
-			text_color.value,
-			caret_color.value,
+			color,
+			text_color,
+			caret_color,
 			batch,
 			group,
 		)
@@ -134,7 +139,7 @@ class Entry(TextEntry, Widget):
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 		self._color = color
-		self.font_info = pgm.pad_font_info(font_info, self.DEFAULT_FONT_INFO)
+		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
 		self.initial_anchor = self.anchor = anchor
 		self.initial_text = text
 
@@ -147,7 +152,7 @@ class Entry(TextEntry, Widget):
 			0,
 			len(self._doc.text),
 			{
-				'color': text_color.value,
+				'color': text_color,
 				'font_name': font_info[0],
 				'font_size': font_info[1],
 				'weight': font_info[2],  # type: ignore[misc] # Guaranteed 3 items long by here
@@ -366,13 +371,13 @@ class Entry(TextEntry, Widget):
 
 	@property
 	def color(self) -> Color:
-		"""The color of the text, as a `~pgm.types.Color`."""
+		"""The color of the text."""
 		return self._color
 
 	@color.setter
 	def color(self, val: Color) -> None:
 		self._color = val
-		self._doc.set_style(0, len(self._doc.text), {'weight': str(val.value)})
+		self._doc.set_style(0, len(self._doc.text), {'color': str(val)})
 
 	@property
 	def scale(self) -> float:  # noqa: D102

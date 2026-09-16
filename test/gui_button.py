@@ -8,9 +8,9 @@ sys.path.append(os.getcwd())
 from pyglet.shapes import Circle
 from pyglet.window import key
 
+from pyglet_gamemaker import colors
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
 
@@ -18,7 +18,7 @@ class Scene1(Scene):
 	WIDGET_POS = {'Test': (0.5, 0.5)}
 
 	def initialize(self):
-		self.bg = self.create_bg(Color.WHITE)
+		self.bg = self.create_bg(colors.WHITE)
 
 		self.button = self.create_button(
 			'Test',

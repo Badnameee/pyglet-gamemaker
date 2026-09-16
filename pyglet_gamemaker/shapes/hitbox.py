@@ -349,7 +349,7 @@ class Hitbox:
 
 		self._unanchored_coords = tuple(
 			(coord[0] + rotation[0], coord[1] + rotation[1])
-			for coord, rotation in zip(self._raw_coords, self._rotation_amount)
+			for coord, rotation in zip(self._raw_coords, self._rotation_amount, strict=True)
 		)
 
 		self.coords = tuple(
@@ -660,7 +660,7 @@ class HitboxRender:
 				The subtype of the hitbox. Ex: 'rect', 'circle'.
 				Defaults to None.
 		"""
-		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
+		self.render = Polygon(*coords, color=color, batch=batch, group=group)
 		self.hitbox = Hitbox(ID, coords, window, scene, anchor, _subtype=subtype)
 
 		self.ID = ID
@@ -862,7 +862,7 @@ class HitboxRender:
 	@hitbox_color.setter
 	def hitbox_color(self, val: Color) -> None:
 		self._hitbox_color = val
-		self.render.color = val.value
+		self.render.color = val
 
 	def __repr__(self) -> str:
 		return repr(self.hitbox)
@@ -920,7 +920,7 @@ class HitboxRenderCircle:
 				The anchor position.
 				Defaults to (0, 0).
 		"""
-		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
+		self.render = Circle(x, y, radius, color=color, batch=batch, group=group)
 		self.hitbox = HitboxCircle(ID, x, y, radius, window, scene, anchor)
 
 		self.ID = ID
@@ -1064,7 +1064,7 @@ class HitboxRenderCircle:
 	@hitbox_color.setter
 	def hitbox_color(self, val: Color) -> None:
 		self._hitbox_color = val
-		self.render.color = val.value
+		self.render.color = val
 
 	def __repr__(self) -> str:
 		return repr(self.hitbox)

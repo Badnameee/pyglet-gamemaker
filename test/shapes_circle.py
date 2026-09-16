@@ -8,19 +8,19 @@ sys.path.append(os.getcwd())
 import pyglet
 from pyglet.window import key
 
+from pyglet_gamemaker import colors
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.shapes.hitbox import HitboxRenderCircle
-from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
 
 class Scene1(Scene):
 	def initialize(self):
 		self.circle = HitboxRenderCircle(
-			'hbc1', 100, 100, 50, Color.WHITE, window, None, self.batch, self.main_group
+			'hbc1', 100, 100, 50, colors.WHITE, window, None, self.batch, self.main_group
 		)
 		self.circle2 = HitboxRenderCircle(
-			'hbc2', 300, 300, 50, Color.RED, window, None, self.batch, self.main_group
+			'hbc2', 300, 300, 50, colors.RED, window, None, self.batch, self.main_group
 		)
 
 		self.window.push_handlers(self)

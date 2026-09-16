@@ -98,7 +98,9 @@ class Camera:
 
 		# Account for initial conditions
 		if window:
-			self.transform(x, y, z, scale_x, scale_y, scale_z, angle_x, angle_y, angle_z)
+			self.transform(
+				x, y, z, scale_x, scale_y, scale_z, angle_x, angle_y, angle_z
+			)
 
 	def update(self) -> None:
 		"""Update the camera view with previously changed values."""

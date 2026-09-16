@@ -10,9 +10,13 @@ from typing import TYPE_CHECKING
 
 from pyglet.text import Label
 
-import pyglet_gamemaker as pgm
-
-from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues, Color
+from .. import colors
+from ..types import (
+	FLOAT_REGEX,
+	AnchorXDynamicValues,
+	AnchorYDynamicValues,
+)
+from ..utils import pad_font_info
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -23,6 +27,7 @@ if TYPE_CHECKING:
 		Anchor,
 		AnchorX,
 		AnchorY,
+		Color,
 		FontInfo,
 		Point2D,
 	)
@@ -60,7 +65,7 @@ class Text(Label, Widget):
 		group: Group,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
-		color: Color = Color.WHITE,
+		color: Color = colors.WHITE,
 	) -> None:
 		"""Create a text label.
 
@@ -91,7 +96,7 @@ class Text(Label, Widget):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
-		self.font_info = pgm.pad_font_info(font_info, self.DEFAULT_FONT_INFO)
+		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
 
 		super().__init__(
 			text,
@@ -100,7 +105,7 @@ class Text(Label, Widget):
 			0,
 			font_name=self.font_info[0],
 			font_size=self.font_info[1],
-			color=color.value,
+			color=color,
 			batch=batch,
 			group=group,
 			weight=self.font_info[2] if self.font_info[2] is not None else 'normal',  # type: ignore[misc] # Guaranteed 3 items long by here

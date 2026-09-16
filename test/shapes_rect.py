@@ -8,10 +8,10 @@ sys.path.append(os.getcwd())
 import pyglet
 from pyglet.window import key
 
+from pyglet_gamemaker import colors
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.shapes.hitbox import HitboxRender
 from pyglet_gamemaker.shapes.rect import Rect
-from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
 
@@ -23,7 +23,7 @@ class Scene1(Scene):
 			100,
 			100,
 			50,
-			Color.WHITE,
+			colors.WHITE,
 			self.window,
 			None,
 			self.batch,
@@ -35,7 +35,7 @@ class Scene1(Scene):
 			300,
 			100,
 			50,
-			Color.RED,
+			colors.RED,
 			self.window,
 			None,
 			self.batch,

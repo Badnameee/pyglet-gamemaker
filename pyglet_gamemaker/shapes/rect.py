@@ -135,6 +135,4 @@ class Rect(HitboxRender):
 		self._calc_coords()
 
 	def __repr__(self) -> str:
-		return (
-			f'Rect ({self.ID}): {self.width}x{self.height} rect @ {self.hitbox._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
-		)
+		return f'Rect ({self.ID}): {self.width}x{self.height} rect @ {self.hitbox._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'

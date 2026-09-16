@@ -71,6 +71,7 @@ extend-select = [
 	"I",
 	"T20",
 	"ANN",
+	"B",
 ]
 extend-ignore = [
 	"D206",
