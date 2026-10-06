@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 class Button(_PushButton, Widget):
-	"""A basic 2D button with custom anchor support. Supports anchoring with specific pixel values or dynamic.
+	"""A basic 2D button with custom anchor support. Supports anchoring with specific pixel values or a ratio of the width/height.
 
 	Dynamic Anchors:
 	- `AnchorX`: 'left', 'center', 'right'
@@ -37,7 +37,7 @@ class Button(_PushButton, Widget):
 	Sprite sheet must have images in a row for all of the statuses in above order.
 
 	When creating object, give the starting index of the button images.
-	For example, passing in 0 will take 0 as the unpressed image, 1 as the hovered, and 2 as the pressed.
+	For example, passing 0 will assign the following: unpressed: 0, hover: 1, pressed: 2
 
 	Dispatches:
 	- `on_half_click` when pressed.
@@ -46,8 +46,10 @@ class Button(_PushButton, Widget):
 	Use kwargs to attach event handlers.
 	"""
 
+	# * CONSTS
 	EVENT_TYPES = 'on_half_click', 'on_full_click'
 
+	# * Instance vars
 	unpressed_img: AbstractImage
 	"""Image of unpressed button"""
 	hover_img: AbstractImage
@@ -59,6 +61,7 @@ class Button(_PushButton, Widget):
 	status: ButtonStatus
 	"""Status of button"""
 
+	# * Private vars
 	_last_mouse_pos: tuple[int, int] = 0, 0
 	"""Holds the last mouse position registered by button"""
 	_will_update_status: bool = True
@@ -167,7 +170,7 @@ class Button(_PushButton, Widget):
 		)
 		self.unpressed_img, self.hover_img, self.pressed_img = self.image_sheet[
 			start : start + 3
-		]  # type: ignore[misc] # Because mypy cannot determine this slice will ALWAYS return a list
+		]  # type: ignore[misc] # mypy cannot determine this slice will ALWAYS return a list
 
 	def _update_status(self, x: int, y: int) -> None:
 		# Update the status of the button given mouse position
@@ -184,9 +187,9 @@ class Button(_PushButton, Widget):
 
 		# Hovered
 		elif self._check_hit(x, y):
-			if self.status == 'Pressed':
-				if self.dispatch:
-					self.dispatch_event('on_full_click', self)
+			if self.status == 'Pressed' and self.dispatch:
+				self.dispatch_event('on_full_click', self)
+			if self.status != 'Hover':
 				self.status = 'Hover'
 
 		# Unpressed
@@ -194,8 +197,6 @@ class Button(_PushButton, Widget):
 			self.status = 'Unpressed'
 
 	def _calc_anchor(self) -> None:
-		prev_pos = self.pos
-
 		anchor_x: float = self._anchor[0]
 		anchor_y: float = self._anchor[1]
 
@@ -232,7 +233,7 @@ class Button(_PushButton, Widget):
 		self._anchor = anchor_x, anchor_y
 
 		# Refresh position
-		self.pos = prev_pos
+		self.pos = self._pos
 
 	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.enabled:
@@ -280,10 +281,11 @@ class Button(_PushButton, Widget):
 
 		To set both `.x` and `.y`, use `.pos`
 		"""
-		return self._x + self._anchor[0]
+		return self._pos[0]
 
 	@x.setter
 	def x(self, val: float) -> None:
+		self._pos = val, self._pos[1]
 		_PushButton.x.fset(self, val - self._anchor[0])  # type: ignore[attr-defined]
 		# Sync status
 		self._on_mouse_motion(*self._last_mouse_pos, 0, 0)
@@ -294,10 +296,11 @@ class Button(_PushButton, Widget):
 
 		To set both `.x` and `.y`, use `.pos`
 		"""
-		return self._y + self._anchor[1]
+		return self._pos[1]
 
 	@y.setter
 	def y(self, val: float) -> None:
+		self._pos = self._pos[0], val
 		_PushButton.y.fset(self, val - self._anchor[1])  # type: ignore[attr-defined]
 		# Sync status
 		self._on_mouse_motion(*self._last_mouse_pos, 0, 0)
@@ -305,10 +308,11 @@ class Button(_PushButton, Widget):
 	@property
 	def pos(self) -> Point2D:
 		"""The anchor position."""
-		return self._x + self._anchor[0], self._y + self._anchor[1]
+		return self._pos
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
+		self._pos = val
 		self.position = val[0] - self._anchor[0], val[1] - self._anchor[1]  # type: ignore[assignment] # bro widget can take float
 		# Sync status
 		self._on_mouse_motion(*self._last_mouse_pos, 0, 0)
@@ -382,13 +386,13 @@ class Button(_PushButton, Widget):
 	@property
 	def scale(self) -> float:
 		"""The scale factor of the button."""
-		return self._sprite.scale
+		return self._scale
 
 	@scale.setter
 	def scale(self, val: float) -> None:
 		self._width = int(self.unpressed_img.width * val)
 		self._height = int(self.unpressed_img.height * val)
-		self._sprite.scale = val
+		self._sprite.scale = self._scale = val
 		self._calc_anchor()
 
 	def __repr__(self) -> str:

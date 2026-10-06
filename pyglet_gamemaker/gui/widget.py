@@ -12,7 +12,15 @@ from ..event_dispatcher import EventDispatcher
 
 if TYPE_CHECKING:
 	from ..scene import Scene
-	from ..types import Anchor, AnchorX, AnchorY, FontInfo, Point2D
+	from ..types import (
+		Anchor,
+		AnchorX,
+		AnchorXDynamicType,
+		AnchorY,
+		AnchorYDynamicType,
+		FontInfo,
+		Point2D,
+	)
 	from ..window import Window
 
 
@@ -44,7 +52,8 @@ class Widget(EventDispatcher, ABC):
 	- `.EVENT_TYPES`: Put event names that may be dispatched
 	"""
 
-	CONVERT_DYNAMIC: dict[AnchorX | AnchorY, float] = {
+	#* CONSTS
+	CONVERT_DYNAMIC: dict[AnchorXDynamicType | AnchorYDynamicType, float] = {
 		'left': 0,
 		'bottom': 0,
 		'center': 0.5,
@@ -55,6 +64,7 @@ class Widget(EventDispatcher, ABC):
 	DEFAULT_FONT_INFO: FontInfo = None, None, None
 	"""The default font info, can be overwritten by `~pgm.Scene`"""
 
+	#* Instance vars
 	ID: str
 	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
@@ -72,8 +82,13 @@ class Widget(EventDispatcher, ABC):
 	scene: Scene | None
 	"""The scene the widget is from. None if widget is a template or not in a scene."""
 
+	#* Property vars
+	_pos: Point2D = 0, 0
+	"""Internally holds position of widget"""
 	_anchor: Point2D = 0, 0
 	"""Internally holds anchor offset of widget"""
+	_scale: float = 1
+	"""Internally holds scale of widget"""
 
 	def offset(self, val: Point2D) -> None:  # noqa: D102
 		"""Add offset to widget."""
@@ -84,11 +99,31 @@ class Widget(EventDispatcher, ABC):
 		"""Set the offset of widget."""
 		self.pos = self.initial_pos[0] + val[0], self.initial_pos[1] + val[1]
 
-	def reset(self) -> None:  # noqa: D102
-		"""Reset widget to initial state."""
-		self.pos = self.initial_pos
-		self.anchor = self.initial_anchor
-		self.scale = 1
+	def reset(
+		self,
+		pos: bool = True,
+		anchor: bool = True,
+		scale: bool = True,
+	) -> None:
+		"""Reset widget to initial state. Args control which parts get reset.
+
+		Args:
+			pos (bool, optional):
+				If True, reset the position.
+				Defaults to True.
+			anchor (bool, optional):
+				If True, reset the anchoring.
+				Defaults to True.
+			scale (bool, optional):
+				If True, reset the scale.
+				Defaults to True.
+		"""
+		if pos:
+			self.pos = self.initial_pos
+		if anchor:
+			self.anchor = self.initial_anchor
+		if scale:
+			self.scale = 1
 
 	def bind_mouse(self) -> None:
 		"""Bind mouse events to widget."""
@@ -178,7 +213,7 @@ class Widget(EventDispatcher, ABC):
 
 	@anchor_x.setter
 	@abstractmethod
-	def anchor_x(self, val: float) -> None: ...
+	def anchor_x(self, val: AnchorX) -> None: ...
 
 	@property
 	@abstractmethod
@@ -192,7 +227,7 @@ class Widget(EventDispatcher, ABC):
 
 	@anchor_y.setter
 	@abstractmethod
-	def anchor_y(self, val: float) -> None: ...
+	def anchor_y(self, val: AnchorY) -> None: ...
 
 	@property
 	@abstractmethod

@@ -238,4 +238,4 @@ class SpriteSheet:
 		return self.image_grid.item_width, self.image_grid.item_height
 
 	def __repr__(self) -> str:
-		return f'SpriteSheet @ "{self.path}": {self.rows}r {self.cols}c | {"has" if self.has_yaml else "does not have"} yaml'
+		return f'SpriteSheet @ "{self.path}": {self.rows}x{self.cols} | {"has" if self.has_yaml else "does not have"} yaml'

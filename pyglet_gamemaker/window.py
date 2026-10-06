@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 	from .types import EventHandler
 
 
-class Window(PygletWin):
+class Window(PygletWin):  # type: ignore[misc]
 	"""The main window that stores the scenes and runs the game.
 
 	The way scenes communicate is through event dispatches. Each scene dispatches

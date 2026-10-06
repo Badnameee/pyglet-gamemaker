@@ -102,6 +102,9 @@ class YAMLValidator:
 	def _validate_anim_row_col(
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
+		if not self.yaml:
+			return
+
 		# rows: {int > 0}
 		if 'rows' not in self.yaml:
 			errors.append(MissingConfigKey('rows'))
@@ -125,6 +128,9 @@ class YAMLValidator:
 	def _validate_anim_padding(
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
+		if not self.yaml:
+			return
+
 		# row-padding: {int >= 0}
 		if 'row-padding' not in self.yaml:
 			errors.append(MissingConfigKey('row-padding'))
@@ -160,6 +166,9 @@ class YAMLValidator:
 	def _validate_anim_misc_settings(
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
+		if not self.yaml:
+			return
+
 		# top-down: {bool}
 		if 'top-down' not in self.yaml:
 			errors.append(MissingConfigKey('top-down'))
@@ -189,6 +198,9 @@ class YAMLValidator:
 	def _validate_anim_anim_data(  # noqa: C901
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
+		if not self.yaml:
+			return
+
 		# anim-data: {dict}
 		if 'anim-data' not in self.yaml:
 			errors.append(MissingConfigKey('anim-data'))
@@ -245,6 +257,9 @@ class YAMLValidator:
 	def _validate_anim_data(  # noqa: C901
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
+		if not self.yaml:
+			return
+
 		# data: {list}
 		if 'data' not in self.yaml:
 			errors.append(MissingConfigKey('data'))
@@ -262,7 +277,7 @@ class YAMLValidator:
 
 			for row_num, row in enumerate(self.yaml['data']):
 				# Get row number error message
-				row_num_error = f'{{Row #{row_num + 1}}}'
+				row_num_error = f'{{Row # {row_num + 1}}}'
 
 				if not isinstance(row, list):
 					errors.append(
@@ -289,7 +304,7 @@ class YAMLValidator:
 					# ]
 					for col_num, id in enumerate(row):
 						# Get column number error message
-						col_num_error = f'{{Col #{col_num + 1}}}'
+						col_num_error = f'{{Col # {col_num + 1}}}'
 
 						if not isinstance(id, str):
 							errors.append(

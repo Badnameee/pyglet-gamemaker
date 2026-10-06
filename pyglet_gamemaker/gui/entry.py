@@ -24,7 +24,16 @@ if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
 	from ..scene import Scene
-	from ..types import Anchor, Color, EventHandler, FontInfo, Point2D, Weight
+	from ..types import (
+		Anchor,
+		AnchorX,
+		AnchorY,
+		Color,
+		EventHandler,
+		FontInfo,
+		Point2D,
+		Weight,
+	)
 	from ..window import Window
 
 
@@ -39,11 +48,10 @@ class Entry(TextEntry, Widget):
 	- 'on_commit' when enter/return key is pressed on the entry.
 	"""
 
+	#* CONSTS
 	EVENT_TYPES = ('on_submit',)
 
-	_color: Color
-	_scale: float = 1
-
+	#* Instance Vars
 	initial_text: str
 	"""Initial text to display"""
 	edited: bool = False
@@ -54,6 +62,9 @@ class Entry(TextEntry, Widget):
 	"""The width without scaling"""
 	base_height: int
 	"""The height without scaling"""
+
+	#* Property vars
+	_color: Color
 
 	def __init__(
 		self,
@@ -127,9 +138,9 @@ class Entry(TextEntry, Widget):
 			x,  # type: ignore[arg-type]
 			y,  # type: ignore[arg-type]
 			width,
-			color,
-			text_color,
-			caret_color,
+			color,  # type: ignore[arg-type]
+			text_color,  # type: ignore[arg-type]
+			caret_color,  # type: ignore[arg-type]
 			batch,
 			group,
 		)
@@ -306,7 +317,7 @@ class Entry(TextEntry, Widget):
 		return self._anchor[0]
 
 	@anchor_x.setter
-	def anchor_x(self, val: float) -> None:
+	def anchor_x(self, val: AnchorX) -> None:
 		self.raw_anchor = val, self.raw_anchor[1]
 		self._calc_anchor()
 
@@ -315,7 +326,7 @@ class Entry(TextEntry, Widget):
 		return self._anchor[1]
 
 	@anchor_y.setter
-	def anchor_y(self, val: float) -> None:
+	def anchor_y(self, val: AnchorY) -> None:
 		self.raw_anchor = self.raw_anchor[0], val
 		self._calc_anchor()
 

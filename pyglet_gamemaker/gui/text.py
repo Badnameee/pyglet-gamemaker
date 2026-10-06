@@ -35,19 +35,14 @@ if TYPE_CHECKING:
 
 
 class Text(Label, Widget):
-	"""A 2D label with scrolling and custom anchor support. Supports anchoring with specific pixel values or dynamic.
-
-	Dynamic Anchors:
-	- `AnchorX`: 'left', 'center', 'right'
-	- `AnchorY`: 'bottom', 'center', 'top'
+	"""A 2D label with scrolling and custom anchor support. Supports anchoring with specific pixel values or a ratio of the width/height.
 
 	Does not support rotating around anchor point (rotates about bottomleft)
 
 	Use kwargs to attach event handlers.
 	"""
 
-	_pos: Point2D = 0, 0
-
+	#* Instance vars
 	font_info: FontInfo
 	"""The font information"""
 	initial_text: str
@@ -157,6 +152,7 @@ class Text(Label, Widget):
 			self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
 
 	def _calc_anchor(self) -> None:
+
 		anchor_x: float = self._anchor[0]
 		anchor_y: float = self._anchor[1]
 
@@ -345,17 +341,15 @@ class Text(Label, Widget):
 
 	@property
 	def scale(self) -> float:
-		"""Scale of widget.
-
-		NOTE: Will account for `TextButton.hover_enlarge` if using `~pgm.gui.TextButton`.
-		"""
+		"""Scale of widget."""
 		# 12 is default font size, in pt.
-		return self.font_size / (self.font_info[1] or 12)
+		return self._scale
 
 	@scale.setter
 	def scale(self, val: float) -> None:
 		if val <= 0:
 			raise ValueError(f'"Text.scale" must be a positive number, not {val}.')
+		self._scale = val
 		# 12 is default font size, in pt.
 		self.font_size = (self.font_info[1] or 12) * val
 		self._calc_anchor()

@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import (
 		Anchor,
+		AnchorX,
+		AnchorY,
 		Color,
 		EventHandler,
 		FontInfo,
@@ -29,22 +31,36 @@ if TYPE_CHECKING:
 
 
 class TextButton(Widget):
-	"""Both a 2D button and 2D text in one. Refer to `~pgm.gui.Button` and `~pgm.gui.Text`.
-
-	Dispatches: Refer to `~pgm.gui.Button`.
+	"""Both a 2D button and 2D text in one, see `~pgm.gui.Button` and `~pgm.gui.Text`.
 
 	Note: `.text` holds Text object, `.button` holds Button object
 
+	Note: Be cautious if editing button or text attributes directly, as it can cause desync between individual components and textbutton object
+
+	Dynamic Anchors:
+	- `AnchorX`: 'left', 'center', 'right'
+	- `AnchorY`: 'bottom', 'center', 'top'
+
+	Button has three statuses: 'unpressed', 'hover', and 'pressed'.
+
+	Takes a sprite sheet (using `sprite.Spritesheet`) to render the button.
+	Sprite sheet must have images in a row for all of the statuses in above order.
+
+	When creating object, give the starting index of the button images.
+	For example, passing in 0 will take 0 as the unpressed image, 1 as the hovered, and 2 as the pressed.
+
+	Dispatches:
+	- `on_half_click` when pressed.
+	- `on_full_click` when pressed and released without mouse moving off.
+
 	Use kwargs to attach event handlers.
 
-	Note: Be cautious if editing button or text attributes directly, as it can cause desync between individual components and tetbutton object
-	- ex. do not set position of text manually, set position of TextButton or set anchor of text
 	"""
 
+	#* CONSTS
 	EVENT_TYPES = Button.EVENT_TYPES + Text.EVENT_TYPES
 
-	_hover_enlarge: float = 0
-
+	#* Instance vars
 	button: Button
 	"""Button object"""
 	text: Text
@@ -52,6 +68,10 @@ class TextButton(Widget):
 	start_hover_enlarge: int
 	"""Starting hover enlarge value"""
 
+	#* Property vars
+	_hover_enlarge: float = 0
+
+	#* Private vars
 	_enlarged: bool = False
 	"""If true, text is currently enlarged. Used internally to enlarge text once."""
 
@@ -173,10 +193,35 @@ class TextButton(Widget):
 		if dispatch:
 			self.bind_events(**kwargs)
 
-	def reset(self) -> None:
-		"""Reset text and button to initial state."""
-		self.text.reset()
-		self.button.reset()
+	def reset(
+		self,
+		pos: bool = True,
+		anchor: bool = True,
+		scale: bool = True,
+		text: bool = True,
+		font: bool = True,
+	) -> None:
+		"""Reset textbutton to initial state. Args control which parts get reset.
+
+		Args:
+			pos (bool, optional):
+				If True, reset the position.
+				Defaults to True.
+			anchor (bool, optional):
+				If True, reset the anchoring.
+				Defaults to True.
+			scale (bool, optional):
+				If True, reset the scale.
+				Defaults to True.
+			text (bool, optional):
+				If True, reset the text.
+				Defaults to True.
+			font (bool, optional):
+				If True, reset the font information.
+				Defaults to True.
+		"""
+		self.text.reset(pos, anchor, scale, text, font)
+		self.button.reset(pos, anchor, scale)
 		self.hover_enlarge = self.start_hover_enlarge
 		# Sync status
 		self._on_mouse_motion(*self.button._last_mouse_pos, 0, 0)
@@ -188,16 +233,14 @@ class TextButton(Widget):
 		if self.button.value:
 			if self.status != 'Pressed':
 				self._enlarge()
-				self.status = 'Pressed'
-
 				if self.dispatch:
 					self.dispatch_event('on_half_click', self)
+				self.status = 'Pressed'
 
 		# Hovered
 		elif self.button._check_hit(x, y):
 			if self.dispatch and self.status == 'Pressed':
 				self.dispatch_event('on_full_click', self)
-
 			if self.status != 'Hover':
 				self._enlarge()
 				self.status = 'Hover'
@@ -272,10 +315,11 @@ class TextButton(Widget):
 
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.button.x
+		return self._pos[0]
 
 	@x.setter
 	def x(self, val: float) -> None:
+		self._pos = val, self._pos[1]
 		self.button.x = val
 		self.text.x = self._shifted_text_x
 		self._enlarge()
@@ -286,10 +330,11 @@ class TextButton(Widget):
 
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.button.y
+		return self._pos[1]
 
 	@y.setter
 	def y(self, val: float) -> None:
+		self._pos = self._pos[0], val
 		self.button.y = val
 		self.text.y = self._shifted_text_y
 		self._enlarge()
@@ -297,11 +342,11 @@ class TextButton(Widget):
 	@property
 	def pos(self) -> Point2D:
 		"""The x position of the anchor point. Setting sets text AND button."""
-		return self.button.pos
+		return self._pos
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.button.pos = val
+		self.button.pos = self._pos = val
 		self.text.pos = self._shifted_text_pos
 		self._enlarge()
 
@@ -313,12 +358,13 @@ class TextButton(Widget):
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
-		return self.button.anchor_x
+		return self._anchor[0]
 
 	@anchor_x.setter
-	def anchor_x(self, val: float) -> None:
+	def anchor_x(self, val: AnchorX) -> None:
+		self.raw_anchor = val, self.raw_anchor[1]
 		self.button.anchor_x = val
-		self.raw_anchor = self.button.raw_anchor
+		self._anchor = self.button.anchor
 		self.text.x = self._shifted_text_x
 
 	@property
@@ -329,12 +375,13 @@ class TextButton(Widget):
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
-		return self.button.anchor_y
+		return self._anchor[1]
 
 	@anchor_y.setter
-	def anchor_y(self, val: float) -> None:
+	def anchor_y(self, val: AnchorY) -> None:
+		self.raw_anchor = self.raw_anchor[0], val
 		self.button.anchor_y = val
-		self.raw_anchor = self.button.raw_anchor
+		self._anchor = self.button.anchor
 		self.text.y = self._shifted_text_y
 
 	@property
@@ -343,12 +390,12 @@ class TextButton(Widget):
 
 		Can be set in px or dynamic (see `~pgm.gui.Button` and `~pgm.gui.Text`)
 		"""
-		return self.button.anchor
+		return self._anchor
 
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
-		self.button.anchor = val
-		self.raw_anchor = self.button.raw_anchor
+		self.button.anchor = self.raw_anchor = val
+		self._anchor = self.button.anchor
 		self.text.pos = self._shifted_text_pos
 
 	@property
@@ -398,11 +445,11 @@ class TextButton(Widget):
 	@property
 	def scale(self) -> float:
 		"""The scale factor of the button."""
-		return self.button.scale
+		return self._scale
 
 	@scale.setter
 	def scale(self, val: float) -> None:
-		self.button.scale = val
+		self.button.scale = self._scale = val
 		# Text scale reflects hover
 		# 	Therefore, setting text.scale also automatically scales hover_enlarge
 		# 	Have to remove enlarge then add it back after scaling

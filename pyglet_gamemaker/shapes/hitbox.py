@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 	from typing import Self
 
 	from ..scene import Scene
-	from ..types import Anchor, Axis, Color, Point2D
+	from ..types import Axis, Color, Point2D
 	from ..window import Window
 
 
@@ -35,19 +35,7 @@ class Hitbox:
 	- anchored: Shifting global position to account for anchor position of hitbox
 	"""
 
-	_local_coords: tuple[Point2D, ...] = ()
-	"""Holds the *untransformed* coords relative to first coordinate"""
-	_raw_coords: tuple[Point2D, ...] = ()
-	"""Holds the *unrotated* AND *unanchored*, but *translated/global* coords"""
-	_unanchored_coords: tuple[Point2D, ...] = ()
-	"""Holds the *unanchored*, *translated/global* coords"""
-	_anchor_coords: tuple[Point2D, ...] = ()
-	"""Holds the *untransformed* coords relative to anchor pos"""
-	_rotation_amount: tuple[Point2D, ...] = ()
-	"""Holds the translation due to rotation of each point"""
-	_anchor: Point2D = 0, 0
-	_angle: float = 0
-
+	#* Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
 	coords: tuple[Point2D, ...]
@@ -61,13 +49,29 @@ class Hitbox:
 	subtype: str | None
 	"""Subtype (ex. 'rect') of hitbox"""
 
+	#* Property vars
+	_anchor: Point2D = 0, 0
+	_angle: float = 0
+
+	#* Private vars
+	_local_coords: tuple[Point2D, ...] = ()
+	"""Holds the *untransformed* coords relative to first coordinate"""
+	_raw_coords: tuple[Point2D, ...] = ()
+	"""Holds the *unrotated* AND *unanchored*, but *translated/global* coords"""
+	_unanchored_coords: tuple[Point2D, ...] = ()
+	"""Holds the *unanchored*, *translated/global* coords"""
+	_anchor_coords: tuple[Point2D, ...] = ()
+	"""Holds the *untransformed* coords relative to anchor pos"""
+	_rotation_amount: tuple[Point2D, ...] = ()
+	"""Holds the translation due to rotation of each point"""
+
 	def __init__(
 		self,
 		ID: str,
 		coords: tuple[Point2D, ...],
 		window: Window,
 		scene: Scene | None,
-		anchor: Anchor = (0, 0),
+		anchor: Point2D = (0, 0),
 		*,
 		_subtype: str | None = None,
 	) -> None:
@@ -82,7 +86,7 @@ class Hitbox:
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor (Anchor, optional):
+			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
 			_subtype (str, optional)
@@ -106,7 +110,7 @@ class Hitbox:
 		height: float,
 		window: Window,
 		scene: Scene | None,
-		anchor: Anchor = (0, 0),
+		anchor: Point2D = (0, 0),
 	) -> Self:
 		"""Create a hitbox from rectangle args.
 
@@ -125,7 +129,7 @@ class Hitbox:
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor (Anchor, optional):
+			anchor (Point2D, optional):
 				Anchor position.
 				Defaults to (0, 0).
 		"""
@@ -141,7 +145,7 @@ class Hitbox:
 	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
 		# Get the normal axes of the hitbox as Vec2 (for SAT).
 
-		# * Special case: point hitbox has no axes
+		#* Special case: point hitbox has no axes
 		if len(self.coords) == 1:
 			return []
 
@@ -244,8 +248,7 @@ class Hitbox:
 				Defaults to False.
 
 		Returns:
-			tuple[bool, Vec2 | None]: Whether
-				collision passed and MTV (None if no collision)
+			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
 		# Get hitbox if not subclass
 		if not isinstance(other, Hitbox):
@@ -257,7 +260,7 @@ class Hitbox:
 		if isinstance(other, HitboxCircle):
 			other._set_collision_axis(self)
 
-		# * Step 1: Get the normal axes of each edge
+		#* Step 1: Get the normal axes of each edge
 		axes = self._get_axes(sacrifice_MTV)
 		other_axes = other._get_axes(sacrifice_MTV)
 
@@ -265,18 +268,18 @@ class Hitbox:
 		MTV_len = float('inf')
 		MTV_axis = Vec2(0, 0)
 
-		# * Step 2: Project the shapes onto each axis
+		#* Step 2: Project the shapes onto each axis
 		for axis in axes + other_axes:
 			l1 = self._project(axis)
 			l2 = other._project(axis)
 
-			# * Step 3: Check for intersection
-			# * If the projections do not intersect, there cannot be a collision
+			#* Step 3: Check for intersection
+			#* If the projections do not intersect, there cannot be a collision
 			if not self._intersect(l1, l2):
 				return False, None
 
-			# * Step 4: For MTV - Get the smallest intersection length
-			# *	and store it along with the axis
+			#* Step 4: For MTV - Get the smallest intersection length
+			#*	and store it along with the axis
 			overlap = self._get_intersection_length(l1, l2)
 			if abs(overlap) < abs(MTV_len):
 				MTV_len = overlap
@@ -299,8 +302,7 @@ class Hitbox:
 				Defaults to False.
 
 		Returns:
-			tuple[bool, Vec2 | None]: Whether
-				collision passed and MTV (None if no collision)
+			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
 		for rect in others:
 			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
@@ -349,7 +351,9 @@ class Hitbox:
 
 		self._unanchored_coords = tuple(
 			(coord[0] + rotation[0], coord[1] + rotation[1])
-			for coord, rotation in zip(self._raw_coords, self._rotation_amount, strict=True)
+			for coord, rotation in zip(
+				self._raw_coords, self._rotation_amount, strict=True
+			)
 		)
 
 		self.coords = tuple(
@@ -462,6 +466,7 @@ class HitboxCircle(Hitbox):
 	Do not try to access `.coords` as they are not real coords.
 	"""
 
+	#* Instance vars
 	axis: Vec2
 	"""The axis between the center and the closest point on last hitbox checked for collision."""
 	radius: float
@@ -475,7 +480,7 @@ class HitboxCircle(Hitbox):
 		radius: float,
 		window: Window,
 		scene: Scene | None,
-		anchor: Anchor = (0, 0),
+		anchor: Point2D = (0, 0),
 	) -> None:
 		"""Create a hitbox from a circle.
 
@@ -492,7 +497,7 @@ class HitboxCircle(Hitbox):
 				Window for attaching self
 			scene (Scene | None):
 				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor (Anchor, optional):
+			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
 		"""
@@ -526,8 +531,7 @@ class HitboxCircle(Hitbox):
 		"""Get closest point on hitbox to circle.
 
 		Args:
-			hitbox (Hitbox | HitboxRender | HitboxRenderCircle):
-				Hitbox to get axis to
+			hitbox (Hitbox | HitboxRender | HitboxRenderCircle): Hitbox to get axis to
 		"""
 
 		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
@@ -540,10 +544,10 @@ class HitboxCircle(Hitbox):
 		if not isinstance(hitbox, Hitbox):
 			hitbox = hitbox.hitbox
 
-		# * Special case: circle-circle collision
-		# *	To calculate collision axis, use line between centers
+		#* Special case: circle-circle collision
+		#*	To calculate collision axis, use line between centers
 		if isinstance(hitbox, HitboxCircle):
-			# Get vector pointing from the center of circle #1 to the edge of circle #2
+			# Get vector pointing from the center of circle # 1 to the edge of circle # 2
 			self.axis = Vec2(
 				self.coords[0][0] - hitbox.coords[0][0],
 				self.coords[0][1] - hitbox.coords[0][1],
@@ -606,8 +610,7 @@ class HitboxCircle(Hitbox):
 class HitboxRender:
 	"""Holds a Hitbox with `.hitbox` and `.render` objects."""
 
-	_hitbox_color: Color
-
+	#* Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
 	hitbox: Hitbox
@@ -616,6 +619,9 @@ class HitboxRender:
 	"""The render object"""
 	subtype: str | None
 	"""Subtype (ex. 'rect') of hitbox"""
+
+	#* Property vars
+	_hitbox_color: Color
 
 	def __init__(
 		self,
@@ -626,7 +632,7 @@ class HitboxRender:
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor: Anchor = (0, 0),
+		anchor: Point2D = (0, 0),
 		*,
 		subtype: str | None = None,
 	) -> None:
@@ -647,7 +653,7 @@ class HitboxRender:
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor (Anchor, optional):
+			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
 			circle (bool, optional):
@@ -680,7 +686,7 @@ class HitboxRender:
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor: Anchor = (0, 0),
+		anchor: Point2D = (0, 0),
 	) -> Self:
 		"""Create a hitbox render from rectangle dimensions.
 
@@ -705,7 +711,7 @@ class HitboxRender:
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor (Anchor):
+			anchor (Point2D):
 				Anchor position
 		"""
 		return cls(
@@ -758,8 +764,7 @@ class HitboxRender:
 				Defaults to False.
 
 		Returns:
-			tuple[bool, Vec2 | None]: Whether
-				collision passed and MTV (None if no collision)
+			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
 
@@ -871,8 +876,7 @@ class HitboxRender:
 class HitboxRenderCircle:
 	"""Holds a Circle Hitbox with `.hitbox` and `.render` objects."""
 
-	_hitbox_color: Color
-
+	#* Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
 	hitbox: HitboxCircle
@@ -881,6 +885,9 @@ class HitboxRenderCircle:
 	"""The render object"""
 	subtype: str | None
 	"""Subtype (ex. 'rect') of hitbox"""
+
+	#* Property vars
+	_hitbox_color: Color
 
 	def __init__(
 		self,
@@ -893,7 +900,7 @@ class HitboxRenderCircle:
 		scene: Scene | None,
 		batch: Batch,
 		group: Group,
-		anchor: Anchor = (0, 0),
+		anchor: Point2D = (0, 0),
 	) -> None:
 		"""Create a circular hitbox render.
 
@@ -916,7 +923,7 @@ class HitboxRenderCircle:
 				The batch for rendering
 			group (Group):
 				The group for rendering
-			anchor (Anchor, optional):
+			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
 		"""
@@ -945,8 +952,7 @@ class HitboxRenderCircle:
 				Defaults to False.
 
 		Returns:
-			tuple[bool, Vec2 | None]: Whether
-				collision passed and MTV (None if no collision)
+			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
 
@@ -965,8 +971,7 @@ class HitboxRenderCircle:
 				Defaults to False.
 
 		Returns:
-			tuple[bool, Vec2 | None]: Whether
-				collision passed and MTV (None if no collision)
+			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
 
