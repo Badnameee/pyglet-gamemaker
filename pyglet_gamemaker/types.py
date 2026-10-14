@@ -16,6 +16,9 @@
 - YAMLDict: Type for parsed YAML files
 - YAMLIterable: Type for iterable YAML values for custom parsing
 - YAMLValidationMode: Types of validation currently supposed by custom YAML parser
+- FLOAT_REGEX: Reggular expression used to check if string is simple float
+- Color: Type used for RGB(A) colors
+- Weight: Possible weight values (tkaen from pyglet)
 
 - Weight: Enum with weight types for fonts
 """

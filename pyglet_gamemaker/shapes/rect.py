@@ -106,8 +106,8 @@ class Rect(HitboxRender):
 	@width.setter
 	def width(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
-		# updates local coords. Updates to local coords would
-		# get overwritten when calling ._calc_coords
+		# 	updates local coords. Updates to local coords would
+		# 	get overwritten when calling ._calc_coords
 		self.hitbox._raw_coords = (
 			self.hitbox._raw_coords[0],
 			(self.hitbox._raw_coords[0][0] + val, self.hitbox._raw_coords[1][1]),
@@ -124,8 +124,8 @@ class Rect(HitboxRender):
 	@height.setter
 	def height(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
-		# updates local coords. Updates to local coords would
-		# get overwritten when calling ._calc_coords
+		# 	updates local coords. Updates to local coords would
+		# 	get overwritten when calling ._calc_coords
 		self.hitbox._raw_coords = (
 			self.hitbox._raw_coords[0],
 			self.hitbox._raw_coords[1],

@@ -35,11 +35,11 @@ class Window(PygletWin):  # type: ignore[misc]
 	Use `.run` to run the game.
 	"""
 
+	#* Instance vars
 	scenes: dict[str, Scene] = {}
 	"""Stores all the scenes in the game"""
 	scene: str = ''
 	"""The currently running scene"""
-
 	centered: bool
 	"""If True, the window is centered. Do not set."""
 

@@ -46,10 +46,10 @@ class Button(_PushButton, Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	EVENT_TYPES = 'on_half_click', 'on_full_click'
 
-	# * Instance vars
+	#* Instance vars
 	unpressed_img: AbstractImage
 	"""Image of unpressed button"""
 	hover_img: AbstractImage
@@ -61,7 +61,7 @@ class Button(_PushButton, Widget):
 	status: ButtonStatus
 	"""Status of button"""
 
-	# * Private vars
+	#* Private vars
 	_last_mouse_pos: tuple[int, int] = 0, 0
 	"""Holds the last mouse position registered by button"""
 	_will_update_status: bool = True
@@ -136,7 +136,7 @@ class Button(_PushButton, Widget):
 		self.ID = ID
 		self.status = 'Unpressed'
 
-		self.initial_pos = x, y
+		self.initial_pos = self.pos = x, y
 		self.initial_anchor = self.anchor = anchor
 		self.dispatch = dispatch
 		self.attach_events = attach_events

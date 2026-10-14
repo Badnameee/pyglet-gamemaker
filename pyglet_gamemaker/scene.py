@@ -59,6 +59,7 @@ class Scene(EventDispatcher, ABC):
 	Use kwargs to attach event handlers.
 	"""
 
+	#* Constant vars
 	WIDGET_POS: dict[str, tuple[float, float]]
 	"""Stores the position of every widget as a scale {id: (scale_x, scale_y)}.
 
@@ -68,6 +69,7 @@ class Scene(EventDispatcher, ABC):
 	"""The default font info if none is passed to gui methods, overrides `~pgm.gui.Widget.DEFAULT_FONT_INFO`"""
 	EVENT_TYPES = ('on_scene_change',)
 
+	#* Instance vars
 	name: str
 	"""The name of the scene"""
 	window: Window

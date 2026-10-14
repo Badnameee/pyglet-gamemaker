@@ -31,6 +31,7 @@ class Trigger(Hitbox, EventDispatcher):
 		'on_mouse_trigger_exit',
 	)
 
+	#* Instance vars
 	enabled: bool = True
 	"""If True, trigger is enabled and dispatches events"""
 	mouse_status = 'None'
@@ -42,6 +43,7 @@ class Trigger(Hitbox, EventDispatcher):
 	Can also use `.mouse_in` and `.mouse_clicked` to get status.
 	"""
 
+	#* Private vars
 	_last_mouse_info: tuple[int, int, bool] = 0, 0, False
 	"""Holds the last mouse position and press status registered by trigger"""
 
