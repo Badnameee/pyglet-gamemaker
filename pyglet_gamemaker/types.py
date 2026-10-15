@@ -25,6 +25,8 @@
 
 from __future__ import annotations
 
+from enum import Enum
+
 __all__ = [
 	'Point2D',
 	'FontInfo',
@@ -69,3 +71,9 @@ YAMLIterable = dict[Any, Any] | list[Any]
 YAMLValidationMode = Literal['Anim']
 FLOAT_REGEX = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
 Color = tuple[int, int, int] | tuple[int, int, int, int]
+
+
+class HitboxSubType(Enum):
+	NONE = 0
+	RECT = 1
+	CIRCLE = 2

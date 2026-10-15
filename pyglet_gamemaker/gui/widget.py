@@ -84,11 +84,8 @@ class Widget(EventDispatcher, ABC):
 
 	#* Property vars
 	_pos: Point2D = 0, 0
-	"""Internally holds position of widget"""
 	_anchor: Point2D = 0, 0
-	"""Internally holds anchor offset of widget"""
 	_scale: float = 1
-	"""Internally holds scale of widget"""
 
 	def offset(self, val: Point2D) -> None:  # noqa: D102
 		"""Add offset to widget."""

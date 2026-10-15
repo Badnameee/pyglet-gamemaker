@@ -162,6 +162,8 @@ class TextButton(Widget):
 			False,
 		)
 		self.button._will_update_status = False
+		self._pos = self.button.pos
+		self._anchor = self.button.anchor
 
 		self.text = Text(
 			ID,
@@ -468,7 +470,10 @@ class TextButton(Widget):
 
 	@property
 	def _shifted_text_pos(self) -> Point2D:
-		return self._shifted_text_x, self._shifted_text_y
+		return (
+			self.button.x - self.button.anchor_x + self.button.width / 2,
+			self.button.y - self.button.anchor_y + self.button.height / 2
+		)
 
 	def __repr__(self) -> str:
 		return (

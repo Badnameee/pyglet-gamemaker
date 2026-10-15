@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from pyglet.graphics import Batch, Group
 
-from ..types import Color, Point2D
+from ..types import Color, HitboxSubType, Point2D
 from .hitbox import HitboxRender
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ class Rect(HitboxRender):
 			batch,
 			group,
 			anchor,
-			subtype='rect',
+			subtype=HitboxSubType.RECT,
 		)
 
 	@property
