@@ -15,7 +15,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
-from ..types import HitboxSubType
+from ..types import CollisionSubType
 
 if TYPE_CHECKING:
 	from typing import Self
@@ -48,7 +48,7 @@ class Hitbox:
 	"""The scene the hitbox is from. None if hitbox is a template or not in a scene."""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
-	subtype: HitboxSubType
+	subtype: CollisionSubType
 	"""Subtype (ex. 'RECT') of hitbox"""
 
 	#* Property vars
@@ -75,7 +75,7 @@ class Hitbox:
 		scene: Scene | None,
 		anchor: Point2D = (0, 0),
 		*,
-		_subtype: HitboxSubType = HitboxSubType.NONE,
+		_subtype: CollisionSubType = CollisionSubType.NONE,
 	) -> None:
 		"""Create a hitbox.
 
@@ -91,9 +91,9 @@ class Hitbox:
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
-			_subtype (HitboxSubType, optional)
+			_subtype (CollisionSubType, optional)
 				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
-				Defaults to HitboxSubType.NONE.
+				Defaults to CollisionSubType.NONE.
 		"""
 		self.ID = ID
 		self.window, self.scene = window, scene
@@ -141,7 +141,7 @@ class Hitbox:
 			window,
 			scene,
 			anchor,
-			_subtype=HitboxSubType.RECT,
+			_subtype=CollisionSubType.RECT,
 		)
 
 	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
@@ -155,7 +155,8 @@ class Hitbox:
 
 		# Loops through vertices and gets all adjacent pairs
 		for i in range(
-			len(self.coords) // (2 if remove_dupes and self.subtype == HitboxSubType.RECT else 1)
+			len(self.coords)
+			// (2 if remove_dupes and self.subtype == CollisionSubType.RECT else 1)
 		):
 			# Grabbing vertex positions
 			p1, p2 = self.coords[i], self.coords[(i + 1) % len(self.coords)]
@@ -504,7 +505,12 @@ class HitboxCircle(Hitbox):
 				Defaults to (0, 0).
 		"""
 		super().__init__(
-			ID, ((x, y), (radius, 0)), window, scene, anchor, _subtype=HitboxSubType.CIRCLE
+			ID,
+			((x, y), (radius, 0)),
+			window,
+			scene,
+			anchor,
+			_subtype=CollisionSubType.CIRCLE,
 		)
 		self.axis = Vec2(0, 0)
 		self.radius = radius
@@ -619,7 +625,7 @@ class HitboxRender:
 	"""The hitbox object"""
 	render: Polygon
 	"""The render object"""
-	subtype: HitboxSubType
+	subtype: CollisionSubType
 	"""Subtype (ex. 'rect') of hitbox"""
 
 	#* Property vars
@@ -636,7 +642,7 @@ class HitboxRender:
 		group: Group,
 		anchor: Point2D = (0, 0),
 		*,
-		subtype: HitboxSubType = HitboxSubType.NONE,
+		subtype: CollisionSubType = CollisionSubType.NONE,
 	) -> None:
 		"""Create a hitbox render.
 
@@ -664,9 +670,9 @@ class HitboxRender:
 			rect (bool, optional):
 				If True, hitbox is a rectangle (for SAT).
 				Defaults to False.
-			subtype (HitboxSubType, optional):
+			subtype (CollisionSubType, optional):
 				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
-				Defaults to HitboxSubType.NONE.
+				Defaults to CollisionSubType.NONE.
 		"""
 		self.render = Polygon(*coords, color=color, batch=batch, group=group)
 		self.hitbox = Hitbox(ID, coords, window, scene, anchor, _subtype=subtype)
@@ -725,7 +731,7 @@ class HitboxRender:
 			batch,
 			group,
 			anchor,
-			subtype=HitboxSubType.RECT,
+			subtype=CollisionSubType.RECT,
 		)
 
 	def collide(

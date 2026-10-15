@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..event_dispatcher import EventDispatcher
-from ..types import HitboxSubType
+from ..types import CollisionSubType
 from .hitbox import Hitbox
 
 if TYPE_CHECKING:
@@ -58,7 +58,7 @@ class Trigger(Hitbox, EventDispatcher):
 		dispatch: bool = True,
 		attach_events: bool = True,
 		*,
-		_subtype: HitboxSubType = HitboxSubType.NONE,
+		_subtype: CollisionSubType = CollisionSubType.NONE,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a trigger.
@@ -156,7 +156,7 @@ class Trigger(Hitbox, EventDispatcher):
 			anchor,
 			dispatch,
 			attach_events,
-			_subtype=HitboxSubType.RECT,
+			_subtype=CollisionSubType.RECT,
 			**kwargs,
 		)
 

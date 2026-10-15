@@ -2,7 +2,6 @@
 
 - Point2D: (float, float) - for 2D points
 - FontInfo: (type, size, weight)
-- ButtonStatus: A status for button widgets. See `~pgm.gui.button.Button`
 - Axis: Either 'x' or 'y'
 - AnchorXDynamicType: The possible **values** of the dynamic anchor on x-axis
 - AnchorYDynamicType: The possible **values** of the dynamic anchor on y-axis
@@ -18,9 +17,9 @@
 - YAMLValidationMode: Types of validation currently supposed by custom YAML parser
 - FLOAT_REGEX: Reggular expression used to check if string is simple float
 - Color: Type used for RGB(A) colors
-- Weight: Possible weight values (tkaen from pyglet)
-
-- Weight: Enum with weight types for fonts
+- Weight: Possible weight values (taken from pyglet)
+- CollisionSubType: All possible subtypes for hitboxes.
+- ButtonStatus: All possible button pressing statuses.
 """
 
 from __future__ import annotations
@@ -30,7 +29,6 @@ from enum import Enum
 __all__ = [
 	'Point2D',
 	'FontInfo',
-	'ButtonStatus',
 	'Axis',
 	'AnchorXDynamicValues',
 	'AnchorYDynamicValues',
@@ -46,6 +44,8 @@ __all__ = [
 	'FLOAT_REGEX',
 	'Color',
 	'Weight',
+	'CollisionSubType',
+	'ButtonStatus',
 ]
 
 
@@ -56,7 +56,6 @@ from pyglet.text import Weight
 
 Point2D = tuple[float, float]
 FontInfo = tuple[str | None, int | None] | tuple[str | None, int | None, Weight | None]
-ButtonStatus = Literal['Unpressed', 'Hover', 'Pressed']
 Axis = Literal['x', 'y']
 AnchorXDynamicValues = 'left', 'center', 'right'
 AnchorYDynamicValues = 'top', 'bottom', 'center'
@@ -73,7 +72,17 @@ FLOAT_REGEX = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
 Color = tuple[int, int, int] | tuple[int, int, int, int]
 
 
-class HitboxSubType(Enum):
+class CollisionSubType(Enum):
+	"""All possible subtypes for hitboxes."""
+
 	NONE = 0
 	RECT = 1
 	CIRCLE = 2
+
+
+class ButtonStatus(Enum):
+	"""All possible button pressing statuses."""
+
+	UNPRESSED = 0
+	HOVER = 1
+	PRESSED = 2

@@ -11,7 +11,12 @@ from typing import TYPE_CHECKING
 from pyglet.gui import PushButton as _PushButton
 
 from ..sprite.sprite_sheet import SpriteSheet
-from ..types import FLOAT_REGEX, AnchorXDynamicValues, AnchorYDynamicValues
+from ..types import (
+	FLOAT_REGEX,
+	AnchorXDynamicValues,
+	AnchorYDynamicValues,
+	ButtonStatus,
+)
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -20,7 +25,7 @@ if TYPE_CHECKING:
 
 	from ..resources import DefaultResources
 	from ..scene import Scene
-	from ..types import Anchor, AnchorX, AnchorY, ButtonStatus, EventHandler, Point2D
+	from ..types import Anchor, AnchorX, AnchorY, EventHandler, Point2D
 	from ..window import Window
 
 
@@ -63,8 +68,8 @@ class Button(_PushButton, Widget):
 
 	#* Private vars
 	_last_mouse_pos: tuple[int, int] = 0, 0
-	"""Holds the last mouse position registered by button"""
 	_will_update_status: bool = True
+	_prev_status: ButtonStatus
 
 	def __init__(
 		self,
@@ -134,7 +139,7 @@ class Button(_PushButton, Widget):
 
 		self.window, self.scene = window, scene
 		self.ID = ID
-		self.status = 'Unpressed'
+		self.status = ButtonStatus.UNPRESSED
 
 		self.initial_pos = self.pos = x, y
 		self.initial_anchor = self.anchor = anchor
@@ -174,27 +179,24 @@ class Button(_PushButton, Widget):
 
 	def _update_status(self, x: int, y: int) -> None:
 		# Update the status of the button given mouse position
-
-		if not self._will_update_status:
-			return
+		self._prev_status = self.status
 
 		# Pressed
 		if self.value:
-			if self.status != 'Pressed':
+			if self.status != ButtonStatus.PRESSED:
 				if self.dispatch:
 					self.dispatch_event('on_half_click', self)
-				self.status = 'Pressed'
+				self.status = ButtonStatus.PRESSED
 
 		# Hovered
 		elif self._check_hit(x, y):
-			if self.status == 'Pressed' and self.dispatch:
+			if self.status == ButtonStatus.PRESSED and self.dispatch:
 				self.dispatch_event('on_full_click', self)
-			if self.status != 'Hover':
-				self.status = 'Hover'
+			self.status = ButtonStatus.HOVER
 
 		# Unpressed
 		else:
-			self.status = 'Unpressed'
+			self.status = ButtonStatus.UNPRESSED
 
 	def _calc_anchor(self) -> None:
 		anchor_x: float = self._anchor[0]

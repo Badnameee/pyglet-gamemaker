@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .. import colors
+from ..types import ButtonStatus
 from .button import Button
 from .text import Text
 from .widget import Widget
@@ -182,7 +183,6 @@ class TextButton(Widget):
 		self.ID = ID
 		self.raw_anchor = self.button.raw_anchor
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
-		self.status = 'Unpressed'
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 
@@ -228,30 +228,27 @@ class TextButton(Widget):
 		# Sync status
 		self._on_mouse_motion(*self.button._last_mouse_pos, 0, 0)
 
-	def _update_status(self, x: int, y: int) -> None:
+	def _update_status(self) -> None:
 		# Update the status of the button
 
 		# Pressed
-		if self.button.value:
-			if self.status != 'Pressed':
+		if self.button.status == ButtonStatus.PRESSED:
+			if self.button._prev_status != ButtonStatus.PRESSED:
 				self._enlarge()
 				if self.dispatch:
 					self.dispatch_event('on_half_click', self)
-				self.status = 'Pressed'
 
 		# Hovered
-		elif self.button._check_hit(x, y):
-			if self.dispatch and self.status == 'Pressed':
+		elif self.button.status == ButtonStatus.HOVER:
+			if self.dispatch and self.button._prev_status == ButtonStatus.PRESSED:
 				self.dispatch_event('on_full_click', self)
-			if self.status != 'Hover':
+			if self.button._prev_status != ButtonStatus.HOVER:
 				self._enlarge()
-				self.status = 'Hover'
 
 		# Unpressed
 		else:
-			if self.status != 'Unpressed':
+			if self.button._prev_status != ButtonStatus.UNPRESSED:
 				self._enlarge()
-				self.status = 'Unpressed'
 
 	def _calc_anchor(self) -> None:
 		self.button._calc_anchor()
@@ -260,7 +257,7 @@ class TextButton(Widget):
 	def _enlarge(self) -> None:
 		# Enlarge the text based on button status
 
-		if self.button.status == 'Hover':
+		if self.button.status == ButtonStatus.HOVER:
 			# First frame hover: enlarge text
 			if not self._enlarged:
 				self._enlarged = True
@@ -275,7 +272,7 @@ class TextButton(Widget):
 		if not self.button.enabled:
 			return False
 		self.button._on_mouse_press(x, y, buttons, modifiers)
-		self._update_status(x, y)
+		self._update_status()
 		self._enlarge()
 		return False
 
@@ -283,7 +280,7 @@ class TextButton(Widget):
 		if not self.button.enabled:
 			return False
 		self.button._on_mouse_motion(x, y, dx, dy)
-		self._update_status(x, y)
+		self._update_status()
 		self._enlarge()
 		return False
 
@@ -291,7 +288,7 @@ class TextButton(Widget):
 		if not self.button.enabled:
 			return False
 		self.button._on_mouse_release(x, y, buttons, modifiers)
-		self._update_status(x, y)
+		self._update_status()
 		self._enlarge()
 		return False
 
@@ -301,7 +298,7 @@ class TextButton(Widget):
 		if not self.button.enabled:
 			return False
 		self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
-		self._update_status(x, y)
+		self._update_status()
 		self._enlarge()
 		return False
 
@@ -413,10 +410,10 @@ class TextButton(Widget):
 			# 	This way, no copy pasting code needed.
 			# 	Because status is being manually set instead of in Button._update_status,
 			# 	no dispatches are made.
-			self.button.status = 'Unpressed'
+			self.button.status = ButtonStatus.UNPRESSED
 			self._enlarge()
 			self._hover_enlarge = size
-			self.button.status = 'Hover'
+			self.button.status = ButtonStatus.HOVER
 			self._enlarge()
 
 		else:
@@ -458,7 +455,12 @@ class TextButton(Widget):
 		self.hover_enlarge = 0
 		self.text.scale = val
 		self.hover_enlarge = self.start_hover_enlarge * val
-		self._update_status(*self.button._last_mouse_pos)
+		self._update_status()
+
+	@property
+	def status(self) -> ButtonStatus:
+		"""The status of the button."""
+		return self.button.status
 
 	@property
 	def _shifted_text_x(self) -> float:
@@ -472,7 +474,7 @@ class TextButton(Widget):
 	def _shifted_text_pos(self) -> Point2D:
 		return (
 			self.button.x - self.button.anchor_x + self.button.width / 2,
-			self.button.y - self.button.anchor_y + self.button.height / 2
+			self.button.y - self.button.anchor_y + self.button.height / 2,
 		)
 
 	def __repr__(self) -> str:
