@@ -18,8 +18,10 @@
 - FLOAT_REGEX: Reggular expression used to check if string is simple float
 - Color: Type used for RGB(A) colors
 - Weight: Possible weight values (taken from pyglet)
-- TriggerSubType: All possible subtypes for hitboxes.
-- ButtonStatus: All possible button pressing statuses.
+- TriggerSubType: All possible subtypes for hitboxes
+- ButtonStatus: All possible button pressing statuses
+- TriggerStatus: A bit flag for trigger statuses
+- TriggerInteractType: All types of trigger interaction types
 """
 
 from __future__ import annotations
@@ -47,6 +49,7 @@ __all__ = [
 	'TriggerSubType',
 	'ButtonStatus',
 	'TriggerStatus',
+	'TriggerInteractType',
 ]
 
 
@@ -101,3 +104,11 @@ class TriggerStatus(Flag):
 	MOUSE_HIT = auto()
 	TRIGGER_NOHIT = auto()
 	TRIGGER_HIT = auto()
+
+
+class TriggerInteractType(Enum):
+	"""All possible trigger collision types."""
+
+	NONE = auto()
+	OVERLAP = auto()
+	COLLIDE = auto()

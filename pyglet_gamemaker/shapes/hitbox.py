@@ -13,7 +13,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
-from ..types import EventHandler, TriggerSubType
+from ..types import EventHandler, TriggerInteractType, TriggerSubType
 from .trigger import HasHitbox, Trigger, TriggerCircle
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 class Hitbox:
 	"""Holds a Hitbox with `.trigger` and `.render` objects."""
 
-	#* Instance vars
+	# * Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
 	trigger: Trigger
@@ -37,7 +37,7 @@ class Hitbox:
 	subtype: TriggerSubType
 	"""Subtype (ex. 'rect') of hitbox"""
 
-	#* Property vars
+	# * Property vars
 	_hitbox_color: Color
 
 	def __init__(
@@ -52,7 +52,8 @@ class Hitbox:
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
-		tags: list[str] | None = None,
+		tags: set[str] | None = None,
+		target_tags: dict[str, TriggerInteractType] | None = None,
 		*,
 		_subtype: TriggerSubType = TriggerSubType.NONE,
 		**kwargs: EventHandler,
@@ -84,8 +85,13 @@ class Hitbox:
 				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
 				Defaults to False.
-			tags (list[str], optional):
+			tags (set[str], optional):
 				Tags trigger should possess, used for controlling collision more closely.
+				Uses 'Default' tag if None passed.
+				Defaults to None.
+			target_tags (dict[str, TriggerInteractType], optional):
+				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
+				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
 			_subtype (TriggerSubType, optional):
 				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
@@ -94,11 +100,25 @@ class Hitbox:
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.render = Polygon(*coords, color=color, batch=batch, group=group)
-		self.trigger = Trigger(ID, coords, window, scene, anchor, dispatch, mouse_detection, tags, _subtype=_subtype, **kwargs)
+		self.trigger = Trigger(
+			ID,
+			coords,
+			window,
+			scene,
+			anchor,
+			dispatch,
+			mouse_detection,
+			tags,
+			target_tags,
+			_subtype=_subtype,
+			**kwargs,
+		)
 
 		self.ID = ID
 		self.subtype = _subtype
 		self._hitbox_color = color
+		# Refresh anchor to make sure correct ._calc_coords is called
+		self.anchor = self.anchor
 
 	@classmethod
 	def from_rect(
@@ -116,7 +136,8 @@ class Hitbox:
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
-		tags: list[str] | None = None,
+		tags: set[str] | None = None,
+		target_tags: dict[str, TriggerInteractType] | None = None,
 		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a hitbox render from rectangle dimensions.
@@ -151,8 +172,13 @@ class Hitbox:
 				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
 				Defaults to False.
-			tags (list[str], optional):
+			tags (set[str], optional):
 				Tags trigger should possess, used for controlling collision more closely.
+				Uses 'Default' tag if None passed.
+				Defaults to None.
+			target_tags (dict[str, TriggerInteractType], optional):
+				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
+				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
@@ -169,13 +195,14 @@ class Hitbox:
 			dispatch,
 			mouse_detection,
 			tags,
+			target_tags,
 			_subtype=TriggerSubType.RECT,
 			**kwargs,
 		)
 
 	def collide(
 		self,
-		other: Trigger,
+		other: Trigger | HasHitbox,
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
@@ -184,7 +211,7 @@ class Hitbox:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | Hitbox | HitboxCircle):
+			other (Trigger):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -201,10 +228,10 @@ class Hitbox:
 		others: list[Trigger | HasHitbox],
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
-		"""Run the SAT algorithm on a list of others.
+		"""Run the SAT algorithm on a list of others. Return on the first overlap/collision.
 
 		Args:
-			others (list[Hitbox | HasHitbox]):
+			others (list[Trigger | HasHitbox]):
 				List of others to check collision with self
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -323,17 +350,17 @@ class Hitbox:
 class HitboxCircle:
 	"""Holds a Circle Hitbox with `.trigger` and `.render` objects."""
 
-	#* Instance vars
+	# * Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
 	trigger: TriggerCircle
 	"""The trigger object"""
 	render: Circle
 	"""The render object"""
-	subtype: str | None
+	subtype = TriggerSubType.CIRCLE
 	"""Subtype (ex. 'rect') of hitbox"""
 
-	#* Property vars
+	# * Property vars
 	_hitbox_color: Color
 
 	def __init__(
@@ -350,7 +377,8 @@ class HitboxCircle:
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
-		tags: list[str] | None = None,
+		tags: set[str] | None = None,
+		target_tags: dict[str, TriggerInteractType] | None = None,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a circular hitbox.
@@ -384,8 +412,11 @@ class HitboxCircle:
 				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
 				Defaults to False.
-			tags (list[str], optional):
+			tags (set[str], optional):
 				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			target_tags (dict[str, TriggerInteractType], optional):
+				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
 				Defaults to None.
 			_subtype (TriggerSubType, optional):
 				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
@@ -394,15 +425,27 @@ class HitboxCircle:
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.render = Circle(x, y, radius, color=color, batch=batch, group=group)
-		self.trigger = TriggerCircle(ID, x, y, radius, window, scene, anchor, dispatch, mouse_detection, tags, **kwargs)
+		self.trigger = TriggerCircle(
+			ID,
+			x,
+			y,
+			radius,
+			window,
+			scene,
+			anchor,
+			dispatch,
+			mouse_detection,
+			tags,
+			target_tags,
+			**kwargs,
+		)
 
 		self.ID = ID
-		self.subtype = 'circle'
 		self._hitbox_color = color
 
 	def collide(
 		self,
-		other: Hitbox | HasHitbox,
+		other: Trigger | HasHitbox,
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
@@ -411,7 +454,7 @@ class HitboxCircle:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | HasHitbox):
+			other (Trigger | HasHitbox):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -427,7 +470,7 @@ class HitboxCircle:
 		others: list[Trigger | HasHitbox],
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
-		"""Run the SAT algorithm on a list of others.
+		"""Run the SAT algorithm on a list of others. Return on the first overlap/collision.
 
 		Args:
 			others (list[Trigger | HasHitbox]):

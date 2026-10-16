@@ -45,7 +45,7 @@ class Entry(TextEntry, Widget):
 	- `AnchorY`: 'bottom', 'center', 'top'
 
 	Dispatches:
-	- 'on_commit' when enter/return key is pressed on the entry.
+	- `on_commit` when enter/return key is pressed on the entry.
 	"""
 
 	#* CONSTS

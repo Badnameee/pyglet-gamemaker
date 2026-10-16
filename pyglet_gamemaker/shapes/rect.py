@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from pyglet.graphics import Batch, Group
 
-from ..types import Color, EventHandler, Point2D, TriggerSubType
+from ..types import Color, EventHandler, Point2D, TriggerInteractType, TriggerSubType
 from .hitbox import Hitbox
 
 if TYPE_CHECKING:
@@ -40,7 +40,8 @@ class Rect(Hitbox):
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
-		tags: list[str] | None = None,
+		tags: set[str] | None = None,
+		target_tags: dict[str, TriggerInteractType] | None = None,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a rectangle.
@@ -76,8 +77,13 @@ class Rect(Hitbox):
 				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
 				Defaults to False.
-			tags (list[str], optional):
+			tags (set[str], optional):
 				Tags trigger should possess, used for controlling collision more closely.
+				Uses 'Default' tag if None passed.
+				Defaults to None.
+			target_tags (dict[str, TriggerInteractType], optional):
+				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
+				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
@@ -94,6 +100,7 @@ class Rect(Hitbox):
 			dispatch,
 			mouse_detection,
 			tags,
+			target_tags,
 			_subtype=TriggerSubType.RECT,
 			**kwargs,
 		)
