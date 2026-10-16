@@ -1,628 +1,37 @@
 """Module holding all hitbox classes.
 
-Currently holds `.Hitbox`, `.HitboxCircle`, `.HitboxRender`, `.HitboxRenderCircle`.
+Currently holds `.Hitbox`, `.HitboxRCircle`.
 
 Use `~pgm.shapes.{class}` instead of `~pgm.shapes.hitbox.{class}`
 """
 
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING
 
-import pyglet
 from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
 from ..types import CollisionSubType
+from .trigger import HasHitbox, Trigger, TriggerCircle
 
 if TYPE_CHECKING:
 	from typing import Self
 
 	from ..scene import Scene
-	from ..types import Axis, Color, Point2D
+	from ..types import Color, Point2D
 	from ..window import Window
 
 
 class Hitbox:
-	"""Store a convex hitbox that uses SAT (Separating Axis Theorem) method for collision.
-
-	Can use `.from_rect()` to get coords for rectangle.
-	Use `hitbox.HitboxCircle` for circle collisions.
-
-	For _coord vars (ex. `._local_coords`), there are 3 types of transformation
-	- translated: Adding global position of hitbox to local position (moving in 2D space)
-	- rotated: Adding the rotation of the hitbox
-	- anchored: Shifting global position to account for anchor position of hitbox
-	"""
+	"""Holds a Hitbox with `.trigger` and `.render` objects."""
 
 	#* Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
-	coords: tuple[Point2D, ...]
-	"""The final coordinates of the hitbox"""
-	window: Window
-	"""Window hitbox is associated with"""
-	scene: Scene | None
-	"""The scene the hitbox is from. None if hitbox is a template or not in a scene."""
-	_trans_pos: Point2D
-	"""Holds the translation amount from (0, 0)"""
-	subtype: CollisionSubType
-	"""Subtype (ex. 'RECT') of hitbox"""
-
-	#* Property vars
-	_anchor: Point2D = 0, 0
-	_angle: float = 0
-
-	#* Private vars
-	_local_coords: tuple[Point2D, ...] = ()
-	"""Holds the *untransformed* coords relative to first coordinate"""
-	_raw_coords: tuple[Point2D, ...] = ()
-	"""Holds the *unrotated* AND *unanchored*, but *translated/global* coords"""
-	_unanchored_coords: tuple[Point2D, ...] = ()
-	"""Holds the *unanchored*, *translated/global* coords"""
-	_anchor_coords: tuple[Point2D, ...] = ()
-	"""Holds the *untransformed* coords relative to anchor pos"""
-	_rotation_amount: tuple[Point2D, ...] = ()
-	"""Holds the translation due to rotation of each point"""
-
-	def __init__(
-		self,
-		ID: str,
-		coords: tuple[Point2D, ...],
-		window: Window,
-		scene: Scene | None,
-		anchor: Point2D = (0, 0),
-		*,
-		_subtype: CollisionSubType = CollisionSubType.NONE,
-	) -> None:
-		"""Create a hitbox.
-
-		Args:
-			ID (str):
-				Name/ID of hitbox
-			coords (tuple[Point2D, ...]):
-				The coordinates of the hitbox. Can create point by putting a single coordinate.
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor (Point2D, optional):
-				The starting anchor position.
-				Defaults to (0, 0).
-			_subtype (CollisionSubType, optional)
-				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
-				Defaults to CollisionSubType.NONE.
-		"""
-		self.ID = ID
-		self.window, self.scene = window, scene
-		self._trans_pos = coords[0]
-		self._raw_coords = coords
-		self.anchor = anchor
-		self.subtype = _subtype
-
-	@classmethod
-	def from_rect(
-		cls,
-		ID: str,
-		x: float,
-		y: float,
-		width: float,
-		height: float,
-		window: Window,
-		scene: Scene | None,
-		anchor: Point2D = (0, 0),
-	) -> Self:
-		"""Create a hitbox from rectangle args.
-
-		Args:
-			ID (str):
-				Name/ID of hitbox
-			x (float):
-				x position
-			y (float):
-				y position
-			width (float):
-				Width of rect
-			height (float):
-				Height of rect
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor (Point2D, optional):
-				Anchor position.
-				Defaults to (0, 0).
-		"""
-		return cls(
-			ID,
-			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
-			window,
-			scene,
-			anchor,
-			_subtype=CollisionSubType.RECT,
-		)
-
-	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
-		# Get the normal axes of the hitbox as Vec2 (for SAT).
-
-		#* Special case: point hitbox has no axes
-		if len(self.coords) == 1:
-			return []
-
-		axes = []
-
-		# Loops through vertices and gets all adjacent pairs
-		for i in range(
-			len(self.coords)
-			// (2 if remove_dupes and self.subtype == CollisionSubType.RECT else 1)
-		):
-			# Grabbing vertex positions
-			p1, p2 = self.coords[i], self.coords[(i + 1) % len(self.coords)]
-
-			# Calculates the vector between them
-			vec = p1[0] - p2[0], p1[1] - p2[1]
-			# Gets perpendicular vector and normalizes it
-			# Normalizing helps get MTV
-			axes.append(Vec2(-vec[1], vec[0]).normalize())
-
-		return axes
-
-	def _project(self, axis: Vec2) -> tuple[float, float]:
-		# Project the hitbox onto an axis (use self._get_axes()) (for SAT).
-		# 	Returns a line
-
-		# Stores the left (minimum) and right (maximum) of line
-		maximum = minimum = axis.dot(Vec2(*self.coords[0]))
-
-		# Gets projections for each vertice
-		# Vertice with lowest and highest projections are used in line
-		for i in range(1, len(self.coords)):
-			# Projection using dot product
-			pos = axis.dot(Vec2(*self.coords[i]))
-			maximum = max(maximum, pos)
-			minimum = min(minimum, pos)
-
-		return minimum, maximum
-
-	@staticmethod
-	def _intersect(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
-		# Check if two lines intersect (for SAT).
-
-		# Left of line1 inside line2
-		if l2[0] <= l1[0] < l2[1]:
-			return True
-
-		# Right of line1 inside line2
-		if l2[0] < l1[1] <= l2[1]:
-			return True
-
-		# Line2 completely inside line1
-		if l1[0] < l2[0] and l1[1] > l2[1]:  # noqa: SIM103
-			return True
-
-		return False
-
-	@staticmethod
-	def _get_intersection_length(
-		l1: tuple[float, float], l2: tuple[float, float]
-	) -> float:
-		# Get the length of intersection between 2 lines (for SAT).
-
-		# Left of line1 inside line2
-		if l2[0] <= l1[0] < l2[1]:
-			return l2[1] - l1[0]
-
-		# Right of line1 inside line2
-		elif l2[0] < l1[1] <= l2[1]:
-			return -(l1[1] - l2[0])
-
-		# Line2 completely inside line1
-		elif l1[0] < l2[0] and l1[1] > l2[1]:
-			# Finds which way is shorter
-			if l1[1] - l2[0] < l2[1] - l1[0]:
-				return -(l1[1] - l2[0])
-			return l2[1] - l1[0]
-
-		return 0
-
-	@staticmethod
-	def _contains(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
-		# Check if one of the lines in completely contained inside the other (for SAT).
-
-		return (l1[0] < l2[0] and l1[1] > l2[1]) or (l2[0] < l1[0] and l2[1] > l1[1])
-
-	def collide(
-		self,
-		other: Hitbox | HitboxRender | HitboxRenderCircle,
-		sacrifice_MTV: bool = False,
-	) -> tuple[bool, Vec2 | None]:
-		"""Run the SAT algorithm to determine if 2 objects are colliding.
-
-		The object method is invoked on should be the one that will move after
-			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
-
-		Args:
-			other (Hitbox | HitboxRender | HitboxRenderCircle):
-				The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
-
-		Returns:
-			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
-		"""
-		# Get hitbox if not subclass
-		if not isinstance(other, Hitbox):
-			other = other.hitbox
-
-		# Get circle collision axis
-		if isinstance(self, HitboxCircle):
-			self._set_collision_axis(other)
-		if isinstance(other, HitboxCircle):
-			other._set_collision_axis(self)
-
-		#* Step 1: Get the normal axes of each edge
-		axes = self._get_axes(sacrifice_MTV)
-		other_axes = other._get_axes(sacrifice_MTV)
-
-		# These store the length and axis for the MTV
-		MTV_len = float('inf')
-		MTV_axis = Vec2(0, 0)
-
-		#* Step 2: Project the shapes onto each axis
-		for axis in axes + other_axes:
-			l1 = self._project(axis)
-			l2 = other._project(axis)
-
-			#* Step 3: Check for intersection
-			#* If the projections do not intersect, there cannot be a collision
-			if not self._intersect(l1, l2):
-				return False, None
-
-			#* Step 4: For MTV - Get the smallest intersection length
-			#*	and store it along with the axis
-			overlap = self._get_intersection_length(l1, l2)
-			if abs(overlap) < abs(MTV_len):
-				MTV_len = overlap
-				MTV_axis = axis
-
-		return True, MTV_axis * MTV_len
-
-	def collide_any(
-		self,
-		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
-		sacrifice_MTV: bool = False,
-	) -> tuple[bool, Vec2 | None]:
-		"""Run the SAT algorithm on a list of others.
-
-		Args:
-			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
-				List of others to check collision with self
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
-
-		Returns:
-			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
-		"""
-		for rect in others:
-			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
-				return collision_info
-
-		return False, None
-
-	def _calc_coords(self) -> None:
-		# Updates coordinates based on new position, angle, and/or anchor.
-
-		# Steps:
-		# 1. Update local coords
-		# 2. Update anchor coords
-		# 3. Get displacement caused by rotation of anchor coords
-		# 4. Add translation to local to get raw
-		# 5. Add anchor rotation displacement to raw to get unanchored
-		# 6. Add anchor to unanchored to get final
-
-		# Use the raw coords, which are precalculated in __init__
-		# before first ._calc_coords call
-		self._local_coords = tuple(
-			(
-				coord[0] - self._raw_coords[0][0],
-				coord[1] - self._raw_coords[0][1],
-			)
-			for coord in self._raw_coords
-		)
-
-		self._anchor_coords = tuple(
-			(coord[0] - self.anchor_x, coord[1] - self.anchor_y)
-			for coord in self._local_coords
-		)
-
-		self._rotation_amount = tuple(
-			(
-				self._get_rotated_pos(coord, 'x') - coord[0],
-				self._get_rotated_pos(coord, 'y') - coord[1],
-			)
-			for coord in self._anchor_coords
-		)
-
-		self._raw_coords = tuple(
-			(coord[0] + self._trans_pos[0], coord[1] + self._trans_pos[1])
-			for coord in self._local_coords
-		)
-
-		self._unanchored_coords = tuple(
-			(coord[0] + rotation[0], coord[1] + rotation[1])
-			for coord, rotation in zip(
-				self._raw_coords, self._rotation_amount, strict=True
-			)
-		)
-
-		self.coords = tuple(
-			(coord[0] - self.anchor_x, coord[1] - self.anchor_y)
-			for coord in self._unanchored_coords
-		)
-
-	def _get_rotated_pos(self, coord: Point2D, axis: Axis) -> float:
-		# Gets position of point if it were rotated
-		if axis == 'x':
-			return coord[0] * math.cos(self.angle) - coord[1] * math.sin(self.angle)
-		if axis == 'y':
-			return coord[0] * math.sin(self.angle) + coord[1] * math.cos(self.angle)
-
-	@property
-	def x(self) -> float:
-		"""The x position of anchor point.
-
-		To set both `.x` and `.y`, use `.pos`.
-		"""
-		return self._trans_pos[0]
-
-	@x.setter
-	def x(self, val: float) -> None:
-		self._trans_pos = val, self._trans_pos[1]
-		self._calc_coords()
-
-	@property
-	def y(self) -> float:
-		"""The y position of anchor point.
-
-		To set both `.x` and `.y`, use `.pos`.
-		"""
-		return self._trans_pos[1]
-
-	@y.setter
-	def y(self, val: float) -> None:
-		self._trans_pos = self._trans_pos[0], val
-		self._calc_coords()
-
-	@property
-	def pos(self) -> Point2D:
-		"""The position of anchor point."""
-		return self._trans_pos
-
-	@pos.setter
-	def pos(self, val: Point2D) -> None:
-		self._trans_pos = val
-		self._calc_coords()
-
-	@property
-	def anchor_x(self) -> float:
-		"""The x anchor of hitbox.
-
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
-		"""
-		return self._anchor[0]
-
-	@anchor_x.setter
-	def anchor_x(self, val: float) -> None:
-		self._anchor = val, self.anchor_y
-		self._calc_coords()
-
-	@property
-	def anchor_y(self) -> float:
-		"""The y anchor of hitbox.
-
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
-		"""
-		return self._anchor[1]
-
-	@anchor_y.setter
-	def anchor_y(self, val: float) -> None:
-		self._anchor = self.anchor_x, val
-		self._calc_coords()
-
-	@property
-	def anchor(self) -> Point2D:
-		"""The anchor of hitbox."""
-		return self._anchor
-
-	@anchor.setter
-	def anchor(self, val: Point2D) -> None:
-		self._anchor = val
-		self._calc_coords()
-
-	@property
-	def angle(self) -> float:
-		"""Angle, in radians, of hitbox."""
-		return self._angle
-
-	@angle.setter
-	def angle(self, val: float) -> None:
-		self._angle = val
-		self._calc_coords()
-
-	def __repr__(self) -> str:
-		if isinstance(self, HitboxCircle):
-			return f'Hitbox ({self.ID}): Subtype "Circle" @ {self._trans_pos} @ {self.radius} size @ {self.angle} rad | {self.anchor} anchored\n'
-		else:
-			return (
-				f'Hitbox ({self.ID}): Subtype "{self.subtype}" @ {self._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
-				f'- Coords: {self.coords}'
-			)
-
-
-class HitboxCircle(Hitbox):
-	"""Holds a hitbox for circle-polygon collisions.
-
-	Do not try to access `.coords` as they are not real coords.
-	"""
-
-	#* Instance vars
-	axis: Vec2
-	"""The axis between the center and the closest point on last hitbox checked for collision."""
-	radius: float
-	"""The radius of the circle"""
-
-	def __init__(
-		self,
-		ID: str,
-		x: float,
-		y: float,
-		radius: float,
-		window: Window,
-		scene: Scene | None,
-		anchor: Point2D = (0, 0),
-	) -> None:
-		"""Create a hitbox from a circle.
-
-		Args:
-			ID (str):
-				Name/ID of hitbox
-			x (float):
-				Center x
-			y (float):
-				Center y
-			radius (float):
-				The radius of the circle
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
-			anchor (Point2D, optional):
-				The anchor position.
-				Defaults to (0, 0).
-		"""
-		super().__init__(
-			ID,
-			((x, y), (radius, 0)),
-			window,
-			scene,
-			anchor,
-			_subtype=CollisionSubType.CIRCLE,
-		)
-		self.axis = Vec2(0, 0)
-		self.radius = radius
-
-	def _get_axes(self, sacrifice_MTV: bool) -> list[Vec2]:
-		return [self.axis.normalize()]
-
-	def _project(self, axis: Vec2) -> tuple[float, float]:
-		proj = axis.dot(Vec2(*self.coords[0]))
-		return proj - self.radius, proj + self.radius
-
-	def collide_any(  # noqa: D102
-		self,
-		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
-		sacrifice_MTV: bool = False,
-	) -> tuple[bool, Vec2 | None]:
-		for rect in others:
-			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
-				return collision_info
-
-		return False, None
-
-	def _set_collision_axis(
-		self, hitbox: Hitbox | HitboxRender | HitboxRenderCircle
-	) -> None:
-		"""Get closest point on hitbox to circle.
-
-		Args:
-			hitbox (Hitbox | HitboxRender | HitboxRenderCircle): Hitbox to get axis to
-		"""
-
-		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
-			# Clamping forces the projection to be within the 2 vertices of the polygon
-			# (or 2 endpoints of v2) by forcing scale factor to be from 0-1
-			# This facilitates finding closest points on polygon to circle center
-			return pyglet.math.clamp(v1.dot(v2) / v2.length_squared(), 0, 1) * v2
-
-		# Get hitbox if not subclass
-		if not isinstance(hitbox, Hitbox):
-			hitbox = hitbox.hitbox
-
-		#* Special case: circle-circle collision
-		#*	To calculate collision axis, use line between centers
-		if isinstance(hitbox, HitboxCircle):
-			# Get vector pointing from the center of circle # 1 to the edge of circle # 2
-			self.axis = Vec2(
-				self.coords[0][0] - hitbox.coords[0][0],
-				self.coords[0][1] - hitbox.coords[0][1],
-			)
-			self.axis = self.axis.normalize() * (self.axis.length() - hitbox.radius)
-			return
-
-		# Get closest point to other hitbox
-		least = Vec2(0, 0), float('inf')
-		# Loop through each axis on polygon
-		for i in range(len(hitbox.coords)):
-			# Grab vertex positions
-			p1, p2 = hitbox.coords[i], hitbox.coords[(i + 1) % len(hitbox.coords)]
-
-			# Calculate the vector between vertices
-			vec = Vec2(p2[0] - p1[0], p2[1] - p1[1])
-
-			# Vector from vertex to center of circle
-			pre_proj = Vec2(self.coords[0][0] - p1[0], self.coords[0][1] - p1[1])
-
-			# Proj holds the vector from p1 to the closest point
-			# 	on the polygon to the circle center
-			proj = get_projection(pre_proj, vec)
-			# Subtracting pre_proj gives vector from circle center to closest point
-			diff = proj - pre_proj
-
-			# Update least
-			if (length := diff.length()) < least[1]:
-				least = diff, length
-
-		self.axis = least[0]
-
-	def _calc_coords(self) -> None:
-		# Same algorithm as in Hitbox, but optimized for single center coordinate of circle
-		self._local_coords = ((0, 0),)
-		self._anchor_coords = ((-self.anchor_x, -self.anchor_y),)
-		self._rotation_amount = (
-			(
-				self._get_rotated_pos(self._anchor_coords[0], 'x')
-				- self._anchor_coords[0][0],
-				self._get_rotated_pos(self._anchor_coords[0], 'y')
-				- self._anchor_coords[0][1],
-			),
-		)
-		self._raw_coords = (self._trans_pos,)
-		self._unanchored_coords = (
-			(
-				self._raw_coords[0][0] + self._rotation_amount[0][0],
-				self._raw_coords[0][1] + self._rotation_amount[0][1],
-			),
-		)
-		self.coords = (
-			(
-				self._unanchored_coords[0][0] - self.anchor_x,
-				self._unanchored_coords[0][1] - self.anchor_y,
-			),
-		)
-
-
-class HitboxRender:
-	"""Holds a Hitbox with `.hitbox` and `.render` objects."""
-
-	#* Instance vars
-	ID: str
-	"""The unique ID of the hitbox to distinguish it"""
-	hitbox: Hitbox
-	"""The hitbox object"""
+	trigger: Trigger
+	"""The trigger object"""
 	render: Polygon
 	"""The render object"""
 	subtype: CollisionSubType
@@ -642,7 +51,7 @@ class HitboxRender:
 		group: Group,
 		anchor: Point2D = (0, 0),
 		*,
-		subtype: CollisionSubType = CollisionSubType.NONE,
+		_subtype: CollisionSubType = CollisionSubType.NONE,
 	) -> None:
 		"""Create a hitbox render.
 
@@ -652,7 +61,7 @@ class HitboxRender:
 			coords (tuple[Point2D, ...]):
 				The coordinates of the hitbox
 			color (Color):
-				The color of the hitbox render
+				The color of the hitbox
 			window (Window):
 				Window for attaching self
 			scene (Scene | None):
@@ -664,21 +73,15 @@ class HitboxRender:
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
-			circle (bool, optional):
-				If True, hitbox is a circle (for SAT).
-				Defaults to False.
-			rect (bool, optional):
-				If True, hitbox is a rectangle (for SAT).
-				Defaults to False.
-			subtype (CollisionSubType, optional):
+			_subtype (CollisionSubType, optional):
 				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
 				Defaults to CollisionSubType.NONE.
 		"""
 		self.render = Polygon(*coords, color=color, batch=batch, group=group)
-		self.hitbox = Hitbox(ID, coords, window, scene, anchor, _subtype=subtype)
+		self.trigger = Trigger(ID, coords, window, scene, anchor, _subtype=_subtype)
 
 		self.ID = ID
-		self.subtype = subtype
+		self.subtype = _subtype
 		self._hitbox_color = color
 
 	@classmethod
@@ -731,12 +134,12 @@ class HitboxRender:
 			batch,
 			group,
 			anchor,
-			subtype=CollisionSubType.RECT,
+			_subtype=CollisionSubType.RECT,
 		)
 
 	def collide(
 		self,
-		other: Hitbox | HitboxRender | HitboxRenderCircle,
+		other: Trigger,
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
@@ -745,7 +148,7 @@ class HitboxRender:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | HitboxRender | HitboxRenderCircle):
+			other (Hitbox | Hitbox | HitboxCircle):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -755,17 +158,17 @@ class HitboxRender:
 			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
-		return self.hitbox.collide(other, sacrifice_MTV)
+		return self.trigger.collide(other, sacrifice_MTV)
 
 	def collide_any(
 		self,
-		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
+		others: list[Trigger | HasHitbox],
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others.
 
 		Args:
-			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
+			others (list[Hitbox | HasHitbox]):
 				List of others to check collision with self
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -774,16 +177,16 @@ class HitboxRender:
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
-		return self.hitbox.collide_any(others, sacrifice_MTV)
+		return self.trigger.collide_any(others, sacrifice_MTV)
 
 	def _calc_coords(self) -> None:
-		self.hitbox._calc_coords()
+		self.trigger._calc_coords()
 
 		# Update polygon render
-		self.render._coordinates = self.hitbox.coords  # type: ignore[assignment]
+		self.render._coordinates = self.trigger.coords  # type: ignore[assignment]
 		self.render._update_vertices()
-		self.render.x = self.hitbox.coords[0][0]
-		self.render.y = self.hitbox.coords[0][1]
+		self.render.x = self.trigger.coords[0][0]
+		self.render.y = self.trigger.coords[0][1]
 
 	@property
 	def x(self) -> float:
@@ -791,11 +194,11 @@ class HitboxRender:
 
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.hitbox._trans_pos[0]
+		return self.trigger._trans_pos[0]
 
 	@x.setter
 	def x(self, val: float) -> None:
-		self.hitbox._trans_pos = val, self.hitbox._trans_pos[1]
+		self.trigger._trans_pos = val, self.trigger._trans_pos[1]
 		self._calc_coords()
 
 	@property
@@ -804,21 +207,21 @@ class HitboxRender:
 
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.hitbox._trans_pos[1]
+		return self.trigger._trans_pos[1]
 
 	@y.setter
 	def y(self, val: float) -> None:
-		self.hitbox._trans_pos = self.hitbox._trans_pos[0], val
+		self.trigger._trans_pos = self.trigger._trans_pos[0], val
 		self._calc_coords()
 
 	@property
 	def pos(self) -> Point2D:
 		"""The position of the anchor point."""
-		return self.hitbox._trans_pos
+		return self.trigger._trans_pos
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.hitbox._trans_pos = val
+		self.trigger._trans_pos = val
 		self._calc_coords()
 
 	@property
@@ -827,11 +230,11 @@ class HitboxRender:
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
-		return self.hitbox.anchor_x
+		return self.trigger.anchor_x
 
 	@anchor_x.setter
 	def anchor_x(self, val: float) -> None:
-		self.hitbox._anchor = val, self.anchor_y
+		self.trigger._anchor = val, self.anchor_y
 		self._calc_coords()
 
 	@property
@@ -840,31 +243,31 @@ class HitboxRender:
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
-		return self.hitbox.anchor_y
+		return self.trigger.anchor_y
 
 	@anchor_y.setter
 	def anchor_y(self, val: float) -> None:
-		self.hitbox._anchor = self.anchor_x, val
+		self.trigger._anchor = self.anchor_x, val
 		self._calc_coords()
 
 	@property
 	def anchor(self) -> Point2D:
 		"""The anchor of the hitbox."""
-		return self.hitbox._anchor
+		return self.trigger._anchor
 
 	@anchor.setter
 	def anchor(self, val: Point2D) -> None:
-		self.hitbox._anchor = val
+		self.trigger._anchor = val
 		self._calc_coords()
 
 	@property
 	def angle(self) -> float:
 		"""Angle, in radians, of hitbox."""
-		return self.hitbox._angle
+		return self.trigger._angle
 
 	@angle.setter
 	def angle(self, val: float) -> None:
-		self.hitbox._angle = val
+		self.trigger._angle = val
 		self._calc_coords()
 
 	@property
@@ -878,17 +281,17 @@ class HitboxRender:
 		self.render.color = val
 
 	def __repr__(self) -> str:
-		return repr(self.hitbox)
+		return repr(self.trigger)
 
 
-class HitboxRenderCircle:
-	"""Holds a Circle Hitbox with `.hitbox` and `.render` objects."""
+class HitboxCircle:
+	"""Holds a Circle Hitbox with `.trigger` and `.render` objects."""
 
 	#* Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
-	hitbox: HitboxCircle
-	"""The hitbox object"""
+	trigger: TriggerCircle
+	"""The trigger object"""
 	render: Circle
 	"""The render object"""
 	subtype: str | None
@@ -910,7 +313,7 @@ class HitboxRenderCircle:
 		group: Group,
 		anchor: Point2D = (0, 0),
 	) -> None:
-		"""Create a circular hitbox render.
+		"""Create a circular hitbox.
 
 		Args:
 			ID (str):
@@ -922,7 +325,7 @@ class HitboxRenderCircle:
 			radius (float):
 				The radius of the circle
 			color (Color):
-				The color of the hitbox render
+				The color of the hitbox
 			window (Window):
 				Window for attaching self
 			scene (Scene | None):
@@ -936,7 +339,7 @@ class HitboxRenderCircle:
 				Defaults to (0, 0).
 		"""
 		self.render = Circle(x, y, radius, color=color, batch=batch, group=group)
-		self.hitbox = HitboxCircle(ID, x, y, radius, window, scene, anchor)
+		self.trigger = TriggerCircle(ID, x, y, radius, window, scene, anchor)
 
 		self.ID = ID
 		self.subtype = 'circle'
@@ -944,7 +347,7 @@ class HitboxRenderCircle:
 
 	def collide(
 		self,
-		other: Hitbox | HitboxRender | HitboxRenderCircle,
+		other: Hitbox | HasHitbox,
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
@@ -953,7 +356,7 @@ class HitboxRenderCircle:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox | HitboxRender | HitboxRenderCircle):
+			other (Hitbox | HasHitbox):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -962,17 +365,17 @@ class HitboxRenderCircle:
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
-		return self.hitbox.collide(other, sacrifice_MTV)
+		return self.trigger.collide(other, sacrifice_MTV)
 
 	def collide_any(
 		self,
-		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
+		others: list[Trigger | HasHitbox],
 		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others.
 
 		Args:
-			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
+			others (list[Trigger | HasHitbox]):
 				List of others to check collision with self
 			sacrifice_MTV (bool, optional):
 				If True, optimize speed in exchange for no MTV.
@@ -981,11 +384,11 @@ class HitboxRenderCircle:
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
-		return self.hitbox.collide_any(others, sacrifice_MTV)
+		return self.trigger.collide_any(others, sacrifice_MTV)
 
 	def _calc_coords(self) -> None:
-		self.hitbox._calc_coords()
-		self.render.position = self.hitbox.coords[0]
+		self.trigger._calc_coords()
+		self.render.position = self.trigger.coords[0]
 
 	@property
 	def x(self) -> float:
@@ -993,11 +396,11 @@ class HitboxRenderCircle:
 
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.hitbox.x
+		return self.trigger.x
 
 	@x.setter
 	def x(self, val: float) -> None:
-		self.hitbox.x = val
+		self.trigger.x = val
 		self._calc_coords()
 
 	@property
@@ -1006,21 +409,21 @@ class HitboxRenderCircle:
 
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self.hitbox.y
+		return self.trigger.y
 
 	@y.setter
 	def y(self, val: float) -> None:
-		self.hitbox.y = val
+		self.trigger.y = val
 		self._calc_coords()
 
 	@property
 	def pos(self) -> Point2D:
 		"""The position of the anchor point."""
-		return self.hitbox.pos
+		return self.trigger.pos
 
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.hitbox.pos = val
+		self.trigger.pos = val
 		self._calc_coords()
 
 	@property
@@ -1029,11 +432,11 @@ class HitboxRenderCircle:
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
-		return self.hitbox.anchor_x
+		return self.trigger.anchor_x
 
 	@anchor_x.setter
 	def anchor_x(self, val: float) -> None:
-		self.hitbox._anchor = val, self.anchor_y
+		self.trigger._anchor = val, self.anchor_y
 		self._calc_coords()
 
 	@property
@@ -1042,31 +445,31 @@ class HitboxRenderCircle:
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
-		return self.hitbox.anchor_y
+		return self.trigger.anchor_y
 
 	@anchor_y.setter
 	def anchor_y(self, val: float) -> None:
-		self.hitbox._anchor = self.anchor_x, val
+		self.trigger._anchor = self.anchor_x, val
 		self._calc_coords()
 
 	@property
 	def anchor(self) -> Point2D:
 		"""The anchor of the hitbox."""
-		return self.hitbox._anchor
+		return self.trigger._anchor
 
 	@anchor.setter
 	def anchor(self, val: Point2D) -> None:
-		self.hitbox._anchor = val
+		self.trigger._anchor = val
 		self._calc_coords()
 
 	@property
 	def angle(self) -> float:
 		"""The angle, in radians, of the hitbox."""
-		return self.hitbox._angle
+		return self.trigger._angle
 
 	@angle.setter
 	def angle(self, val: float) -> None:
-		self.hitbox._angle = val
+		self.trigger._angle = val
 		self._calc_coords()
 
 	@property
@@ -1080,4 +483,4 @@ class HitboxRenderCircle:
 		self.render.color = val
 
 	def __repr__(self) -> str:
-		return repr(self.hitbox)
+		return repr(self.trigger)

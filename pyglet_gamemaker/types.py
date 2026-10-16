@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, Flag, auto
 
 __all__ = [
 	'Point2D',
@@ -46,6 +46,7 @@ __all__ = [
 	'Weight',
 	'CollisionSubType',
 	'ButtonStatus',
+	'TriggerStatus',
 ]
 
 
@@ -75,14 +76,28 @@ Color = tuple[int, int, int] | tuple[int, int, int, int]
 class CollisionSubType(Enum):
 	"""All possible subtypes for hitboxes."""
 
-	NONE = 0
-	RECT = 1
-	CIRCLE = 2
+	NONE = auto()
+	RECT = auto()
+	CIRCLE = auto()
+	POINT = auto()
 
 
 class ButtonStatus(Enum):
 	"""All possible button pressing statuses."""
 
-	UNPRESSED = 0
-	HOVER = 1
-	PRESSED = 2
+	UNPRESSED = auto()
+	HOVER = auto()
+	PRESSED = auto()
+
+
+class TriggerStatus(Flag):
+	"""All possible trigger statuses, as a bit flag.
+
+	`.MOUSE_NOHIT` or `.MOUSE_HIT`: Whether mouse is overlapping trigger
+	`.TRIGGER_NOHIT` or `.TRIGGER_HIT`: Whether anything is overlapping trigger
+	"""
+
+	MOUSE_NOHIT = auto()
+	MOUSE_HIT = auto()
+	TRIGGER_NOHIT = auto()
+	TRIGGER_HIT = auto()

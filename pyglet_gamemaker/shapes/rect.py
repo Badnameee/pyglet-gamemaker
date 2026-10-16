@@ -10,15 +10,15 @@ from typing import TYPE_CHECKING
 from pyglet.graphics import Batch, Group
 
 from ..types import CollisionSubType, Color, Point2D
-from .hitbox import HitboxRender
+from .hitbox import Hitbox
 
 if TYPE_CHECKING:
 	from ..scene import Scene
 	from ..window import Window
 
 
-class Rect(HitboxRender):
-	"""A rendered rectangular hitbox.
+class Rect(Hitbox):
+	"""A rectangular hitbox.
 
 	Has attributes for each vertex position (`.bottomleft`, `.bottomright`, `.topright`, `.topleft`)
 
@@ -75,64 +75,64 @@ class Rect(HitboxRender):
 			batch,
 			group,
 			anchor,
-			subtype=CollisionSubType.RECT,
+			_subtype=CollisionSubType.RECT,
 		)
 
 	@property
 	def bottomleft(self) -> Point2D:
 		"""The bottomleft vertex position of rect after all transformations."""
-		return self.hitbox.coords[0]
+		return self.trigger.coords[0]
 
 	@property
 	def bottomright(self) -> Point2D:
 		"""The bottomright vertex position of rect after all transformations."""
-		return self.hitbox.coords[1]
+		return self.trigger.coords[1]
 
 	@property
 	def topright(self) -> Point2D:
 		"""The topright vertex position of rect after all transformations."""
-		return self.hitbox.coords[2]
+		return self.trigger.coords[2]
 
 	@property
 	def topleft(self) -> Point2D:
 		"""The topleft vertex position of rect after all transformations."""
-		return self.hitbox.coords[3]
+		return self.trigger.coords[3]
 
 	@property
 	def width(self) -> float:
 		"""The width of *unrotated* rectangle."""
-		return self.hitbox._raw_coords[1][0] - self.hitbox._raw_coords[0][0]
+		return self.trigger._raw_coords[1][0] - self.trigger._raw_coords[0][0]
 
 	@width.setter
 	def width(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
 		# 	updates local coords. Updates to local coords would
 		# 	get overwritten when calling ._calc_coords
-		self.hitbox._raw_coords = (
-			self.hitbox._raw_coords[0],
-			(self.hitbox._raw_coords[0][0] + val, self.hitbox._raw_coords[1][1]),
-			(self.hitbox._raw_coords[3][0] + val, self.hitbox._raw_coords[2][1]),
-			self.hitbox._raw_coords[3],
+		self.trigger._raw_coords = (
+			self.trigger._raw_coords[0],
+			(self.trigger._raw_coords[0][0] + val, self.trigger._raw_coords[1][1]),
+			(self.trigger._raw_coords[3][0] + val, self.trigger._raw_coords[2][1]),
+			self.trigger._raw_coords[3],
 		)
 		self._calc_coords()
 
 	@property
 	def height(self) -> float:
 		"""The height of *unrotated* rectangle."""
-		return self.hitbox._raw_coords[3][1] - self.hitbox._raw_coords[0][1]
+		return self.trigger._raw_coords[3][1] - self.trigger._raw_coords[0][1]
 
 	@height.setter
 	def height(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
 		# 	updates local coords. Updates to local coords would
 		# 	get overwritten when calling ._calc_coords
-		self.hitbox._raw_coords = (
-			self.hitbox._raw_coords[0],
-			self.hitbox._raw_coords[1],
-			(self.hitbox._raw_coords[2][0], self.hitbox._raw_coords[1][1] + val),
-			(self.hitbox._raw_coords[3][0], self.hitbox._raw_coords[0][1] + val),
+		self.trigger._raw_coords = (
+			self.trigger._raw_coords[0],
+			self.trigger._raw_coords[1],
+			(self.trigger._raw_coords[2][0], self.trigger._raw_coords[1][1] + val),
+			(self.trigger._raw_coords[3][0], self.trigger._raw_coords[0][1] + val),
 		)
 		self._calc_coords()
 
 	def __repr__(self) -> str:
-		return f'Rect ({self.ID}): {self.width}x{self.height} rect @ {self.hitbox._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+		return f'Rect ({self.ID}): {self.width}x{self.height} @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'

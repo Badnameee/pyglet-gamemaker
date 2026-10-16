@@ -10,13 +10,13 @@ from pyglet.window import key
 
 from pyglet_gamemaker import colors
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.shapes.hitbox import HitboxRender, HitboxRenderCircle
+from pyglet_gamemaker.shapes.hitbox import Hitbox, HitboxCircle
 from pyglet_gamemaker.window import Window
 
 
 class Scene1(Scene):
 	def initialize(self):
-		self.hitbox = HitboxRender.from_rect(
+		self.hitbox = Hitbox.from_rect(
 			'hb1',
 			100,
 			100,
@@ -24,11 +24,11 @@ class Scene1(Scene):
 			50,
 			colors.WHITE,
 			self.window,
-			None,
+			self,
 			self.batch,
 			self.main_group,
 		)
-		self.hitbox2 = HitboxRender.from_rect(
+		self.hitbox2 = Hitbox.from_rect(
 			'hb2',
 			300,
 			300,
@@ -36,18 +36,18 @@ class Scene1(Scene):
 			50,
 			colors.RED,
 			self.window,
-			None,
+			self,
 			self.batch,
 			self.main_group,
 		)
-		self.circle = HitboxRenderCircle(
+		self.circle = HitboxCircle(
 			'hbc1',
 			100,
 			100,
 			50,
 			colors.WHITE,
 			self.window,
-			None,
+			self,
 			self.batch,
 			self.main_group,
 		)
@@ -72,7 +72,7 @@ class Scene1(Scene):
 	def on_mouse_motion(self, x, y, dx, dy):
 		self.hitbox.pos = x, y
 		self.circle.pos = x, y
-		print(self.hitbox if self.mode == 'rect' else self.circle)
+		#print(self.hitbox if self.mode == 'rect' else self.circle)
 
 	def on_key_press(self, symbol, modifiers):
 		if symbol == key.A:
@@ -104,6 +104,12 @@ class Scene1(Scene):
 				self.circle.render.visible = True
 
 		print(self.hitbox if self.mode == 'rect' else self.circle)
+
+	def on_trigger_enter(self, t1, t2):
+		print(f'{t1.ID} entered {t2.ID}!')
+
+	def on_trigger_exit(self, t1, t2):
+		print(f'{t1.ID} exited {t2.ID}!')
 
 	def disable(self):
 		pyglet.clock.unschedule(self.update)

@@ -9,7 +9,6 @@ from pyglet.event import EventDispatcher as _EventDispatcher
 if TYPE_CHECKING:
 	from .scene import Scene
 	from .types import EventHandler
-	from .window import Window
 
 
 class EventDispatcher(_EventDispatcher):
@@ -25,8 +24,6 @@ class EventDispatcher(_EventDispatcher):
 	"""The event names that a widget can dispatch"""
 
 	#* Instance vars
-	window: Window
-	"""Window dispatcher is associated with"""
 	scene: Scene | None
 	"""The scene the dispatcher is from. None if part of a template or not in a scene."""
 
