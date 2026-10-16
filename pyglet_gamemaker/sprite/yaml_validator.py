@@ -195,7 +195,7 @@ class YAMLValidator:
 		else:
 			conditions['void'] = True
 
-	def _validate_anim_anim_data(  # noqa: C901
+	def _validate_anim_anim_data(
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
 		if not self.yaml:
@@ -254,7 +254,7 @@ class YAMLValidator:
 							)
 						)
 
-	def _validate_anim_data(  # noqa: C901
+	def _validate_anim_data(
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
 		if not self.yaml:

@@ -14,7 +14,7 @@ import pyglet
 from pyglet.math import Vec2
 
 from ..event_dispatcher import EventDispatcher
-from ..types import CollisionSubType, TriggerStatus
+from ..types import TriggerStatus, TriggerSubType
 
 if TYPE_CHECKING:
 	from typing import Self
@@ -41,11 +41,19 @@ class Trigger(EventDispatcher):
 	- translated: Adding global position of trigger to local position (moving in 2D space)
 	- rotated: Adding the rotation of the trigger
 	- anchored: Shifting global position to account for anchor position of trigger
+
+	Dispatches:
+	- 'on_mouse_trigger_enter(self, x, y, MTV)' when mouse enters trigger
+	- 'on_mouse_trigger_motion(self, x, y, MTV)' when mouse moves in trigger
+	- 'on_mouse_trigger_exit(self, x, y)' when mouse exits trigger
+	- 'on_trigger_enter(self, other, MTV)' when trigger enters trigger
+	- 'on_trigger_exit(self, other, MTV)' when trigger exits trigger
 	"""
 
 	#* Constant vars
 	EVENT_TYPES = (
 		'on_mouse_trigger_enter',
+		'on_mouse_trigger_motion',
 		'on_mouse_trigger_exit',
 		'on_trigger_enter',
 		'on_trigger_exit',
@@ -62,7 +70,7 @@ class Trigger(EventDispatcher):
 	"""The scene the trigger is from. None if trigger is a template or not in a scene."""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
-	subtype: CollisionSubType
+	subtype: TriggerSubType
 	"""Subtype (ex. 'RECT') of trigger"""
 	enabled: bool = True
 	"""If True, trigger is enabled and dispatches events"""
@@ -74,6 +82,8 @@ class Trigger(EventDispatcher):
 	"""If True, detect mouse collision + attach mouse events to window"""
 	hit_triggers: set[Trigger]
 	"""Stores all overlapping hitboxes"""
+	tags: list[str] | None
+	"""All tags this trigger possesses"""
 
 	#* Property vars
 	_anchor: Point2D = 0, 0
@@ -102,8 +112,9 @@ class Trigger(EventDispatcher):
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
+		tags: list[str] | None = None,
 		*,
-		_subtype: CollisionSubType = CollisionSubType.NONE,
+		_subtype: TriggerSubType = TriggerSubType.NONE,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a trigger.
@@ -128,9 +139,12 @@ class Trigger(EventDispatcher):
 				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
 				Defaults to False.
-			_subtype (CollisionSubType, optional)
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			_subtype (TriggerSubType, optional)
 				The subtype of the trigger (i.e. 'RECT').
-				Defaults to CollisionSubType.NONE.
+				Defaults to TriggerSubType.NONE.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
@@ -141,6 +155,7 @@ class Trigger(EventDispatcher):
 		self.anchor = anchor
 		self.subtype = _subtype
 		self.hit_triggers = set()
+		self.tags = tags
 
 		self.dispatch = dispatch
 		self.mouse_detection = mouse_detection
@@ -166,7 +181,8 @@ class Trigger(EventDispatcher):
 		scene: Scene | None = None,
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
-		attach_events: bool = True,
+		mouse_detection: bool = True,
+		tags: list[str] | None = None,
 		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a trigger from rectangle args.
@@ -191,12 +207,15 @@ class Trigger(EventDispatcher):
 				Anchor position.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `~pgm.shapes.Trigger` for more info.
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
-				If False, don't attach events (e.g. mouse) to window.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
-				Defaults to True.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
@@ -207,8 +226,9 @@ class Trigger(EventDispatcher):
 			scene,
 			anchor,
 			dispatch,
-			attach_events,
-			_subtype=CollisionSubType.RECT,
+			mouse_detection,
+			tags,
+			_subtype=TriggerSubType.RECT,
 			**kwargs,
 		)
 
@@ -222,7 +242,8 @@ class Trigger(EventDispatcher):
 		scene: Scene | None = None,
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
-		attach_events: bool = True,
+		mouse_detection: bool = True,
+		tags: list[str] | None = None,
 		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a 1x1 trigger from a point.
@@ -247,24 +268,28 @@ class Trigger(EventDispatcher):
 				Anchor position.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
-				If False, don't dispatch events to handlers. See `~pgm.shapes.Trigger` for more info.
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
-				If False, don't attach events (e.g. mouse) to window.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
 				Event handlers can still be manually invoked.
-				Defaults to True.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		return cls(
 			ID,
-			((x, y), (x + 1, y), (x + 1, y + 1), (x, y + 1)),
+			((x, y),),
 			window,
 			scene,
 			anchor,
 			dispatch,
-			attach_events,
-			_subtype=CollisionSubType.POINT,
+			mouse_detection,
+			tags,
+			_subtype=TriggerSubType.POINT,
 			**kwargs,
 		)
 
@@ -272,8 +297,7 @@ class Trigger(EventDispatcher):
 		# Get the normal axes of the trigger as Vec2 (for SAT).
 
 		#* Special case: point trigger has no axes
-		# print(self.coords)
-		if len(self.coords) == 1:
+		if self.subtype == TriggerSubType.POINT:
 			return []
 
 		axes = []
@@ -281,7 +305,7 @@ class Trigger(EventDispatcher):
 		# Loops through vertices and gets all adjacent pairs
 		for i in range(
 			len(self.coords)
-			// (2 if remove_dupes and self.subtype == CollisionSubType.RECT else 1)
+			// (2 if remove_dupes and self.subtype == TriggerSubType.RECT else 1)
 		):
 			# Grabbing vertex positions
 			p1, p2 = self.coords[i], self.coords[(i + 1) % len(self.coords)]
@@ -294,40 +318,25 @@ class Trigger(EventDispatcher):
 
 		return axes
 
-	def _project(self, axis: Vec2) -> tuple[float, float]:
+	def _project(self, axis: Vec2, remove_dupes: bool) -> tuple[float, float]:
 		# Project the trigger onto an axis (use self._get_axes()) (for SAT).
 		# 	Returns a line
 
 		# Stores the left (minimum) and right (maximum) of line
-		maximum = minimum = axis.dot(Vec2(*self.coords[0]))
+		maximum = minimum = axis.dot(self.coords[0])
 
 		# Gets projections for each vertice
 		# Vertice with lowest and highest projections are used in line
-		for i in range(1, len(self.coords)):
+		for i in range(
+			len(self.coords)
+			// (2 if remove_dupes and self.subtype == TriggerSubType.RECT else 1)
+		):
 			# Projection using dot product
-			pos = axis.dot(Vec2(*self.coords[i]))
+			pos = axis.dot(self.coords[i])
 			maximum = max(maximum, pos)
 			minimum = min(minimum, pos)
 
 		return minimum, maximum
-
-	@staticmethod
-	def _intersect(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
-		# Check if two lines intersect (for SAT).
-
-		# Left of line1 inside line2
-		if l2[0] <= l1[0] < l2[1]:
-			return True
-
-		# Right of line1 inside line2
-		if l2[0] < l1[1] <= l2[1]:
-			return True
-
-		# Line2 completely inside line1
-		if l1[0] < l2[0] and l1[1] > l2[1]:  # noqa: SIM103
-			return True
-
-		return False
 
 	@staticmethod
 	def _get_intersection_length(
@@ -335,28 +344,30 @@ class Trigger(EventDispatcher):
 	) -> float:
 		# Get the length of intersection between 2 lines (for SAT).
 
+		# Line1 cannot possibly intersect
+		if l1[0] >= l2[1] or l1[1] < l2[0]:
+			return 0
+
 		# Left of line1 inside line2
 		if l2[0] <= l1[0] < l2[1]:
-			return l2[1] - l1[0]
+			return min(l1[1], l2[1]) - l1[0]
 
 		# Right of line1 inside line2
-		elif l2[0] < l1[1] <= l2[1]:
-			return -(l1[1] - l2[0])
+		if l2[0] < l1[1] <= l2[1]:
+			return min(l1[0], l2[0]) - l1[1]
 
-		# Line2 completely inside line1
-		elif l1[0] < l2[0] and l1[1] > l2[1]:
-			# Finds which way is shorter
-			if l1[1] - l2[0] < l2[1] - l1[0]:
-				return -(l1[1] - l2[0])
-			return l2[1] - l1[0]
-
-		return 0
+		# Line2 in line1
+		return l2[1] - l2[0]
 
 	@staticmethod
 	def _contains(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
 		# Check if one of the lines in completely contained inside the other (for SAT).
-
 		return (l1[0] < l2[0] and l1[1] > l2[1]) or (l2[0] < l1[0] and l2[1] > l1[1])
+
+	@staticmethod
+	def _shorter_than(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
+		# Check if l1 shorter than l2
+		return abs(l1[1] - l1[0]) < abs(l2[1] - l2[0])
 
 	def collide(
 		self,
@@ -387,6 +398,20 @@ class Trigger(EventDispatcher):
 					f'Hitbox passed into Trigger.collide() method is of type {other.__class__.__name__}, which does not contain a `.trigger` attribute.'
 				)
 
+		# Do not try to check 2 points
+		if (
+			self.subtype == TriggerSubType.POINT
+			and other.subtype == TriggerSubType.POINT
+		):
+			raise ValueError(
+				f'Colliders "{self.ID}" and "{other.ID}" cannot both be points.'
+			)
+
+		if self.subtype == TriggerSubType.POINT:
+			return other._collide_point(self, sacrifice_MTV)
+		if other.subtype == TriggerSubType.POINT:
+			return self._collide_point(other, sacrifice_MTV)
+
 		# Get circle collision axis
 		if isinstance(self, TriggerCircle):
 			self._set_collision_axis(other)
@@ -403,29 +428,40 @@ class Trigger(EventDispatcher):
 
 		#* Step 2: Project the shapes onto each axis
 		for axis in axes + other_axes:
-			l1 = self._project(axis)
-			l2 = other._project(axis)
+			l1 = self._project(axis, sacrifice_MTV)
+			l2 = other._project(axis, sacrifice_MTV)
 
 			#* Step 3: Check for intersection
-			#* If the projections do not intersect, there cannot be a collision
-			if not self._intersect(l1, l2):
+			#* 	If the projections do not intersect, there cannot be a collision
+			if not (overlap := self._get_intersection_length(l1, l2)):
 				# Run post collision to update triggers
-				self._post_collision(other, TriggerStatus.TRIGGER_NOHIT)
-				other._post_collision(self, TriggerStatus.TRIGGER_NOHIT)
+				self._post_trigger_collision(other, TriggerStatus.TRIGGER_NOHIT)
+				other._post_trigger_collision(self, TriggerStatus.TRIGGER_NOHIT)
 				return False, None
 
-			#* Step 4: For MTV - Get the smallest intersection length
+			#* Step 4: If line completely contained, find nearest exit
+			if self._contains(l1, l2):
+				left_diff = abs(l1[0] - l2[0])
+				right_diff = abs(l1[1] - l2[1])
+
+				if left_diff < right_diff:
+					overlap = overlap + left_diff
+				else:
+					overlap = -(overlap + right_diff)
+
+			#* Step 5: For MTV - Get the smallest intersection length
 			#*	and store it along with the axis
-			overlap = self._get_intersection_length(l1, l2)
 			if abs(overlap) < abs(MTV_len):
 				MTV_len = overlap
 				MTV_axis = axis
 
-		# Run post collision to update triggers
-		self._post_collision(other, TriggerStatus.TRIGGER_HIT)
-		other._post_collision(self, TriggerStatus.TRIGGER_HIT)
+		MTV = MTV_axis * MTV_len
 
-		return True, MTV_axis * MTV_len
+		# Run post collision to update triggers
+		self._post_trigger_collision(other, TriggerStatus.TRIGGER_HIT, MTV)
+		other._post_trigger_collision(self, TriggerStatus.TRIGGER_HIT, MTV)
+
+		return True, MTV
 
 	def collide_any(
 		self,
@@ -450,18 +486,69 @@ class Trigger(EventDispatcher):
 
 		return False, None
 
-	def _post_collision(
-		self, other: Trigger, hit_status: TriggerStatus
+	def _collide_point(
+		self, other: Trigger, sacrifice_MTV: bool
+	) -> tuple[bool, Vec2 | None]:
+		"""Run the SAT algorithm on a polygon and a point. Do not invoke manually.
+
+		Args:
+			other (Trigger):
+				The other trigger to detect collision with
+			sacrifice_MTV (bool, optional):
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
+
+		Returns:
+			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
+		"""
+		#* Step 1: Get the normal axes of each edge
+		axes = self._get_axes(sacrifice_MTV)
+
+		# These store the length and axis for the MTV
+		MTV_len = float('inf')
+		MTV_axis = Vec2(0, 0)
+
+		#* Step 2: Project the shapes onto each axis
+		for axis in axes:
+			l1 = self._project(axis, sacrifice_MTV)
+			l2 = other._project(axis, sacrifice_MTV)
+
+			#* Step 3: Check for intersection
+			#* 	If the projections do not intersect, there cannot be a collision
+			if not self._contains(l1, l2):
+				return False, None
+
+			#* Step 4: Line is always containing point, so simplified overlap algorithm
+			left_diff = abs(l1[0] - l2[0])
+			right_diff = abs(l1[1] - l2[1])
+
+			if left_diff < right_diff:
+				overlap = left_diff
+			else:
+				overlap = -right_diff
+
+			#* Step 5: For MTV - Get the smallest intersection length
+			#*	and store it along with the axis
+			if abs(overlap) < abs(MTV_len):
+				MTV_len = overlap
+				MTV_axis = axis
+
+		MTV = MTV_axis * MTV_len
+
+		return True, MTV
+
+	def _post_trigger_collision(
+		self, other: Trigger, hit_status: TriggerStatus, MTV: Vec2 | None = None
 	) -> None:
 		# Update internals after collision, not just enter or exit
-		#	Also dispatch events
+		# 	Also dispatch events
 
 		# First hit
 		if hit_status & TriggerStatus.TRIGGER_HIT and other not in self.hit_triggers:
 			self.hit_triggers.add(other)
-			self.dispatch_event('on_trigger_enter', self, other)
+			self.dispatch_event('on_trigger_enter', self, other, MTV)
 		# First nohit
-		
+
 		elif hit_status & TriggerStatus.TRIGGER_NOHIT and other in self.hit_triggers:
 			self.hit_triggers.remove(other)
 			self.dispatch_event('on_trigger_exit', self, other)
@@ -541,21 +628,27 @@ class Trigger(EventDispatcher):
 		else:
 			self._mouse_trigger.pos = x, y
 
-		collided = self.collide(self._mouse_trigger, False)[0]
+		collided, MTV = self.collide(self._mouse_trigger, False)
 
 		# Enter
 		if collided:
-			if self.dispatch and self.status & TriggerStatus.MOUSE_NOHIT:
-				self.dispatch_event('on_mouse_trigger_enter', self, x, y)
+			# First time
+			if self.status & TriggerStatus.MOUSE_NOHIT:
 				self.status &= ~TriggerStatus.MOUSE_NOHIT
 				self.status |= TriggerStatus.MOUSE_HIT
+				if self.dispatch:
+					self.dispatch_event('on_mouse_trigger_enter', self, x, y, MTV)
+			# Repeat offender
+			elif self.dispatch:
+				self.dispatch_event('on_mouse_trigger_motion', self, x, y, MTV)
 
 		# Exit
 		else:
-			if self.dispatch and self.status & TriggerStatus.MOUSE_HIT:
-				self.dispatch_event('on_mouse_trigger_exit', self, x, y)
+			if self.status & TriggerStatus.MOUSE_HIT:
 				self.status &= ~TriggerStatus.MOUSE_HIT
 				self.status |= TriggerStatus.MOUSE_NOHIT
+				if self.dispatch:
+					self.dispatch_event('on_mouse_trigger_exit', self, x, y)
 
 		self._last_mouse_info = x, y
 
@@ -709,6 +802,10 @@ class TriggerCircle(Trigger):
 		window: Window | None = None,
 		scene: Scene | None = None,
 		anchor: Point2D = (0, 0),
+		dispatch: bool = True,
+		mouse_detection: bool = False,
+		tags: list[str] | None = None,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a trigger from a circle.
 
@@ -729,6 +826,18 @@ class TriggerCircle(Trigger):
 			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
+				Event handlers can still be manually invoked.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		super().__init__(
 			ID,
@@ -736,7 +845,10 @@ class TriggerCircle(Trigger):
 			window,
 			scene,
 			anchor,
-			_subtype=CollisionSubType.CIRCLE,
+			dispatch,
+			mouse_detection,
+			tags,
+			_subtype=TriggerSubType.CIRCLE,
 		)
 		self.axis = Vec2(0, 0)
 		self.radius = radius
@@ -744,7 +856,7 @@ class TriggerCircle(Trigger):
 	def _get_axes(self, sacrifice_MTV: bool) -> list[Vec2]:
 		return [self.axis.normalize()]
 
-	def _project(self, axis: Vec2) -> tuple[float, float]:
+	def _project(self, axis: Vec2, remove_dupes: bool) -> tuple[float, float]:
 		proj = axis.dot(Vec2(*self.coords[0]))
 		return proj - self.radius, proj + self.radius
 

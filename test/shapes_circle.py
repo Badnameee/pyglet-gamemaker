@@ -17,10 +17,10 @@ from pyglet_gamemaker.window import Window
 class Scene1(Scene):
 	def initialize(self):
 		self.circle = HitboxCircle(
-			'hbc1', 100, 100, 50, colors.WHITE, window, None, self.batch, self.main_group
+			'hbc1', 100, 100, 50, colors.WHITE, window, self, self.batch, self.main_group
 		)
 		self.circle2 = HitboxCircle(
-			'hbc2', 300, 300, 50, colors.RED, window, None, self.batch, self.main_group
+			'hbc2', 300, 300, 50, colors.RED, window, self, self.batch, self.main_group
 		)
 
 		self.window.push_handlers(self)

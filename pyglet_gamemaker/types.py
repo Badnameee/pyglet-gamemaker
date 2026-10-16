@@ -18,7 +18,7 @@
 - FLOAT_REGEX: Reggular expression used to check if string is simple float
 - Color: Type used for RGB(A) colors
 - Weight: Possible weight values (taken from pyglet)
-- CollisionSubType: All possible subtypes for hitboxes.
+- TriggerSubType: All possible subtypes for hitboxes.
 - ButtonStatus: All possible button pressing statuses.
 """
 
@@ -44,7 +44,7 @@ __all__ = [
 	'FLOAT_REGEX',
 	'Color',
 	'Weight',
-	'CollisionSubType',
+	'TriggerSubType',
 	'ButtonStatus',
 	'TriggerStatus',
 ]
@@ -73,7 +73,7 @@ FLOAT_REGEX = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
 Color = tuple[int, int, int] | tuple[int, int, int, int]
 
 
-class CollisionSubType(Enum):
+class TriggerSubType(Enum):
 	"""All possible subtypes for hitboxes."""
 
 	NONE = auto()

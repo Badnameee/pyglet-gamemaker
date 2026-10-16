@@ -13,7 +13,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
-from ..types import CollisionSubType
+from ..types import EventHandler, TriggerSubType
 from .trigger import HasHitbox, Trigger, TriggerCircle
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class Hitbox:
 	"""The trigger object"""
 	render: Polygon
 	"""The render object"""
-	subtype: CollisionSubType
+	subtype: TriggerSubType
 	"""Subtype (ex. 'rect') of hitbox"""
 
 	#* Property vars
@@ -50,8 +50,12 @@ class Hitbox:
 		batch: Batch,
 		group: Group,
 		anchor: Point2D = (0, 0),
+		dispatch: bool = True,
+		mouse_detection: bool = False,
+		tags: list[str] | None = None,
 		*,
-		_subtype: CollisionSubType = CollisionSubType.NONE,
+		_subtype: TriggerSubType = TriggerSubType.NONE,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a hitbox render.
 
@@ -73,12 +77,24 @@ class Hitbox:
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
-			_subtype (CollisionSubType, optional):
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
+				Event handlers can still be manually invoked.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			_subtype (TriggerSubType, optional):
 				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
-				Defaults to CollisionSubType.NONE.
+				Defaults to TriggerSubType.NONE.
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.render = Polygon(*coords, color=color, batch=batch, group=group)
-		self.trigger = Trigger(ID, coords, window, scene, anchor, _subtype=_subtype)
+		self.trigger = Trigger(ID, coords, window, scene, anchor, dispatch, mouse_detection, tags, _subtype=_subtype, **kwargs)
 
 		self.ID = ID
 		self.subtype = _subtype
@@ -98,6 +114,10 @@ class Hitbox:
 		batch: Batch,
 		group: Group,
 		anchor: Point2D = (0, 0),
+		dispatch: bool = True,
+		mouse_detection: bool = False,
+		tags: list[str] | None = None,
+		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a hitbox render from rectangle dimensions.
 
@@ -124,6 +144,18 @@ class Hitbox:
 				The group for rendering
 			anchor (Point2D):
 				Anchor position
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
+				Event handlers can still be manually invoked.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		return cls(
 			ID,
@@ -134,7 +166,11 @@ class Hitbox:
 			batch,
 			group,
 			anchor,
-			_subtype=CollisionSubType.RECT,
+			dispatch,
+			mouse_detection,
+			tags,
+			_subtype=TriggerSubType.RECT,
+			**kwargs,
 		)
 
 	def collide(
@@ -312,6 +348,10 @@ class HitboxCircle:
 		batch: Batch,
 		group: Group,
 		anchor: Point2D = (0, 0),
+		dispatch: bool = True,
+		mouse_detection: bool = False,
+		tags: list[str] | None = None,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a circular hitbox.
 
@@ -337,9 +377,24 @@ class HitboxCircle:
 			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
+				Event handlers can still be manually invoked.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			_subtype (TriggerSubType, optional):
+				The subtype of the hitbox. Ex: 'RECT', 'CIRCLE'.
+				Defaults to TriggerSubType.NONE.
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.render = Circle(x, y, radius, color=color, batch=batch, group=group)
-		self.trigger = TriggerCircle(ID, x, y, radius, window, scene, anchor)
+		self.trigger = TriggerCircle(ID, x, y, radius, window, scene, anchor, dispatch, mouse_detection, tags, **kwargs)
 
 		self.ID = ID
 		self.subtype = 'circle'

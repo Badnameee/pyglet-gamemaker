@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from pyglet.graphics import Batch, Group
 
-from ..types import CollisionSubType, Color, Point2D
+from ..types import Color, EventHandler, Point2D, TriggerSubType
 from .hitbox import Hitbox
 
 if TYPE_CHECKING:
@@ -38,6 +38,10 @@ class Rect(Hitbox):
 		batch: Batch,
 		group: Group,
 		anchor: Point2D = (0, 0),
+		dispatch: bool = True,
+		mouse_detection: bool = False,
+		tags: list[str] | None = None,
+		**kwargs: EventHandler,
 	) -> None:
 		"""Create a rectangle.
 
@@ -65,6 +69,18 @@ class Rect(Hitbox):
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `~pgm.gui.Button` for more info.
+				Defaults to True.
+			mouse_detection (bool, optional):
+				If True, detect mouse collision + attach mouse events to window. Window must be set.
+				Event handlers can still be manually invoked.
+				Defaults to False.
+			tags (list[str], optional):
+				Tags trigger should possess, used for controlling collision more closely.
+				Defaults to None.
+			kwargs (EventHandler):
+				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		super().__init__(
 			ID,
@@ -75,7 +91,11 @@ class Rect(Hitbox):
 			batch,
 			group,
 			anchor,
-			_subtype=CollisionSubType.RECT,
+			dispatch,
+			mouse_detection,
+			tags,
+			_subtype=TriggerSubType.RECT,
+			**kwargs,
 		)
 
 	@property
