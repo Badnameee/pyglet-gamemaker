@@ -13,20 +13,11 @@ Args:
 		Defaults to {{&default}}.
 {{/kwargs}}
 {{/parametersExist}}
-{{#exceptionsExist}}
 
-Raises:
-{{#exceptions}}
-    {{type}}:
-        {{descriptionPlaceholder}}
-{{/exceptions}}
-{{/exceptionsExist}}
 {{#returnsExist}}
-
 Returns:
 {{#returns}}
-    {{typePlaceholder}}:
-        {{descriptionPlaceholder}}
+    {{typePlaceholder}}: {{descriptionPlaceholder}}
 {{/returns}}
 {{/returnsExist}}
 {{#yieldsExist}}
