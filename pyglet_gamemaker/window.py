@@ -35,7 +35,7 @@ class Window(PygletWin):  # type: ignore[misc]
 	Use `.run` to run the game.
 	"""
 
-	#* Instance vars
+	# * Instance vars
 	scenes: dict[str, Scene] = {}
 	"""Stores all the scenes in the game"""
 	scene: str = ''

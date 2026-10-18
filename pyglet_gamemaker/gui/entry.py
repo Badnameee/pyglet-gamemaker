@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from pyglet.gui import TextEntry
 
-from pyglet_gamemaker.utils import pad_font_info
+from pyglet_gamemaker.utils import get_scene_widget_pos, pad_font_info
 
 from .. import colors
 from ..types import (
@@ -48,10 +48,10 @@ class Entry(TextEntry, Widget):
 	- `on_commit` when enter/return key is pressed on the entry.
 	"""
 
-	#* CONSTS
+	# * CONSTS
 	EVENT_TYPES = ('on_submit',)
 
-	#* Instance Vars
+	# * Instance Vars
 	initial_text: str
 	"""Initial text to display"""
 	edited: bool = False
@@ -63,20 +63,20 @@ class Entry(TextEntry, Widget):
 	base_height: int
 	"""The height without scaling"""
 
-	#* Property vars
+	# * Property vars
 	_color: Color
 
 	def __init__(
 		self,
 		ID: str,
-		text: str,
-		x: float,
-		y: float,
-		width: int,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		text: str = '',
+		x: float | None = None,
+		y: float | None = None,
+		width: int | None = None,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
 		color: Color = colors.WHITE,
@@ -90,23 +90,31 @@ class Entry(TextEntry, Widget):
 
 		Args:
 			ID (str):
-				ID of entry for identification
-			text (str):
-				Initial text to display
-			x (int):
-				Anchored x coordinate of text entry widget
-			y (int):
-				Anchored y coordinate of text entry widget
-			width (int):
-				The width of text entry widget
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the widget is from. None if widget is a template or not in a scene.
-			batch (Batch):
-				Batch for rendering
-			group (Group):
-				Group for rendering
+				Name/ID of widget.
+			text (str, optional):
+				Initial display text.
+				Defaults to ''.
+			x (float, optional):
+				Anchored x position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			y (float, optional):
+				Anchored y position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			width (int, optional):
+				The width of text entry widget. Height determined by font size.
+				Defaults to 15 times the font size.
+			window (Window, optional):
+				Window for attaching self. Required if binding mouse events.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
 			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Entry` for more info on anchor values.
 				Defaults to (0, 0).
@@ -133,11 +141,16 @@ class Entry(TextEntry, Widget):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 
 		"""
+		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
+		x, y = get_scene_widget_pos(self, ID, x, y, scene)
+
 		super().__init__(
 			text,
 			x,  # type: ignore[arg-type]
 			y,  # type: ignore[arg-type]
-			width,
+			width
+			if width is not None
+			else 15 * (font_info[1] or self.DEFAULT_FONT_SIZE),
 			color,  # type: ignore[arg-type]
 			text_color,  # type: ignore[arg-type]
 			caret_color,  # type: ignore[arg-type]
@@ -150,12 +163,11 @@ class Entry(TextEntry, Widget):
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 		self._color = color
-		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
 		self.initial_anchor = self.anchor = anchor
 		self.initial_text = text
 
 		self.initial_pos = x, y
-		self.base_width = width
+		self.base_width = self._width
 		self.base_height = self._height
 
 		# Restyle for font customization
@@ -166,18 +178,22 @@ class Entry(TextEntry, Widget):
 				'color': text_color,
 				'font_name': font_info[0],
 				'font_size': font_info[1],
-				'weight': font_info[2],  # type: ignore[misc] # Guaranteed 3 items long by here
+				'weight': font_info[2],  # type: ignore[misc]
 			},
 		)
 
 		# Automatically adjust height to font size
-		if font_info[1]:
-			self.height *= font_info[1] / 12  # type: ignore[assignment] # Don't care if it's a float
+		if font_info[1] is not None:
+			self.height *= font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # Don't care if it's a float
 
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
 		if attach_events:
+			if not self.window:
+				raise TypeError(
+					'Cannot attach Entry to window if ".window" is not set.'
+				)
 			self.window.push_handlers(self)
 		# Bind user kwargs
 		if dispatch:
@@ -248,7 +264,7 @@ class Entry(TextEntry, Widget):
 		if isinstance(self.raw_anchor[0], str):
 			# Original dynamic anchor
 			if self.raw_anchor[0] in AnchorXDynamicValues:
-				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
 				anchor_x = float(self.raw_anchor[0]) * self.width
 			else:
@@ -263,7 +279,7 @@ class Entry(TextEntry, Widget):
 		if isinstance(self.raw_anchor[1], str):
 			# Original dynamic anchor
 			if self.raw_anchor[1] in AnchorYDynamicValues:
-				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
 				anchor_y = float(self.raw_anchor[1]) * self.height
 			else:
@@ -397,14 +413,13 @@ class Entry(TextEntry, Widget):
 	@scale.setter
 	def scale(self, val: float) -> None:
 		if val <= 0:
-			raise ValueError(f'"Text.scale" must be a positive number, not {val}.')
+			raise ValueError(f'"Entry.scale" must be a positive number, not {val}.')
 
-		# 12 is default font size, in pt.
-		self.font_size = (self.font_info[1] or 12) * val
+		self.font_size = (self.font_info[1] or self.DEFAULT_FONT_SIZE) * val
 		self.width = int(self.base_width * val)
 		self.height = int(self.base_height * val)
 		self._scale = val
 		self._calc_anchor()
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return f'Entry ({self.ID}): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

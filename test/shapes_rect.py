@@ -25,7 +25,7 @@ class Scene1(Scene):
 			50,
 			colors.WHITE,
 			self.window,
-			None,
+			self,
 			self.batch,
 			self.main_group,
 		)
@@ -37,7 +37,7 @@ class Scene1(Scene):
 			50,
 			colors.RED,
 			self.window,
-			None,
+			self,
 			self.batch,
 			self.main_group,
 		)
@@ -79,7 +79,7 @@ class Scene1(Scene):
 
 		print(self.rect)
 
-	def on_trigger_enter(self, t1, t2):
+	def on_trigger_enter(self, t1, t2, MTV):
 		print(f'{t1.ID} entered {t2.ID}!')
 
 	def on_trigger_exit(self, t1, t2):

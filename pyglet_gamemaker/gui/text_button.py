@@ -58,10 +58,10 @@ class TextButton(Widget):
 
 	"""
 
-	#* CONSTS
+	# * CONSTS
 	EVENT_TYPES = Button.EVENT_TYPES + Text.EVENT_TYPES
 
-	#* Instance vars
+	# * Instance vars
 	button: Button
 	"""Button object"""
 	text: Text
@@ -69,26 +69,26 @@ class TextButton(Widget):
 	start_hover_enlarge: int
 	"""Starting hover enlarge value"""
 
-	#* Property vars
+	# * Property vars
 	_hover_enlarge: float = 0
 
-	#* Private vars
+	# * Private vars
 	_enlarged: bool = False
 	"""If true, text is currently enlarged. Used internally to enlarge text once."""
 
 	def __init__(
 		self,
 		ID: str,
-		text: str,
-		x: float,
-		y: float,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		button_group: Group,
-		text_group: Group,
 		image_sheet: SpriteSheet | DefaultResources,
-		image_start: str | int,
+		image_start: str | int = 0,
+		text: str = 'None',
+		x: float | None = None,
+		y: float | None = None,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		button_group: Group | None = None,
+		text_group: Group | None = None,
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = ('center', 'center'),
 		font_info: FontInfo = (None, None, None),
@@ -103,26 +103,33 @@ class TextButton(Widget):
 		Args:
 			ID (str):
 				Name/ID of widget
+			image_sheet (SpriteSheet | DefaultResources):
+				SpriteSheet with the button images.
+			image_start (str | int, optional):
+				The starting index of the button images.
+				Defaults to 0.
 			text (str):
-				Label text
+				Label text.
+				Defaults to 'None'.
 			x (float):
 				Anchored x position of button
 			y (float):
 				Anchored y position of button
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the widget is from. None if widget is a template or not in a scene.
-			batch (Batch):
-				Batch for rendering
-			button_group (Group):
-				Group for rendering button
-			text_group (Group):
-				Group for rendering text
-			image_sheet (SpriteSheet):
-				SpriteSheet with the button images
-			image_start (str | int):
-				The starting index of the button images
+			window (Window, optional):
+				Window for attaching self. Required if binding mouse events.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			button_group (Group, optional):
+				Group for rendering button.
+				Defaults to None.
+			text_group (Group, optional):
+				Group for rendering text.
+				Defaults to None.
 			button_anchor (Anchor, optional):
 				Anchor position for the button. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
@@ -150,10 +157,10 @@ class TextButton(Widget):
 		"""
 		self.button = Button(
 			ID,
-			x,
-			y,
 			image_sheet,
 			image_start,
+			x,
+			y,
 			window,
 			scene,
 			batch,
@@ -162,7 +169,6 @@ class TextButton(Widget):
 			False,
 			False,
 		)
-		self.button._will_update_status = False
 		self._pos = self.button.pos
 		self._anchor = self.button.anchor
 
@@ -477,7 +483,7 @@ class TextButton(Widget):
 			self.button.y - self.button.anchor_y + self.button.height / 2,
 		)
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return (
 			f'TextButton ({self.ID}):\n'
 			f'- Button @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored\n'

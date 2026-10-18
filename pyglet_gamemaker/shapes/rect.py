@@ -62,7 +62,7 @@ class Rect(Hitbox):
 			window (Window):
 				Window for attaching self
 			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
+				The scene the hitbox is from.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -161,5 +161,5 @@ class Rect(Hitbox):
 		)
 		self._calc_coords()
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return f'Rect ({self.ID}): {self.width}x{self.height} @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'

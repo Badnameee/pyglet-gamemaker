@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class MissingConfigKey(KeyError):
 	"""Missing configuration key in .yaml file."""
 
-	#* Instance vars
+	# * Instance vars
 	hierarchy: Any | tuple[Any, ...]
 	"""Key hierarchy pointing to error"""
 
@@ -35,7 +35,7 @@ class MissingConfigKey(KeyError):
 class InvalidConfigKeyType(TypeError):
 	"""Invalid key type in .yaml file."""
 
-	#* Instance vars
+	# * Instance vars
 	hierarchy: Any | tuple[Any, ...]
 	"""Key hierarchy pointing to error"""
 	expected: type | tuple[type, ...]
@@ -72,7 +72,7 @@ class InvalidConfigKeyType(TypeError):
 class InvalidConfigValueType(ValueError):
 	"""Invalid value type in .yaml file."""
 
-	#* Instance vars
+	# * Instance vars
 	hierarchy: Any | tuple[Any, ...]
 	"""Key hierarchy pointing to error"""
 	expected: type | tuple[type, ...]
@@ -109,7 +109,7 @@ class InvalidConfigValueType(ValueError):
 class InvalidConfigValue(TypeError):
 	"""Invalid value in .yaml file."""
 
-	#* Instance vars
+	# * Instance vars
 	hierarchy: Any | tuple[Any, ...]
 	"""Key hierarchy pointing to error"""
 	expected_format: str
@@ -137,7 +137,7 @@ class InvalidConfigValue(TypeError):
 class InvalidConfigFile(RuntimeError):
 	"""Invalid .yaml file."""
 
-	#* Instance vars
+	# * Instance vars
 	file_path: str
 	"""Path to .yaml file"""
 	validation_mode: str
@@ -163,7 +163,7 @@ class InvalidConfigFile(RuntimeError):
 class EmptyConfigFile(ValueError):
 	"""Empty .yaml file."""
 
-	#* Instance vars
+	# * Instance vars
 	file_path: PurePath
 	"""Path to .yaml file"""
 

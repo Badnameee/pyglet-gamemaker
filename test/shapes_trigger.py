@@ -33,7 +33,7 @@ class Scene1(Scene):
 				Rectangle(*self.t._last_mouse_info[:2], 1, 1, batch=self.batch)
 			)
 
-	def on_mouse_trigger_enter(self, trigger, x, y):
+	def on_mouse_trigger_enter(self, trigger, x, y, MTV):
 		print(f'Mouse entered {trigger.ID} @ ({x}, {y})')
 
 	def on_mouse_trigger_exit(self, trigger, x, y):

@@ -40,12 +40,12 @@ class Scene1(Scene):
 	def on_mouse_motion(self, x, y, dx, dy):
 		self.txt.pos = x, y
 		self.txt_anchor.position = self.txt.pos
-		#print(self.txt)
+		# print(self.txt)
 
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		self.txt.pos = x, y
 		self.txt_anchor.position = self.txt.pos
-		#print(self.txt)
+		# print(self.txt)
 
 	def on_key_press(self, symbol, modifiers):
 		if symbol == key.LEFT:

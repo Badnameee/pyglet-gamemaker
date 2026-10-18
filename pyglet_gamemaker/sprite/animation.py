@@ -156,7 +156,7 @@ class AnimationFrame(_AnimationFrame):
 			and self.frame_num > other.frame_num
 		)
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		"""Show variables in frame."""
 		if self.frame_num:
 			return f'AnimationFrame({self.image}, duration={self.duration}, frame={self.frame_num})'

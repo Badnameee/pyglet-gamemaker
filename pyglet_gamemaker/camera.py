@@ -28,11 +28,11 @@ class Camera:
 	- NOTE: These transformations are **relative** to the default settings provided at creation.
 	"""
 
-	#* Instance vars
+	# * Instance vars
 	window: Window | None
-	"The window the camera is attached to"
+	'The window the camera is attached to'
 	og_mat: Mat4 | None
-	"The view matrix of the window"
+	'The view matrix of the window'
 	_initial_pos: tuple[float, float, float]
 	_initial_scale: tuple[float, float, float]
 	_initial_angle: tuple[float, float, float]
@@ -104,8 +104,16 @@ class Camera:
 		self.og_mat = window.view if window else None
 
 		self._initial_pos = self._pos = (x or 0), (y or 0), (z or 0)
-		self._initial_scale = self._scale = (scale_x or 1), (scale_y or 1), (scale_z or 1)
-		self._initial_angle = self._angle = (angle_x or 0), (angle_y or 0), (angle_z or 0)
+		self._initial_scale = self._scale = (
+			(scale_x or 1),
+			(scale_y or 1),
+			(scale_z or 1),
+		)
+		self._initial_angle = self._angle = (
+			(angle_x or 0),
+			(angle_y or 0),
+			(angle_z or 0),
+		)
 		self._initial_anchor = self._anchor = ((anchor_x or 0), (anchor_y or 0), (anchor_z or 0))  # fmt: skip
 
 		# Account for initial conditions
@@ -117,9 +125,7 @@ class Camera:
 	def update(self) -> None:
 		"""Update the camera view with previously changed values."""
 		if not self.og_mat:
-			raise TypeError(
-				'"Camera.og_mat" must be set using "Camera.set_window(...)".'
-			)
+			raise TypeError('"Camera.og_mat" must be set using "Camera.set_window()".')
 
 		# SRT: Scale, rotate, translate
 		# 	However, in order to rotate around a point, translate so the point is @ (0, 0),
@@ -292,14 +298,26 @@ class Camera:
 			(self._initial_pos[2] + z) if z is not None else self._pos[2],
 		)
 		self._scale = (
-			(self._initial_scale[0] * scale_x) if scale_x is not None else self._scale[0],
-			(self._initial_scale[1] * scale_y) if scale_y is not None else self._scale[1],
-			(self._initial_scale[2] * scale_z) if scale_z is not None else self._scale[2],
+			(self._initial_scale[0] * scale_x)
+			if scale_x is not None
+			else self._scale[0],
+			(self._initial_scale[1] * scale_y)
+			if scale_y is not None
+			else self._scale[1],
+			(self._initial_scale[2] * scale_z)
+			if scale_z is not None
+			else self._scale[2],
 		)
 		self._angle = (
-			(self._initial_angle[0] + angle_x) if angle_x is not None else self._angle[0],
-			(self._initial_angle[1] + angle_y) if angle_y is not None else self._angle[1],
-			(self._initial_angle[2] + angle_z) if angle_z is not None else self._angle[2],
+			(self._initial_angle[0] + angle_x)
+			if angle_x is not None
+			else self._angle[0],
+			(self._initial_angle[1] + angle_y)
+			if angle_y is not None
+			else self._angle[1],
+			(self._initial_angle[2] + angle_z)
+			if angle_z is not None
+			else self._angle[2],
 		)
 		self._anchor = (
 			(self._initial_anchor[0] + anchor_x) if anchor_x is not None else self._anchor[0],

@@ -17,6 +17,7 @@ from ..types import (
 	AnchorYDynamicValues,
 	ButtonStatus,
 )
+from ..utils import get_scene_widget_pos
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -51,10 +52,10 @@ class Button(_PushButton, Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	#* CONSTS
+	# * CONSTS
 	EVENT_TYPES = 'on_half_click', 'on_full_click'
 
-	#* Instance vars
+	# * Instance vars
 	unpressed_img: AbstractImage
 	"""Image of unpressed button"""
 	hover_img: AbstractImage
@@ -63,25 +64,24 @@ class Button(_PushButton, Widget):
 	"""Image of pressed button"""
 	image_sheet: SpriteSheet
 	"""Entire sprite sheet used"""
-	status: ButtonStatus
+	status: ButtonStatus = ButtonStatus.UNPRESSED
 	"""Status of button"""
 
-	#* Private vars
+	# * Private vars
 	_last_mouse_pos: tuple[int, int] = 0, 0
-	_will_update_status: bool = True
 	_prev_status: ButtonStatus
 
 	def __init__(
 		self,
 		ID: str,
-		x: float,
-		y: float,
 		image_sheet: SpriteSheet | DefaultResources,
-		image_start: str | int,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		image_start: str | int = 0,
+		x: float | None = None,
+		y: float | None = None,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		attach_events: bool = True,
@@ -91,24 +91,31 @@ class Button(_PushButton, Widget):
 
 		Args:
 			ID (str):
-				Name/ID of widget
-			x (float):
-				Anchored x position of button
-			y (float):
-				Anchored y position of button
-			image_sheet (SpriteSheet):
-				SpriteSheet with the button images
-			image_start (str | int):
+				Name/ID of widget.
+			image_sheet (SpriteSheet | DefaultResources):
+				SpriteSheet with the button images.
+			image_start (str | int, optional):
 				The starting index of the button images.
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the widget is from. None if widget is a template or not in a scene.
-			batch (Batch):
-				Batch for rendering
-			group (Group):
-				Group for rendering
-			anchor (Anchor):
+				Defaults to 0.
+			x (float, optional):
+				Anchored x position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			y (float, optional):
+				Anchored y position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			window (Window, optional):
+				Window for attaching self. Required if binding mouse events.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
+			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
 			dispatch (bool, optional):
@@ -121,6 +128,8 @@ class Button(_PushButton, Widget):
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
+		x, y = get_scene_widget_pos(self, ID, x, y, scene)
+
 		# Extract images from sheet
 		self._parse_sheet(
 			image_sheet,
@@ -139,7 +148,6 @@ class Button(_PushButton, Widget):
 
 		self.window, self.scene = window, scene
 		self.ID = ID
-		self.status = ButtonStatus.UNPRESSED
 
 		self.initial_pos = self.pos = x, y
 		self.initial_anchor = self.anchor = anchor
@@ -155,18 +163,37 @@ class Button(_PushButton, Widget):
 		if dispatch:
 			self.bind_events(**kwargs)
 
-	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
-		"""Update the sheet of the button."""
+	def update_sheet(
+		self,
+		image_sheet: SpriteSheet | DefaultResources | None,
+		image_start: str | int = 0,
+	) -> None:
+		"""Update the sheet of the button.
+
+		Args:
+			image_sheet (SpriteSheet | DefaultResources, optional):
+				New sheet. If None passed, keep previous sheet.
+				Defaults to None.
+			image_start (str | int, optional):
+				New start position.
+				Defaults to 0.
+
+		"""
 		self._parse_sheet(image_sheet, image_start)
 		self._calc_anchor()
 
 	def _parse_sheet(
-		self, image_sheet: SpriteSheet | DefaultResources, image_start: str | int
+		self, image_sheet: SpriteSheet | DefaultResources | None, image_start: str | int
 	) -> None:
-		"""Parse a sheet into individual images and store them."""
-		self.image_sheet = (
-			image_sheet if isinstance(image_sheet, SpriteSheet) else image_sheet.value
-		)
+		# Parse a sheet into individual images and store them.
+
+		# If new sheet, reparse
+		if image_sheet:
+			self.image_sheet = (
+				image_sheet
+				if isinstance(image_sheet, SpriteSheet)
+				else image_sheet.value
+			)
 
 		start = (
 			self.image_sheet.lookup[image_start]
@@ -206,7 +233,7 @@ class Button(_PushButton, Widget):
 		if isinstance(self.raw_anchor[0], str):
 			# Original dynamic anchor
 			if self.raw_anchor[0] in AnchorXDynamicValues:
-				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self._width
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self._width  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
 				anchor_x = float(self.raw_anchor[0]) * self._width
 			else:
@@ -221,7 +248,7 @@ class Button(_PushButton, Widget):
 		if isinstance(self.raw_anchor[1], str):
 			# Original dynamic anchor
 			if self.raw_anchor[1] in AnchorYDynamicValues:
-				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self._height
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self._height  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
 				anchor_y = float(self.raw_anchor[1]) * self._height
 			else:
@@ -397,5 +424,5 @@ class Button(_PushButton, Widget):
 		self._sprite.scale = self._scale = val
 		self._calc_anchor()
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return f'Button ({self.ID}): {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

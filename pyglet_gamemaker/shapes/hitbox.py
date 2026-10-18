@@ -14,13 +14,13 @@ from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
 from ..types import EventHandler, TriggerInteractType, TriggerSubType
-from .trigger import HasHitbox, Trigger, TriggerCircle
+from .trigger import Trigger, TriggerCircle
 
 if TYPE_CHECKING:
 	from typing import Self
 
 	from ..scene import Scene
-	from ..types import Color, Point2D
+	from ..types import Color, HasHitbox, Point2D
 	from ..window import Window
 
 
@@ -70,7 +70,7 @@ class Hitbox:
 			window (Window):
 				Window for attaching self
 			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
+				The scene the hitbox is from
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -158,7 +158,7 @@ class Hitbox:
 			window (Window):
 				Window for attaching self
 			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
+				The scene the hitbox is from.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -343,8 +343,11 @@ class Hitbox:
 		self._hitbox_color = val
 		self.render.color = val
 
-	def __repr__(self) -> str:
-		return repr(self.trigger)
+	def __str__(self) -> str:
+		return (
+			f'Hitbox ({self.ID}): Subtype "{self.subtype}" @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+			f'- Coords: {self.trigger.coords}'
+		)
 
 
 class HitboxCircle:
@@ -397,7 +400,7 @@ class HitboxCircle:
 			window (Window):
 				Window for attaching self
 			scene (Scene | None):
-				The scene the hitbox is from. None if hitbox is a template or not in a scene.
+				The scene the hitbox is from.
 			batch (Batch):
 				The batch for rendering
 			group (Group):
@@ -580,5 +583,8 @@ class HitboxCircle:
 		self._hitbox_color = val
 		self.render.color = val
 
-	def __repr__(self) -> str:
-		return repr(self.trigger)
+	def __str__(self) -> str:
+		return (
+			f'Hitbox ({self.ID}): Subtype "{self.subtype}" @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+			f'- Coords: {self.trigger.coords}'
+		)

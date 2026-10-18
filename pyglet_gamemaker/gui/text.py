@@ -16,7 +16,7 @@ from ..types import (
 	AnchorXDynamicValues,
 	AnchorYDynamicValues,
 )
-from ..utils import pad_font_info
+from ..utils import get_scene_widget_pos, pad_font_info
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ class Text(Label, Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	#* Instance vars
+	# * Instance vars
 	font_info: FontInfo
 	"""The font information"""
 	initial_text: str
@@ -51,13 +51,13 @@ class Text(Label, Widget):
 	def __init__(
 		self,
 		ID: str,
-		text: str,
-		x: float,
-		y: float,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		text: str = 'None',
+		x: float | None = None,
+		y: float | None = None,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
 		color: Color = colors.WHITE,
@@ -66,21 +66,28 @@ class Text(Label, Widget):
 
 		Args:
 			ID (str):
-				Name/ID of widget
-			text (str):
-				Label text
-			x (float):
-				Anchored x position
-			y (float):
-				Anchored y position
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the widget is from. None if widget is a template.
-			batch (Batch):
-				Batch for rendering
-			group (Group):
-				Group for rendering
+				Name/ID of widget.
+			text (str, optional):
+				Label text.
+				Defaults to 'None'.
+			x (float, optional):
+				Anchored x position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			y (float, optional):
+				Anchored y position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			window (Window, optional):
+				Window for attaching self.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
 			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
@@ -92,20 +99,22 @@ class Text(Label, Widget):
 				Defaults to Color.WHITE.
 		"""
 		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
+		x, y = get_scene_widget_pos(self, ID, x, y, scene)
 
-		super().__init__(
-			text,
-			x,
-			y,
-			0,
-			font_name=self.font_info[0],
-			font_size=self.font_info[1],
-			color=color,
-			batch=batch,
-			group=group,
-			weight=self.font_info[2] if self.font_info[2] is not None else 'normal',  # type: ignore[misc] # Guaranteed 3 items long by here
+		(
+			super().__init__(
+				text,
+				x,
+				y,
+				0,
+				font_name=self.font_info[0],
+				font_size=self.font_info[1],
+				color=color,
+				batch=batch,
+				group=group,
+				weight=self.font_info[2],  # type: ignore[misc, arg-type]
+			),
 		)
-		Widget.__init__(self)
 
 		self.window, self.scene = window, scene
 		self.ID = ID
@@ -160,7 +169,7 @@ class Text(Label, Widget):
 		if isinstance(self.raw_anchor[0], str):
 			# Original dynamic anchor
 			if self.raw_anchor[0] in AnchorXDynamicValues:
-				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
 				anchor_x = float(self.raw_anchor[0]) * self.width
 			else:
@@ -175,7 +184,7 @@ class Text(Label, Widget):
 		if isinstance(self.raw_anchor[1], str):
 			# Original dynamic anchor
 			if self.raw_anchor[1] in AnchorYDynamicValues:
-				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
 				anchor_y = float(self.raw_anchor[1]) * self.height
 			else:
@@ -272,7 +281,7 @@ class Text(Label, Widget):
 		"""
 		return self._anchor[1]
 
-	@anchor_y.setter  # type: ignore[override]
+	@anchor_y.setter
 	def anchor_y(self, val: AnchorY) -> None:
 		self.raw_anchor = self.raw_anchor[0], val
 		self._calc_anchor()
@@ -342,7 +351,6 @@ class Text(Label, Widget):
 	@property
 	def scale(self) -> float:
 		"""Scale of widget."""
-		# 12 is default font size, in pt.
 		return self._scale
 
 	@scale.setter
@@ -350,9 +358,8 @@ class Text(Label, Widget):
 		if val <= 0:
 			raise ValueError(f'"Text.scale" must be a positive number, not {val}.')
 		self._scale = val
-		# 12 is default font size, in pt.
-		self.font_size = (self.font_info[1] or 12) * val
+		self.font_size = (self.font_info[1] or self.DEFAULT_FONT_SIZE) * val
 		self._calc_anchor()
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return f'Text ({self.ID}): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

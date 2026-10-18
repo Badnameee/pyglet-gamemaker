@@ -19,15 +19,15 @@ class EventDispatcher(_EventDispatcher):
 	- `.bind_events` : Bind **kwargs and scene methods
 	"""
 
-	#* Constant vars
+	# * Constant vars
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
 
-	#* Instance vars
+	# * Instance vars
 	scene: Scene | None
-	"""The scene the dispatcher is from. None if part of a template or not in a scene."""
+	"""The scene the dispatcher is from."""
 
-	#* Private vars
+	# * Private vars
 	_events_registered = False
 	"""Holds whether events have been registered yet"""
 

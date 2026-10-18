@@ -54,7 +54,7 @@ __all__ = [
 
 
 from collections.abc import Callable
-from typing import Any, Literal, SupportsFloat
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pyglet.text import Weight
 
@@ -65,8 +65,8 @@ AnchorXDynamicValues = 'left', 'center', 'right'
 AnchorYDynamicValues = 'top', 'bottom', 'center'
 AnchorXDynamicType = Literal['left', 'center', 'right']
 AnchorYDynamicType = Literal['top', 'bottom', 'center']
-AnchorX = AnchorXDynamicType | SupportsFloat | float
-AnchorY = AnchorYDynamicType | SupportsFloat | float
+AnchorX = AnchorXDynamicType | str | float
+AnchorY = AnchorYDynamicType | str | float
 Anchor = tuple[AnchorX, AnchorY]
 EventHandler = Callable[..., Any]
 YAMLDict = dict[Any, Any] | None
@@ -112,3 +112,13 @@ class TriggerInteractType(Enum):
 	NONE = auto()
 	OVERLAP = auto()
 	COLLIDE = auto()
+
+
+@runtime_checkable
+class HasHitbox(Protocol):
+	"""Class Protocol for an object with a hitbox attribute."""
+
+	trigger: Trigger
+
+
+from .shapes.trigger import Trigger  # so cursed but if it works it works

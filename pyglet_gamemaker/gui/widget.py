@@ -52,7 +52,7 @@ class Widget(EventDispatcher, ABC):
 	- `.EVENT_TYPES`: Put event names that may be dispatched
 	"""
 
-	#* CONSTS
+	# * CONSTS
 	CONVERT_DYNAMIC: dict[AnchorXDynamicType | AnchorYDynamicType, float] = {
 		'left': 0,
 		'bottom': 0,
@@ -63,8 +63,10 @@ class Widget(EventDispatcher, ABC):
 	"""Converts dynamic anchor to multiplier"""
 	DEFAULT_FONT_INFO: FontInfo = None, None, None
 	"""The default font info, can be overwritten by `~pgm.Scene`"""
+	DEFAULT_FONT_SIZE: int = 12
+	"""Default pyglet/pgm font size"""
 
-	#* Instance vars
+	# * Instance vars
 	ID: str
 	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
@@ -73,16 +75,16 @@ class Widget(EventDispatcher, ABC):
 	"""Original (*unanchored* AND *unrotated*) position of widget"""
 	initial_anchor: Anchor = 0, 0
 	"""Original anchor offset of widget"""
-	dispatch: bool = True
+	dispatch: bool
 	"""If False, don't dispatch events to handlers"""
-	attach_events: bool = True
+	attach_events: bool
 	"""If False, don't attach events (e.g. mouse) to window"""
-	window: Window
+	window: Window | None
 	"""Window widget is associated with"""
 	scene: Scene | None
-	"""The scene the widget is from. None if widget is a template or not in a scene."""
+	"""The scene the widget is from."""
 
-	#* Property vars
+	# * Property vars
 	_pos: Point2D = 0, 0
 	_anchor: Point2D = 0, 0
 	_scale: float = 1
@@ -124,6 +126,9 @@ class Widget(EventDispatcher, ABC):
 
 	def bind_mouse(self) -> None:
 		"""Bind mouse events to widget."""
+		if not self.window:
+			raise ValueError(f'"Widget.window" (ID: "{self.ID}") not set.')
+
 		self.window.push_handlers(
 			on_mouse_press=self._on_mouse_press,
 			on_mouse_release=self._on_mouse_release,

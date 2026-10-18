@@ -72,7 +72,7 @@ class Scene1(Scene):
 	def on_mouse_motion(self, x, y, dx, dy):
 		self.hitbox.pos = x, y
 		self.circle.pos = x, y
-		#print(self.hitbox if self.mode == 'rect' else self.circle)
+		# print(self.hitbox if self.mode == 'rect' else self.circle)
 
 	def on_key_press(self, symbol, modifiers):
 		if symbol == key.A:
@@ -105,7 +105,7 @@ class Scene1(Scene):
 
 		print(self.hitbox if self.mode == 'rect' else self.circle)
 
-	def on_trigger_enter(self, t1, t2):
+	def on_trigger_enter(self, t1, t2, MTV):
 		print(f'{t1.ID} entered {t2.ID}!')
 
 	def on_trigger_exit(self, t1, t2):

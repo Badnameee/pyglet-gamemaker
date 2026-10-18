@@ -8,13 +8,13 @@ Use `~pgm.shapes.{class}` instead of `~pgm.shapes.trigger.{class}`.
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 import pyglet
 from pyglet.math import Vec2
 
 from ..event_dispatcher import EventDispatcher
-from ..types import TriggerInteractType, TriggerStatus, TriggerSubType
+from ..types import HasHitbox, TriggerInteractType, TriggerStatus, TriggerSubType
 
 if TYPE_CHECKING:
 	from typing import Self
@@ -28,17 +28,10 @@ KT = TypeVar('KT')
 VT = TypeVar('VT')
 
 
-@runtime_checkable
-class HasHitbox(Protocol):
-	"""Class Protocol for an object with a hitbox attribute."""
-
-	trigger: Trigger
-
-
 class TargetTagManager(Generic[KT, VT]):
 	"""Manages tags for what tags a trigger, hitbox, etc. can interact with.
 
-	Adds functionality for input validation and removing tags when value is NONE.
+	Adds functionality for removing tags when value is NONE.
 	"""
 
 	_set: set[KT]
@@ -107,7 +100,7 @@ class Trigger(EventDispatcher):
 	window: Window | None
 	"""Window trigger is associated with"""
 	scene: Scene | None
-	"""The scene the trigger is from. None if trigger is a template or not in a scene."""
+	"""The scene the trigger is from."""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
 	subtype: TriggerSubType
@@ -168,10 +161,10 @@ class Trigger(EventDispatcher):
 			coords (tuple[Point2D, ...]):
 				The coordinates of the trigger. Use `.from_point` to create from a single point.
 			window (Window, optional):
-				Window for attaching self
+				Window for attaching self. Required if binding mouse events.
 				Defaults to None.
 			scene (Scene | None):
-				The scene the trigger is from. None if trigger is a template or not in a scene.
+				The scene the trigger is from.
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
@@ -184,7 +177,7 @@ class Trigger(EventDispatcher):
 				Defaults to False.
 			tags (set[str], optional):
 				Tags trigger should possess, used for controlling collision more closely.
-				Uses 'Default' tag if None passed.
+				Uses 'Default' tag by default.
 				Defaults to None.
 			target_tags (dict[str, TriggerInteractType], optional):
 				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
@@ -204,7 +197,7 @@ class Trigger(EventDispatcher):
 		self.subtype = _subtype
 		self.hit_triggers = set()
 		self.tags = tags or {'Default'}
-		# Use Default first so that .target_tags can overwrite
+		# Use Default first so that target_tags can overwrite
 		self._target_tags = TargetTagManager(
 			{'Default': TriggerInteractType.OVERLAP} | (target_tags or {})
 		)
@@ -255,7 +248,7 @@ class Trigger(EventDispatcher):
 				Window for attaching self
 				Defaults to None.
 			scene (Scene | None):
-				The scene the trigger is from. None if trigger is a template or not in a scene.
+				The scene the trigger is from.
 			anchor (Point2D, optional):
 				Anchor position.
 				Defaults to (0, 0).
@@ -323,7 +316,7 @@ class Trigger(EventDispatcher):
 				Window for attaching self.
 				Defaults to None.
 			scene (Scene | None):
-				The scene the trigger is from. None if trigger is a template or not in a scene.
+				The scene the trigger is from.
 			anchor (Point2D, optional):
 				Anchor position.
 				Defaults to (0, 0).
@@ -461,7 +454,7 @@ class Trigger(EventDispatcher):
 				other = other.trigger
 			else:
 				raise TypeError(
-					f'Hitbox passed into Trigger.collide() method is of type {other.__class__.__name__}, which does not contain a `.trigger` attribute.'
+					f'Hitbox passed to "Trigger.collide()" method is of type {other.__class__.__name__}, which does not contain a `.trigger` attribute.'
 				)
 
 		if not self.enabled or not other.enabled:
@@ -626,8 +619,8 @@ class Trigger(EventDispatcher):
 		if hit_status & TriggerStatus.TRIGGER_HIT and other not in self.hit_triggers:
 			self.hit_triggers.add(other)
 			self.dispatch_event('on_trigger_enter', self, other, MTV)
-		# First nohit
 
+		# First nohit
 		elif hit_status & TriggerStatus.TRIGGER_NOHIT and other in self.hit_triggers:
 			self.hit_triggers.remove(other)
 			self.dispatch_event('on_trigger_exit', self, other)
@@ -742,26 +735,26 @@ class Trigger(EventDispatcher):
 			on_mouse_drag=self._on_mouse_drag,
 		)
 
-	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
+	def _on_mouse_press(self, x: int, y: int, _buttons: int, _modifiers: int) -> bool:
 		if not self.enabled:
 			return False
 		self._update_mouse_collision(x, y)
 		return False
 
-	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> bool:
+	def _on_mouse_motion(self, x: int, y: int, _dx: int, _dy: int) -> bool:
 		if not self.enabled:
 			return False
 		self._update_mouse_collision(x, y)
 		return False
 
-	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
+	def _on_mouse_release(self, x: int, y: int, _buttons: int, _modifiers: int) -> bool:
 		if not self.enabled:
 			return False
 		self._update_mouse_collision(x, y)
 		return False
 
 	def _on_mouse_drag(
-		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
+		self, x: int, y: int, _dx: int, _dy: int, _buttons: int, _modifiers: int
 	) -> bool:
 		if not self.enabled:
 			return False
@@ -855,7 +848,7 @@ class Trigger(EventDispatcher):
 		"""Get the tags this trigger targets. See `~pgm.shapes.TargetTagManager`."""
 		return self._target_tags
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return (
 			f'Trigger ({self.ID}): Subtype "{self.subtype}" @ {self._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
 			f'- Coords: {self.coords}'
@@ -904,7 +897,7 @@ class TriggerCircle(Trigger):
 				Window for attaching self
 				Defaults to None.
 			scene (Scene | None):
-				The scene the trigger is from. None if trigger is a template or not in a scene.
+				The scene the trigger is from.
 			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
@@ -935,14 +928,15 @@ class TriggerCircle(Trigger):
 			tags,
 			target_tags,
 			_subtype=TriggerSubType.CIRCLE,
+			**kwargs,
 		)
 		self.axis = Vec2(0, 0)
 		self.radius = radius
 
-	def _get_axes(self, sacrifice_MTV: bool) -> list[Vec2]:
+	def _get_axes(self, _sacrifice_MTV: bool) -> list[Vec2]:
 		return [self.axis.normalize()]
 
-	def _project(self, axis: Vec2, remove_dupes: bool) -> tuple[float, float]:
+	def _project(self, axis: Vec2, _remove_dupes: bool) -> tuple[float, float]:
 		proj = axis.dot(Vec2(*self.coords[0]))
 		return proj - self.radius, proj + self.radius
 
@@ -1036,5 +1030,5 @@ class TriggerCircle(Trigger):
 			),
 		)
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return f'Trigger ({self.ID}): Subtype "Circle" @ {self._trans_pos} @ {self.radius} size @ {self.angle} rad | {self.anchor} anchored\n'

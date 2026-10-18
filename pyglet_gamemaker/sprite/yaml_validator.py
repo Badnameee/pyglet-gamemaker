@@ -57,7 +57,7 @@ class YAMLValidator:
 			return
 
 		raise NotImplementedError(
-			f'{validation_mode} not in currently supported validation types'
+			f'{validation_mode} not a currently supported YAML validation type.'
 		)
 
 	def validate(self) -> list[Exception]:
@@ -79,6 +79,7 @@ class YAMLValidator:
 		errors: list[Exception] = []
 
 		# Conditions of .yaml file that affect future validation
+		# 	Mitigates cascading errors
 		conditions = {
 			'rows': False,
 			'cols': False,

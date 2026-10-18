@@ -173,7 +173,7 @@ class SpriteSheet:
 		# Must be same number of names as parts of the grid
 		if len(args) != len(self.image_grid):
 			raise ValueError(
-				f'SpriteSheet.name() takes {len(self.image_grid)} args, but {len(args)} were given.'
+				f'"SpriteSheet.name()" takes {len(self.image_grid)} args, but {len(args)} were given.'
 			)
 
 		# Add all to lookup table
@@ -187,7 +187,7 @@ class SpriteSheet:
 	def _name_from_yaml(self) -> None:
 		if not self.has_yaml:
 			raise NotImplementedError(
-				'Should not run SpriteSheet.name_with_yaml on a SpriteSheet with no yaml'
+				'Should not run "SpriteSheet.name_with_yaml()" on a SpriteSheet with no yaml.'
 			)
 		with open(self.yaml_path) as file:  # type: ignore[arg-type] # self.yaml_path guaranteed to be Path if self.has_yaml
 			self.yaml = yaml.safe_load(file)
@@ -237,5 +237,5 @@ class SpriteSheet:
 		"""Dimensions of single sprite."""
 		return self.image_grid.item_width, self.image_grid.item_height
 
-	def __repr__(self) -> str:
+	def __str__(self) -> str:
 		return f'SpriteSheet @ "{self.path}": {self.rows}x{self.cols} | {"has" if self.has_yaml else "does not have"} yaml'
