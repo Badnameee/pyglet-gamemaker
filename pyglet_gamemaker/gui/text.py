@@ -54,13 +54,13 @@ class Text(Label, Widget):
 		text: str = 'None',
 		x: float | None = None,
 		y: float | None = None,
+		color: Color = colors.WHITE,
 		window: Window | None = None,
 		scene: Scene | None = None,
 		batch: Batch | None = None,
 		group: Group | None = None,
 		anchor: Anchor = (0, 0),
 		font_info: FontInfo = (None, None, None),
-		color: Color = colors.WHITE,
 	) -> None:
 		"""Create a text label.
 
@@ -76,6 +76,9 @@ class Text(Label, Widget):
 			y (float, optional):
 				Anchored y position. Can be set through `Scene.WIDGET_POS` if scene is provided.
 				Defaults to None.
+			color (Color, optional):
+				Color of text.
+				Defaults to Color.WHITE.
 			window (Window, optional):
 				Window for attaching self.
 				Defaults to None.
@@ -94,9 +97,6 @@ class Text(Label, Widget):
 			font_info (FontInfo, optional):
 				Font name, size, (and optional weight).
 				Defaults to (None, None, None).
-			color (Color, optional):
-				Color of text.
-				Defaults to Color.WHITE.
 		"""
 		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
 		x, y = get_scene_widget_pos(self, ID, x, y, scene)

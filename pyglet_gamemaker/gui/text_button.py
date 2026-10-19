@@ -84,6 +84,7 @@ class TextButton(Widget):
 		text: str = 'None',
 		x: float | None = None,
 		y: float | None = None,
+		color: Color = colors.WHITE,
 		window: Window | None = None,
 		scene: Scene | None = None,
 		batch: Batch | None = None,
@@ -92,7 +93,6 @@ class TextButton(Widget):
 		button_anchor: Anchor = (0, 0),
 		text_anchor: Anchor = ('center', 'center'),
 		font_info: FontInfo = (None, None, None),
-		color: Color = colors.WHITE,
 		hover_enlarge: int = 0,
 		dispatch: bool = True,
 		attach_events: bool = True,
@@ -115,6 +115,9 @@ class TextButton(Widget):
 				Anchored x position of button
 			y (float):
 				Anchored y position of button
+			color (Color, optional):
+				Color of text.
+				Defaults to Color.WHITE.
 			window (Window, optional):
 				Window for attaching self. Required if binding mouse events.
 				Defaults to None.
@@ -139,9 +142,6 @@ class TextButton(Widget):
 			font_info (FontInfo, optional):
 				Font name, size, (and optional weight).
 				Defaults to (None, None, None).
-			color (Color, optional):
-				Color of text.
-				Defaults to Color.WHITE.
 			hover_enlarge (int, optional):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
@@ -176,13 +176,13 @@ class TextButton(Widget):
 			ID,
 			text,
 			*self._shifted_text_pos,
+			color,
 			window,
 			scene,
 			batch,
 			text_group,
 			text_anchor,
 			font_info,
-			color,
 		)
 
 		self.window, self.scene = window, scene
