@@ -8,7 +8,7 @@ Use `~pgm.shapes.{class}` instead of `~pgm.shapes.trigger.{class}`.
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING
 
 import pyglet
 from pyglet.math import Vec2
@@ -24,27 +24,23 @@ if TYPE_CHECKING:
 	from ..window import Window
 
 
-KT = TypeVar('KT')
-VT = TypeVar('VT')
-
-
-class TargetTagManager(Generic[KT, VT]):
+class TargetTagManager:
 	"""Manages tags for what tags a trigger, hitbox, etc. can interact with.
 
 	Adds functionality for removing tags when value is NONE.
 	"""
 
-	_set: set[KT]
-	_dict: dict[KT, VT]
+	_set: set[str]
+	_dict: dict[str, TriggerInteractType]
 
-	def __init__(self, d: dict[KT, VT] | None) -> None:  # noqa: D107
+	def __init__(self, d: dict[str, TriggerInteractType] | None) -> None:  # noqa: D107
 		self._dict = d or {}
 		self._set = set(d) if d else set()
 
-	def __getitem__(self, key: KT) -> VT:
+	def __getitem__(self, key: str) -> TriggerInteractType:
 		return self._dict[key]
 
-	def __setitem__(self, key: KT, value: VT) -> None:
+	def __setitem__(self, key: str, value: TriggerInteractType) -> None:
 		# Remove item
 		if key in self._set and value == TriggerInteractType.NONE:
 			self._set.remove(key)
@@ -136,7 +132,7 @@ class Trigger(EventDispatcher):
 	_last_mouse_info: Point2D = 0, 0
 	_mouse_trigger: Trigger | None = None
 	"""Trigger on the mouse for mouse detection"""
-	_target_tags: TargetTagManager[str, TriggerInteractType]
+	_target_tags: TargetTagManager
 
 	def __init__(
 		self,
@@ -844,7 +840,7 @@ class Trigger(EventDispatcher):
 		self._calc_coords()
 
 	@property
-	def target_tags(self) -> TargetTagManager[str, TriggerInteractType]:
+	def target_tags(self) -> TargetTagManager:
 		"""Get the tags this trigger targets. See `~pgm.shapes.TargetTagManager`."""
 		return self._target_tags
 
