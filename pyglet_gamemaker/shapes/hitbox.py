@@ -13,6 +13,7 @@ from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
+from .. import colors
 from ..types import EventHandler, TriggerInteractType, TriggerSubType
 from .trigger import Trigger, TriggerCircle
 
@@ -44,11 +45,11 @@ class Hitbox:
 		self,
 		ID: str,
 		coords: tuple[Point2D, ...],
-		color: Color,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		color: Color = colors.WHITE,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
@@ -65,16 +66,21 @@ class Hitbox:
 				Name/ID of hitbox
 			coords (tuple[Point2D, ...]):
 				The coordinates of the hitbox
-			color (Color):
-				The color of the hitbox
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from
-			batch (Batch):
-				The batch for rendering
-			group (Group):
-				The group for rendering
+			color (Color, optional):
+				Color of text.
+				Defaults to Color.WHITE.
+			window (Window, optional):
+				Window for attaching self.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
@@ -128,11 +134,11 @@ class Hitbox:
 		y: float,
 		width: float,
 		height: float,
-		color: Color,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		color: Color = colors.WHITE,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
@@ -153,16 +159,21 @@ class Hitbox:
 				Width of rect
 			height (float):
 				Height of rect
-			color (Color):
-				The color of the hitbox render
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from.
-			batch (Batch):
-				The batch for rendering
-			group (Group):
-				The group for rendering
+			color (Color, optional):
+				Color of text.
+				Defaults to Color.WHITE.
+			window (Window, optional):
+				Window for attaching self.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
 			anchor (Point2D):
 				Anchor position
 			dispatch (bool, optional):
@@ -372,11 +383,11 @@ class HitboxCircle:
 		x: float,
 		y: float,
 		radius: float,
-		color: Color,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		color: Color = colors.WHITE,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
@@ -395,16 +406,21 @@ class HitboxCircle:
 				Center y
 			radius (float):
 				The radius of the circle
-			color (Color):
-				The color of the hitbox
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from.
-			batch (Batch):
-				The batch for rendering
-			group (Group):
-				The group for rendering
+			color (Color, optional):
+				Color of text.
+				Defaults to Color.WHITE.
+			window (Window, optional):
+				Window for attaching self.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
 			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).

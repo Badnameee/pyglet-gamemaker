@@ -81,16 +81,16 @@ class Text(Label, Widget):
 				Defaults to Color.WHITE.
 			window (Window, optional):
 				Window for attaching self.
-				Defaults to None.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
 				The scene the widget is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to None.
+				Defaults to `scene.main_group` if scene is provided, else None.
 			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).

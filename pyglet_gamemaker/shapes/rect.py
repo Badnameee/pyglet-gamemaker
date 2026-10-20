@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from pyglet.graphics import Batch, Group
 
+from .. import colors
 from ..types import Color, EventHandler, Point2D, TriggerInteractType, TriggerSubType
 from .hitbox import Hitbox
 
@@ -32,11 +33,11 @@ class Rect(Hitbox):
 		y: float,
 		width: float,
 		height: float,
-		color: Color,
-		window: Window,
-		scene: Scene | None,
-		batch: Batch,
-		group: Group,
+		color: Color = colors.WHITE,
+		window: Window | None = None,
+		scene: Scene | None = None,
+		batch: Batch | None = None,
+		group: Group | None = None,
 		anchor: Point2D = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
@@ -57,16 +58,21 @@ class Rect(Hitbox):
 				Width of rect
 			height (float):
 				Height of rect
-			color (Color):
-				The color of the hitbox render
-			window (Window):
-				Window for attaching self
-			scene (Scene | None):
-				The scene the hitbox is from.
-			batch (Batch):
-				The batch for rendering
-			group (Group):
-				The group for rendering
+			color (Color, optional):
+				Color of text.
+				Defaults to Color.WHITE.
+			window (Window, optional):
+				Window for attaching self.
+				Defaults to None.
+			scene (Scene, optional):
+				The scene the widget is from.
+				Defaults to None.
+			batch (Batch, optional):
+				Batch for rendering.
+				Defaults to None.
+			group (Group, optional):
+				Group for rendering.
+				Defaults to None.
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
