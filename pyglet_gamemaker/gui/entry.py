@@ -13,8 +13,8 @@ from pyglet.gui import TextEntry
 from .. import colors
 from ..types import (
 	FLOAT_REGEX,
-	AnchorXDynamicValues,
-	AnchorYDynamicValues,
+	AnchorXDynamicPresetValues,
+	AnchorYDynamicPresetValues,
 )
 from .widget import Widget
 
@@ -37,12 +37,10 @@ if TYPE_CHECKING:
 class Entry(TextEntry, Widget):
 	"""A text entry with custom anchor support. Supports anchoring with specific pixel values or dynamic.
 
-	Dynamic Anchors:
-	- `AnchorX`: 'left', 'center', 'right'
-	- `AnchorY`: 'bottom', 'center', 'top'
+	See `~pgm.gui.widget.Widget` for information regarding anchoring.
 
 	Dispatches:
-	- `on_commit` when enter/return key is pressed on the entry.
+	- `on_submit()` when enter/return key is pressed on the entry.
 	"""
 
 	# * CONSTS
@@ -269,13 +267,13 @@ class Entry(TextEntry, Widget):
 		# Dynamic
 		if isinstance(self.raw_anchor[0], str):
 			# Original dynamic anchor
-			if self.raw_anchor[0] in AnchorXDynamicValues:
+			if self.raw_anchor[0] in AnchorXDynamicPresetValues:
 				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.width  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
 				anchor_x = float(self.raw_anchor[0]) * self.width
 			else:
 				raise ValueError(
-					f'"Text.anchor_x" must be either one of {AnchorXDynamicValues} or a string representing a float, not "{self.raw_anchor[0]}".'
+					f'"Text.anchor_x" must be either one of {AnchorXDynamicPresetValues} or a string representing a float, not "{self.raw_anchor[0]}".'
 				)
 		# Static
 		if isinstance(self.raw_anchor[0], float | int):
@@ -284,13 +282,13 @@ class Entry(TextEntry, Widget):
 		# Dynamic
 		if isinstance(self.raw_anchor[1], str):
 			# Original dynamic anchor
-			if self.raw_anchor[1] in AnchorYDynamicValues:
+			if self.raw_anchor[1] in AnchorYDynamicPresetValues:
 				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.height  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
 				anchor_y = float(self.raw_anchor[1]) * self.height
 			else:
 				raise ValueError(
-					f'"Text.anchor_y" must be either one of {AnchorYDynamicValues} or a string representing a float, not "{self.raw_anchor[1]}".'
+					f'"Text.anchor_y" must be either one of {AnchorYDynamicPresetValues} or a string representing a float, not "{self.raw_anchor[1]}".'
 				)
 		# Static
 		if isinstance(self.raw_anchor[1], float | int):

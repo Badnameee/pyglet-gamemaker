@@ -38,9 +38,7 @@ class TextButton(Widget):
 
 	Note: Be cautious if editing button or text attributes directly, as it can cause desync between individual components and textbutton object
 
-	Dynamic Anchors:
-	- `AnchorX`: 'left', 'center', 'right'
-	- `AnchorY`: 'bottom', 'center', 'top'
+	See `~pgm.gui.widget.Widget` for information regarding anchoring.
 
 	Button has three statuses: 'unpressed', 'hover', and 'pressed'.
 
@@ -496,6 +494,6 @@ class TextButton(Widget):
 	def __str__(self) -> str:
 		return (
 			f'TextButton("{self.ID}"):\n'
-			f'- Button @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored\n'
-			f'- Text @ {self.text.pos} @ {self.text.scale}x scale | {self.text.raw_anchor} anchored'
+			f'- Button: {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored\n'
+			f'- Text: "{self.text.text}" @ {self.text.pos} @ {self.text.scale}x scale | {self.text.raw_anchor} anchored'
 		)

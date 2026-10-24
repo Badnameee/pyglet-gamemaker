@@ -129,7 +129,7 @@ class YAMLValidator:
 	def _validate_anim_padding(
 		self, conditions: dict[str, bool], errors: list[Exception]
 	) -> None:
-		if not self.yaml: 
+		if not self.yaml:
 			return
 
 		# row-padding: {int >= 0}

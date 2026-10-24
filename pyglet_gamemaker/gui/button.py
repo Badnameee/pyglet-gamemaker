@@ -13,8 +13,8 @@ from pyglet.gui import PushButton as _PushButton
 from ..sprite.sprite_sheet import SpriteSheet
 from ..types import (
 	FLOAT_REGEX,
-	AnchorXDynamicValues,
-	AnchorYDynamicValues,
+	AnchorXDynamicPresetValues,
+	AnchorYDynamicPresetValues,
 	ButtonStatus,
 )
 from .widget import Widget
@@ -30,15 +30,13 @@ if TYPE_CHECKING:
 
 
 class Button(_PushButton, Widget):
-	"""A basic 2D button with custom anchor support. Supports anchoring with specific pixel values or a ratio of the width/height.
+	"""A basic 2D button.
 
-	Dynamic Anchors:
-	- `AnchorX`: 'left', 'center', 'right'
-	- `AnchorY`: 'bottom', 'center', 'top'
+	See `~pgm.gui.widget.Widget` for information regarding anchoring.
 
 	Button has three statuses: 'unpressed', 'hover', and 'pressed'.
 
-	Takes a sprite sheet (using `sprite.Spritesheet`) to render the button.
+	Takes a sprite sheet (using `~pgm.sprite.sprite_sheet.Spritesheet`) to render the button.
 	Sprite sheet must have images in a row for all of the statuses in above order.
 
 	When creating object, give the starting index of the button images.
@@ -235,13 +233,13 @@ class Button(_PushButton, Widget):
 		# Dynamic
 		if isinstance(self.raw_anchor[0], str):
 			# Original dynamic anchor
-			if self.raw_anchor[0] in AnchorXDynamicValues:
+			if self.raw_anchor[0] in AnchorXDynamicPresetValues:
 				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self._width  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
 				anchor_x = float(self.raw_anchor[0]) * self._width
 			else:
 				raise ValueError(
-					f'"Text.anchor_x" must be either one of {AnchorXDynamicValues} or a string representing a float, not "{self.raw_anchor[0]}".'
+					f'"Text.anchor_x" must be either one of {AnchorXDynamicPresetValues} or a string representing a float, not "{self.raw_anchor[0]}".'
 				)
 		# Static
 		if isinstance(self.raw_anchor[0], float | int):
@@ -250,13 +248,13 @@ class Button(_PushButton, Widget):
 		# Dynamic
 		if isinstance(self.raw_anchor[1], str):
 			# Original dynamic anchor
-			if self.raw_anchor[1] in AnchorYDynamicValues:
+			if self.raw_anchor[1] in AnchorYDynamicPresetValues:
 				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self._height  # type: ignore[index]
 			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
 				anchor_y = float(self.raw_anchor[1]) * self._height
 			else:
 				raise ValueError(
-					f'"Text.anchor_y" must be either one of {AnchorYDynamicValues} or a string representing a float, not "{self.raw_anchor[1]}".'
+					f'"Text.anchor_y" must be either one of {AnchorYDynamicPresetValues} or a string representing a float, not "{self.raw_anchor[1]}".'
 				)
 		# Static
 		if isinstance(self.raw_anchor[1], float | int):

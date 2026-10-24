@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 	from ..types import (
 		Anchor,
 		AnchorX,
-		AnchorXDynamicType,
+		AnchorXDynamicPresetType,
 		AnchorY,
-		AnchorYDynamicType,
+		AnchorYDynamicPresetType,
 		FontInfo,
 		Point2D,
 	)
@@ -31,6 +31,13 @@ class Widget(EventDispatcher, ABC):
 	"""The base class for a Widget. Inherit to create own widget.
 
 	NOTE: Must call `~pgm.gui.Widget.register_events()` for event handler names to be registered.
+
+	Widgets support 3 types of anchor types:
+	- Static - A static pixel value that does not scale
+	- Dynamic Preset - Specific dynamic values with preset scales (e.g. **'left', 'center', 'right'**)
+		- See `~pgm.types.AnchorXDynamicPresetValues` and `~pgm.types.AnchorYDynamicPresetValues` for all values.
+	- Dynamic - A float representing the ratio of width/height the anchor should be
+		- e.g. **('0.5', '0.5')** is equivalent to a center anchor
 
 	Required Methods:
 	- `._calc_anchor()`: Calculate the static anchor with raw_anchor
@@ -49,17 +56,17 @@ class Widget(EventDispatcher, ABC):
 	- `.scale`
 
 	Optional Methods:
-	- `_verify_group(): Inserts default group from scene if not set explicitly
-		- Override to group default scene group, see `._verify_group()`
 	- `_on_mouse_...`: `...press()`, `...release()`, `...motion()`, `...drag()`
 		- Mouse events to attach when creating widget.
 
-	Optional Properties:
+	Optional Vars:
 	- `.EVENT_TYPES`: Put event names that may be dispatched
 	"""
 
 	# * CONSTS
-	CONVERT_DYNAMIC: dict[AnchorXDynamicType | AnchorYDynamicType, float] = {
+	CONVERT_DYNAMIC: dict[
+		AnchorXDynamicPresetType | AnchorYDynamicPresetType, float
+	] = {
 		'left': 0,
 		'bottom': 0,
 		'center': 0.5,
