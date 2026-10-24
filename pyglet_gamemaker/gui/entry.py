@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING
 
 from pyglet.gui import TextEntry
 
-from pyglet_gamemaker.utils import get_scene_widget_pos, pad_font_info
-
 from .. import colors
 from ..types import (
 	FLOAT_REGEX,
@@ -32,7 +30,6 @@ if TYPE_CHECKING:
 		EventHandler,
 		FontInfo,
 		Point2D,
-		Weight,
 	)
 	from ..window import Window
 
@@ -55,7 +52,7 @@ class Entry(TextEntry, Widget):
 	initial_text: str
 	"""Initial text to display"""
 	edited: bool = False
-	"""If True, text has been edited. If False, remove default text when focused"""
+	"""If True, entry text has been edited. If False, remove default text when focused."""
 	font_info: FontInfo
 	"""The font information"""
 	base_width: int
@@ -83,7 +80,7 @@ class Entry(TextEntry, Widget):
 		text_color: Color = colors.BLACK,
 		caret_color: Color = colors.BLACK,
 		attach_events: bool = True,
-		dispatch: bool = False,
+		dispatch: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a text entry widget. Note most of the arguments and docstring were copied from `~pyglet.gui.TextEntry.__init__`.
@@ -105,7 +102,7 @@ class Entry(TextEntry, Widget):
 				Defaults to 15 times the font size.
 			window (Window, optional):
 				Window for attaching self. Required if binding mouse events.
-				Defaults to None.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
 				The scene the widget is from.
 				Defaults to None.
@@ -141,8 +138,15 @@ class Entry(TextEntry, Widget):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 
 		"""
-		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
-		x, y = get_scene_widget_pos(self, ID, x, y, scene)
+		self.ID = ID
+		self.scene = scene
+
+		# Verify scene attrs
+		self.font_info = self._process_font_info(font_info)
+		x, y = self._verify_pos(x, y)
+		self.window = self._verify_window(window)
+		batch = self._verify_batch(batch)
+		group = self._verify_group(group)
 
 		super().__init__(
 			text,
@@ -150,7 +154,7 @@ class Entry(TextEntry, Widget):
 			y,  # type: ignore[arg-type]
 			width
 			if width is not None
-			else 15 * (font_info[1] or self.DEFAULT_FONT_SIZE),
+			else 15 * (self.font_info[1] or self.DEFAULT_FONT_SIZE),
 			color,  # type: ignore[arg-type]
 			text_color,  # type: ignore[arg-type]
 			caret_color,  # type: ignore[arg-type]
@@ -158,15 +162,12 @@ class Entry(TextEntry, Widget):
 			group,
 		)
 
-		self.ID = ID
-		self.window, self.scene = window, scene
 		self.dispatch = dispatch
 		self.attach_events = attach_events
 		self._color = color
+		self.initial_pos = x, y
 		self.initial_anchor = self.anchor = anchor
 		self.initial_text = text
-
-		self.initial_pos = x, y
 		self.base_width = self._width
 		self.base_height = self._height
 
@@ -176,24 +177,20 @@ class Entry(TextEntry, Widget):
 			len(self._doc.text),
 			{
 				'color': text_color,
-				'font_name': font_info[0],
-				'font_size': font_info[1],
-				'weight': font_info[2],  # type: ignore[misc]
+				'font_name': self.font_info[0],
+				'font_size': self.font_info[1],
+				'weight': self.font_info[2],  # type: ignore[misc]
 			},
 		)
 
 		# Automatically adjust height to font size
-		if font_info[1] is not None:
-			self.height *= font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # Don't care if it's a float
+		if self.font_info[1] is not None:
+			self.height *= self.font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # Don't care if it's a float
 
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
 		if attach_events:
-			if not self.window:
-				raise TypeError(
-					'Cannot attach Entry to window if ".window" is not set.'
-				)
 			self.window.push_handlers(self)
 		# Bind user kwargs
 		if dispatch:
@@ -248,10 +245,19 @@ class Entry(TextEntry, Widget):
 			self.dispatch_event('on_submit', self, text)
 
 	def _set_focus(self, value: bool) -> None:
+		# Get previous value to detect first click-off
+		prev_value = self._focus
 		super()._set_focus(value)
+
 		if value and not self.edited:
-			self.edited = True
 			self.clear()
+
+		# First click-off
+		elif not value and prev_value:
+			# If empty, bring back text and clear when focused
+			self.edited = len(self._layout.document.text) != 0
+			if not self.edited:
+				self._layout.document.insert_text(0, self.initial_text)
 
 	def _calc_anchor(self) -> None:
 		# Get pos before messing with anchor
@@ -392,7 +398,7 @@ class Entry(TextEntry, Widget):
 		return self._doc.get_style('weight')  # type: ignore[no-any-return]
 
 	@weight.setter
-	def weight(self, val: Weight) -> None:
+	def weight(self, val: str) -> None:
 		self.font_info = *self.font_info[:2], val
 		self._doc.set_style(0, len(self._doc.text), {'weight': val})
 

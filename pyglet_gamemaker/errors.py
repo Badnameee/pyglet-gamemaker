@@ -1,9 +1,6 @@
-# ruff: noqa: D105, D107
+# ruff: noqa: D107
 
-"""Stores all errors used internally.
-
-At the moment they all are related to validating .yaml files.
-"""
+"""Stores all errors used internally."""
 
 from __future__ import annotations
 
@@ -12,6 +9,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from pathlib import PurePath
 	from typing import Any
+
+	from .types import HasID
 
 
 class MissingConfigKey(KeyError):
@@ -174,3 +173,20 @@ class EmptyConfigFile(ValueError):
 		s = f'Empty config file at "{self.file_path}".'
 
 		return s
+
+
+class MissingAttr(TypeError):
+	"""Class (usually widget/trigger) missing an attribute that could be supplemented by `scene` attr."""
+
+	# * Instance vars
+	obj: HasID
+	"""Object in question"""
+	attr_name: str
+	"""Attribute name"""
+
+	def __init__(self, obj: HasID, attr_name: str) -> None:
+		self.obj = obj
+		self.attr_name = attr_name
+
+	def __str__(self) -> str:
+		return f'{self.obj.__class__.__name__}(ID="{self.obj.ID}") must receive an {self.attr_name} value or a scene to extract {self.attr_name} from.'

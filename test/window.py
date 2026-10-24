@@ -6,8 +6,12 @@ import sys
 sys.path.append(os.getcwd())
 
 from pyglet_gamemaker import colors
+from pyglet_gamemaker.gui.button import Button
+from pyglet_gamemaker.gui.text import Text
+from pyglet_gamemaker.gui.text_button import TextButton
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
+from pyglet_gamemaker.shapes.rect import Rect
 from pyglet_gamemaker.window import Window
 
 
@@ -21,50 +25,59 @@ class TestScene(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.bg = self.create_bg(self.bg_color)
-		self.create_text(
+		self.bg = Rect(
+			'BG',
+			0,
+			0,
+			self.window.width,
+			self.window.height,
+			self.bg_color,
+			scene=self,
+		)
+
+		self.txt = Text(
 			'Test1',
 			'Hi',
-			('center', 'center'),
+			scene=self,
+			anchor=('center', 'center'),
 		)
-		self.create_button(
+		self.button = Button(
 			'Test2',
 			DefaultResources.button,
 			0,
-			('center', 'center'),
+			scene=self,
+			anchor=('center', 'center'),
 		)
-		self.create_text_button(
+		self.text_button = TextButton(
 			'Test3',
-			'Hi2',
 			DefaultResources.button,
 			0,
-			('center', 'center'),
-			('center', 'center'),
+			'Hi2',
+			scene=self,
+			button_anchor=('center', 'center'),
+			text_anchor=('center', 'center'),
 			hover_enlarge=5,
 		)
 
 	def on_half_click(self, button):
-		if button.ID == 'Test2':
-			print(f'{self.__class__.__name__}: Test2 was clicked!')
-		elif button.ID == 'Test3':
-			print(f'{self.__class__.__name__}: Test3 was clicked!')
+		print(f'{self.__class__.__name__}: "{button.ID}" was clicked!')
 
 	def on_full_click(self, button):
-		if button.ID == 'Test2':
-			print(f'{self.__class__.__name__}: Test2 was fully pressed!')
-		elif button.ID == 'Test3':
-			print(f'{self.__class__.__name__}: Test3 was fully pressed!')
+		print(f'{self.__class__.__name__}: "{button.ID}" was fully pressed!')
+		if button.ID == 'Test3':
 			self.dispatch_event('on_scene_change', 'TestScene2')
 
 	def enable(self):
-		print(self.__class__.__name__ + ' enabled')
-		for widget in self.widgets.values():
-			widget.enable()
+		print(f'{self.__class__.__name__} enabled')
+		self.txt.enable()
+		self.button.enable()
+		self.text_button.enable()
 
 	def disable(self):
-		print(self.__class__.__name__ + ' disabled')
-		for widget in self.widgets.values():
-			widget.disable()
+		print(f'{self.__class__.__name__} disabled')
+		self.txt.disable()
+		self.button.disable()
+		self.text_button.disable()
 
 
 class TestScene2(Scene):
@@ -81,51 +94,62 @@ class TestScene2(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.bg = self.create_bg(self.bg_color)
-		self.create_text(
+		self.bg = Rect(
+			'BG',
+			0,
+			0,
+			self.window.width,
+			self.window.height,
+			self.bg_color,
+			scene=self,
+		)
+
+		self.txt = Text(
 			'Test1',
 			'Hi',
-			('center', 'center'),
+			scene=self,
+			anchor=('center', 'center'),
 		)
-		self.create_button(
+		self.button = Button(
 			'Test2',
 			DefaultResources.button,
 			0,
-			('center', 'center'),
+			scene=self,
+			anchor=('center', 'center'),
 		)
-		self.create_text_button(
+		self.text_button = TextButton(
 			'Test3',
-			'Hi2',
 			DefaultResources.button,
 			0,
-			('center', 'center'),
-			('center', 'center'),
+			'Hi2',
+			scene=self,
+			button_anchor=('center', 'center'),
+			text_anchor=('center', 'center'),
 			hover_enlarge=5,
 		)
 
 	def on_half_click(self, button):
-		print(f'{self.__class__.__name__}: {button.ID} was clicked!')
+		print(f'{self.__class__.__name__}: "{button.ID}" was clicked!')
 
 	def on_full_click(self, button):
-		print(f'{self.__class__.__name__}: {button.ID} was fully pressed!')
+		print(f'{self.__class__.__name__}: "{button.ID}" was fully pressed!')
 		if button.ID == 'Test3':
 			self.dispatch_event('on_scene_change', 'TestScene')
 
 	def enable(self):
-		print(self.__class__.__name__, 'enabled')
-		for widget in self.widgets.values():
-			widget.enable()
+		print(f'{self.__class__.__name__} enabled')
+		self.txt.enable()
+		self.button.enable()
+		self.text_button.enable()
 
 	def disable(self):
-		print(self.__class__.__name__, 'disabled')
-		for widget in self.widgets.values():
-			widget.disable()
+		print(f'{self.__class__.__name__} disabled')
+		self.txt.disable()
+		self.button.disable()
+		self.text_button.disable()
 
-
-test1 = TestScene('TestScene', colors.ORANGE)
-test2 = TestScene2('TestScene2', colors.WHITE)
 
 window = Window(640, 480)
-window.add_scene(test1)
-window.add_scene(test2)
+window.add_scene(TestScene('TestScene', colors.ORANGE))
+window.add_scene(TestScene2('TestScene2', colors.WHITE))
 window.run()

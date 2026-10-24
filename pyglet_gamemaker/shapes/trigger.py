@@ -35,7 +35,22 @@ class TargetTagManager:
 
 	def __init__(self, d: dict[str, TriggerInteractType] | None) -> None:  # noqa: D107
 		self._dict = d or {}
-		self._set = set(d) if d else set()
+		# Immediately remove items with 'NONE'
+		self._set = (
+			{k for k, v in d.items() if v != TriggerInteractType.NONE} if d else set()
+		)
+
+	def intersection(self, tags: set[str]) -> set[str]:
+		"""Return interesction of target tags with trigger tags of other trigger.
+
+		Args:
+			tags (set[str]):
+				Trigger tags of other trigger.
+
+		Returns:
+			set[str]: All tags that allow for collision between both triggers.
+		"""
+		return self._set.intersection(tags)
 
 	def __getitem__(self, key: str) -> TriggerInteractType:
 		return self._dict[key]
@@ -76,7 +91,7 @@ class Trigger(EventDispatcher):
 	- `on_mouse_trigger_motion(self, x, y, MTV)` when mouse moves in trigger
 	- `on_mouse_trigger_exit(self, x, y)` when mouse exits trigger
 	- `on_trigger_enter(self, other, MTV)` when trigger enters trigger
-	- `on_trigger_exit(self, other, MTV)` when trigger exits trigger
+	- `on_trigger_exit(self, other)` when trigger exits trigger
 	"""
 
 	# * Constant vars
@@ -158,9 +173,10 @@ class Trigger(EventDispatcher):
 				The coordinates of the trigger. Use `.from_point` to create from a single point.
 			window (Window, optional):
 				Window for attaching self. Required if binding mouse events.
-				Defaults to None.
-			scene (Scene | None):
+				Defaults to `scene.window` if scene is provided, else None.
+			scene (Scene, optional):
 				The scene the trigger is from.
+				Defaults to None.
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
@@ -186,13 +202,15 @@ class Trigger(EventDispatcher):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.ID = ID
-		self.window, self.scene = window, scene
+		self.window = window if window else scene.window if scene else None
+		self.scene = scene
 		self._trans_pos = coords[0]
 		self._raw_coords = coords
 		self.anchor = anchor
 		self.subtype = _subtype
+
 		self.hit_triggers = set()
-		self.tags = tags or {'Default'}
+		self.tags = tags if tags is not None else {'Default'}
 		# Use Default first so that target_tags can overwrite
 		self._target_tags = TargetTagManager(
 			{'Default': TriggerInteractType.OVERLAP} | (target_tags or {})
@@ -241,10 +259,11 @@ class Trigger(EventDispatcher):
 			height (float):
 				Height of rect
 			window (Window, optional):
-				Window for attaching self
+				Window for attaching self. Required if binding mouse events.
 				Defaults to None.
-			scene (Scene | None):
+			scene (Scene, optional):
 				The scene the trigger is from.
+				Defaults to None.
 			anchor (Point2D, optional):
 				Anchor position.
 				Defaults to (0, 0).
@@ -348,7 +367,7 @@ class Trigger(EventDispatcher):
 			**kwargs,
 		)
 
-	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
+	def _get_axes(self, _: bool) -> list[Vec2]:
 		# Get the normal axes of the trigger as Vec2 (for SAT).
 
 		# * Special case: point trigger has no axes
@@ -356,12 +375,10 @@ class Trigger(EventDispatcher):
 			return []
 
 		axes = []
+		seen_axes = set()
 
 		# Loops through vertices and gets all adjacent pairs
-		for i in range(
-			len(self.coords)
-			// (2 if remove_dupes and self.subtype == TriggerSubType.RECT else 1)
-		):
+		for i in range(len(self.coords)):
 			# Grabbing vertex positions
 			p1, p2 = self.coords[i], self.coords[(i + 1) % len(self.coords)]
 
@@ -369,11 +386,16 @@ class Trigger(EventDispatcher):
 			vec = p1[0] - p2[0], p1[1] - p2[1]
 			# Gets perpendicular vector and normalizes it
 			# Normalizing helps get MTV
-			axes.append(Vec2(-vec[1], vec[0]).normalize())
+			vec = Vec2(-vec[1], vec[0]).normalize()
+
+			# Check for no dupes
+			if abs(vec) not in seen_axes:
+				seen_axes.add(abs(vec))
+				axes.append(vec)
 
 		return axes
 
-	def _project(self, axis: Vec2, remove_dupes: bool) -> tuple[float, float]:
+	def _project(self, axis: Vec2, _: bool) -> tuple[float, float]:
 		# Project the trigger onto an axis (use self._get_axes()) (for SAT).
 		# 	Returns a line
 
@@ -382,10 +404,7 @@ class Trigger(EventDispatcher):
 
 		# Gets projections for each vertice
 		# Vertice with lowest and highest projections are used in line
-		for i in range(
-			len(self.coords)
-			// (2 if remove_dupes and self.subtype == TriggerSubType.RECT else 1)
-		):
+		for i in range(1, len(self.coords)):
 			# Projection using dot product
 			pos = axis.dot(self.coords[i])
 			maximum = max(maximum, pos)
@@ -398,6 +417,13 @@ class Trigger(EventDispatcher):
 		l1: tuple[float, float], l2: tuple[float, float]
 	) -> float:
 		# Get the length of intersection between 2 lines (for SAT).
+
+		length = min(l1[1], l2[1]) - max(l1[0], l2[0])
+		if length < 0:
+			return 0
+		if (l1[0] + l1[1]) / 2 > (l2[0] + l2[1]) / 2:
+			return abs(length)
+		return -abs(length)
 
 		# Line1 cannot possibly intersect
 		if l1[0] >= l2[1] or l1[1] < l2[0]:
@@ -457,7 +483,7 @@ class Trigger(EventDispatcher):
 			return False, None
 
 		# Check other has at least one tag
-		if not self._target_tags._set.intersection(other.tags):
+		if not self._target_tags.intersection(other.tags):
 			return False, None
 
 		# Do not try to check 2 points
@@ -476,9 +502,9 @@ class Trigger(EventDispatcher):
 
 		# Get circle collision axis
 		if isinstance(self, TriggerCircle):
-			self._set_collision_axis(other)
+			self._get_collision_axis(other)
 		if isinstance(other, TriggerCircle):
-			other._set_collision_axis(self)
+			other._get_collision_axis(self)
 
 		# * Step 1: Get the normal axes of each edge
 		axes = self._get_axes(sacrifice_MTV)
@@ -846,7 +872,7 @@ class Trigger(EventDispatcher):
 
 	def __str__(self) -> str:
 		return (
-			f'Trigger ({self.ID}): Subtype "{self.subtype}" @ {self._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+			f'Trigger({self.ID}): Subtype "{self.subtype}" @ {self._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
 			f'- Coords: {self.coords}'
 		)
 
@@ -890,10 +916,11 @@ class TriggerCircle(Trigger):
 			radius (float):
 				The radius of the circle
 			window (Window, optional):
-				Window for attaching self
-				Defaults to None.
-			scene (Scene | None):
+				Window for attaching self. Required if binding mouse events.
+				Defaults to `scene.window` if scene is provided, else None.
+			scene (Scene, optional):
 				The scene the trigger is from.
+				Defaults to None.
 			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
@@ -947,11 +974,14 @@ class TriggerCircle(Trigger):
 
 		return False, None
 
-	def _set_collision_axis(self, trigger: Trigger) -> None:
-		"""Get closest point on trigger to circle.
+	def _get_collision_axis(self, trigger: Trigger | HasHitbox) -> None:
+		"""Get axis of collision for circle (for SAT).
+
+		This axis points from center of circle to closest point on other trigger.
 
 		Args:
-			trigger (Trigger): Trigger to get axis to
+			trigger (Trigger | HasHitbox):
+				Trigger to get axis to
 		"""
 
 		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
@@ -1027,4 +1057,4 @@ class TriggerCircle(Trigger):
 		)
 
 	def __str__(self) -> str:
-		return f'Trigger ({self.ID}): Subtype "Circle" @ {self._trans_pos} @ {self.radius} size @ {self.angle} rad | {self.anchor} anchored\n'
+		return f'Trigger("{self.ID}"): Subtype "Circle" @ {self._trans_pos} @ {self.radius} size @ {self.angle} rad | {self.anchor} anchored'

@@ -67,20 +67,20 @@ class Hitbox:
 			coords (tuple[Point2D, ...]):
 				The coordinates of the hitbox
 			color (Color, optional):
-				Color of text.
+				Color of hitbox.
 				Defaults to Color.WHITE.
 			window (Window, optional):
-				Window for attaching self.
-				Defaults to None.
+				Window for attaching self. Required if binding mouse events.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
-				The scene the widget is from.
+				The scene the hitbox is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to None.
+				Defaults to `scene.main_group` if scene is provided, else None.
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
@@ -92,11 +92,11 @@ class Hitbox:
 				Event handlers can still be manually invoked.
 				Defaults to False.
 			tags (set[str], optional):
-				Tags trigger should possess, used for controlling collision more closely.
+				Tags hitbox should possess, used for controlling collision more closely.
 				Uses 'Default' tag if None passed.
 				Defaults to None.
 			target_tags (dict[str, TriggerInteractType], optional):
-				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
+				Tags hitbox interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
 				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
 			_subtype (TriggerSubType, optional):
@@ -105,7 +105,12 @@ class Hitbox:
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
-		self.render = Polygon(*coords, color=color, batch=batch, group=group)
+		self.render = Polygon(
+			*coords,
+			color=color,
+			batch=batch if batch else scene.batch if scene else None,
+			group=group if group else scene.main_group if scene else None,
+		)
 		self.trigger = Trigger(
 			ID,
 			coords,
@@ -163,17 +168,17 @@ class Hitbox:
 				Color of text.
 				Defaults to Color.WHITE.
 			window (Window, optional):
-				Window for attaching self.
+				Window for attaching self. Required if binding mouse events.
 				Defaults to None.
 			scene (Scene, optional):
-				The scene the widget is from.
+				The scene the hitbox is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to None.
+				Defaults to `scene.main_group` if scene is provided, else None.
 			anchor (Point2D):
 				Anchor position
 			dispatch (bool, optional):
@@ -356,7 +361,7 @@ class Hitbox:
 
 	def __str__(self) -> str:
 		return (
-			f'Hitbox ({self.ID}): Subtype "{self.subtype}" @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+			f'Hitbox("{self.ID}"): Subtype "{self.subtype}" @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
 			f'- Coords: {self.trigger.coords}'
 		)
 
@@ -410,17 +415,17 @@ class HitboxCircle:
 				Color of text.
 				Defaults to Color.WHITE.
 			window (Window, optional):
-				Window for attaching self.
-				Defaults to None.
+				Window for attaching self. Required if binding mouse events.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
-				The scene the widget is from.
+				The scene the hitbox is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to None.
+				Defaults to `scene.main_group` if scene is provided, else None.
 			anchor (Point2D, optional):
 				The anchor position.
 				Defaults to (0, 0).
@@ -443,7 +448,14 @@ class HitboxCircle:
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
-		self.render = Circle(x, y, radius, color=color, batch=batch, group=group)
+		self.render = Circle(
+			x,
+			y,
+			radius,
+			color=color,
+			batch=batch if batch else scene.batch if scene else None,
+			group=group if group else scene.main_group if scene else None,
+		)
 		self.trigger = TriggerCircle(
 			ID,
 			x,
@@ -600,7 +612,4 @@ class HitboxCircle:
 		self.render.color = val
 
 	def __str__(self) -> str:
-		return (
-			f'Hitbox ({self.ID}): Subtype "{self.subtype}" @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
-			f'- Coords: {self.trigger.coords}'
-		)
+		return f'HitboxCircle("{self.ID}"): Subtype "Circle" @ {self.trigger._trans_pos} @ {self.trigger.radius} size @ {self.angle} rad | {self.anchor} anchored'

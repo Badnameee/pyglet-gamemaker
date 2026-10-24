@@ -1,16 +1,16 @@
-"""Stores all custom types used in library.
+"""Stores all custom types used in pgm.
 
 - Point2D: (float, float) - for 2D points
-- FontInfo: (type, size, weight)
+- FontInfo: (type, size, weight). See `pyglet.text.Weight` for weight values.
 - Axis: Either 'x' or 'y'
 - AnchorXDynamicType: The possible **values** of the dynamic anchor on x-axis
 - AnchorYDynamicType: The possible **values** of the dynamic anchor on y-axis
 - AnchorXDynamicType: Only the dynamic anchor on x-axis
 - AnchorYDynamicType: Only the dynamic anchor on y-axis
-- AnchorX: Dynamic or static anchor on x-axis
-- AnchorY: Dynamic or static anchor on y-axis
+- AnchorX: Static, dynamic, or true-dynamic anchor on x-axis
+- AnchorY: Static, dynamic, or true-dynamic anchor on y-axis
 - Anchor: (`.AnchorX`, `.AnchorY`)
-- Color: Enum that stores a bunch of preset colors. See `~pgm.types.Color`
+- Color: Enum that stores a bunch of preset colors. See `~pgm.colors` for color values.
 - Eventhandler: Type for user-made event handlers
 - YAMLDict: Type for parsed YAML files
 - YAMLIterable: Type for iterable YAML values for custom parsing
@@ -45,7 +45,6 @@ __all__ = [
 	'YAMLValidationMode',
 	'FLOAT_REGEX',
 	'Color',
-	'Weight',
 	'TriggerSubType',
 	'ButtonStatus',
 	'TriggerStatus',
@@ -56,10 +55,8 @@ __all__ = [
 from collections.abc import Callable
 from typing import Any, Literal, Protocol, runtime_checkable
 
-from pyglet.text import Weight
-
 Point2D = tuple[float, float]
-FontInfo = tuple[str | None, int | None] | tuple[str | None, int | None, Weight | None]
+FontInfo = tuple[str | None, int | None] | tuple[str | None, int | None, str | None]
 Axis = Literal['x', 'y']
 AnchorXDynamicValues = 'left', 'center', 'right'
 AnchorYDynamicValues = 'top', 'bottom', 'center'
@@ -116,9 +113,16 @@ class TriggerInteractType(Enum):
 
 @runtime_checkable
 class HasHitbox(Protocol):
-	"""Class Protocol for an object with a hitbox attribute."""
+	"""Class Protocol for an object with a trigger attribute."""
 
 	trigger: Trigger
 
 
-from .shapes.trigger import Trigger  # so cursed but if it works it works
+@runtime_checkable
+class HasID(Protocol):
+	"""Class Protocol for an object with an ID attribute."""
+
+	ID: str
+
+
+from .shapes.trigger import Trigger

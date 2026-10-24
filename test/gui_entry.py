@@ -10,6 +10,7 @@ from pyglet.shapes import Circle
 from pyglet.window import key
 
 from pyglet_gamemaker import colors
+from pyglet_gamemaker.gui.entry import Entry
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.window import Window
 
@@ -18,11 +19,12 @@ class Scene1(Scene):
 	WIDGET_POS = {'Test': (0.5, 0.5)}
 
 	def initialize(self):
-		self.entry = self.create_entry(
+		self.entry = Entry(
 			'Test',
 			'Start Test!',
-			250,
-			('.5', '.5'),
+			width=250,
+			scene=self,
+			anchor=('.5', '.5'),
 			font_info=(None, None),
 			color=colors.GRAY,
 		)
@@ -76,7 +78,7 @@ class Scene1(Scene):
 		self.anchor.position = self.entry.pos
 
 	def on_submit(self, entry, text):
-		print(f'{self.__class__.__name__}: {entry.ID} submitted! "{text}"')
+		print(f'{self.__class__.__name__}: "{entry.ID}" submitted! "{text}"')
 
 	def enable(self):
 		for widget in self.widgets.values():

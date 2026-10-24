@@ -5,12 +5,10 @@ import sys
 
 sys.path.append(os.getcwd())
 
-import pyglet
 from pyglet.shapes import Rectangle
 
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.shapes.trigger import Trigger
-from pyglet_gamemaker.types import TriggerStatus
 from pyglet_gamemaker.window import Window
 
 
@@ -22,28 +20,24 @@ class Scene1(Scene):
 			100,
 			300,
 			300,
-			self.window,
-			self,
+			scene=self,
 		)
 		self.objs = []
-
-	def update(self, dt):
-		if self.t.status & TriggerStatus.MOUSE_HIT:
-			self.objs.append(
-				Rectangle(*self.t._last_mouse_info[:2], 1, 1, batch=self.batch)
-			)
 
 	def on_mouse_trigger_enter(self, trigger, x, y, MTV):
 		print(f'Mouse entered {trigger.ID} @ ({x}, {y})')
 
+	def on_mouse_trigger_motion(self, trigger, x, y, MTV):
+		self.objs.append(
+			Rectangle(*self.t._last_mouse_info[:2], 1, 1, batch=self.batch)
+		)
+
 	def on_mouse_trigger_exit(self, trigger, x, y):
 		print(f'Mouse exited {trigger.ID} @ ({x}, {y})')
 
-	def disable(self):
-		pyglet.clock.unschedule(self.update)
+	def disable(self): ...
 
-	def enable(self):
-		pyglet.clock.schedule_interval(self.update, 1 / 60)
+	def enable(self): ...
 
 
 window = Window(640, 480)

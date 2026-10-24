@@ -22,11 +22,8 @@ class Scene1(Scene):
 			200,
 			400,
 			(255, 0, 0, 100),
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
-			(100, 200),
+			scene=self,
+			anchor=(100, 200),
 			mouse_detection=True,
 			target_tags={'Custom2': TriggerInteractType.OVERLAP},
 		)
@@ -38,11 +35,8 @@ class Scene1(Scene):
 				50,
 				50,
 				(255, 255, 0, 100),
-				self.window,
-				self,
-				self.batch,
-				self.main_group,
-				(0, 25),
+				scene=self,
+				anchor=(0, 25),
 				mouse_detection=False,
 			),
 			Rect(
@@ -52,11 +46,8 @@ class Scene1(Scene):
 				50,
 				50,
 				(0, 255, 0, 100),
-				self.window,
-				self,
-				self.batch,
-				self.main_group,
-				(0, 25),
+				scene=self,
+				anchor=(0, 25),
 				mouse_detection=False,
 				tags={'Custom1'},
 			),
@@ -67,11 +58,8 @@ class Scene1(Scene):
 				50,
 				50,
 				(0, 255, 255, 100),
-				self.window,
-				self,
-				self.batch,
-				self.main_group,
-				(0, 25),
+				scene=self,
+				anchor=(0, 25),
 				mouse_detection=False,
 				tags={'Custom1', 'Custom2'},
 			),
@@ -91,7 +79,7 @@ class Scene1(Scene):
 		pyglet.clock.unschedule(self.update)
 
 	def enable(self):
-		pyglet.clock.schedule_interval(self.update, 1 / 1200)
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 
 
 window = Window(640, 480)

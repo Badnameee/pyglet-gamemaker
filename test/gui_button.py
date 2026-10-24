@@ -9,8 +9,10 @@ from pyglet.shapes import Circle
 from pyglet.window import key
 
 from pyglet_gamemaker import colors
+from pyglet_gamemaker.gui.button import Button
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
+from pyglet_gamemaker.shapes.rect import Rect
 from pyglet_gamemaker.window import Window
 
 
@@ -18,14 +20,22 @@ class Scene1(Scene):
 	WIDGET_POS = {'Test': (0.5, 0.5)}
 
 	def initialize(self):
-		self.bg = self.create_bg(colors.WHITE)
+		self.bg = Rect(
+			'BG',
+			0,
+			0,
+			self.window.width,
+			self.window.height,
+			colors.WHITE,
+			scene=self,
+		)
 
-		self.button = self.create_button(
+		self.button = Button(
 			'Test',
 			DefaultResources.button,
 			0,
-			('.5', '.5'),
-			add_to_widget_dict=False,
+			scene=self,
+			anchor=('.5', '.5'),
 		)
 
 		self.button_anchor = Circle(
@@ -39,10 +49,10 @@ class Scene1(Scene):
 		self.window.push_handlers(self)
 
 	def on_half_click(self, button):
-		print(f'{button.ID} pressed down on!')
+		print(f'"{button.ID}": pressed down on!')
 
 	def on_full_click(self, button):
-		print(f'{button.ID} fully pressed and released!')
+		print(f'"{button.ID}": fully pressed and released!')
 
 	def on_key_press(self, symbol, modifiers):
 		if symbol == key.A:

@@ -24,10 +24,7 @@ class Scene1(Scene):
 			100,
 			100,
 			(255, 0, 0),
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 			mouse_detection=True,
 		)
 		self.r2 = Rect(
@@ -37,10 +34,7 @@ class Scene1(Scene):
 			80,
 			110,
 			(0, 0, 255, 100),
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 			mouse_detection=False,
 		)
 		self.objs = []

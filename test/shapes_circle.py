@@ -5,6 +5,8 @@ import sys
 
 sys.path.append(os.getcwd())
 
+import math
+
 import pyglet
 from pyglet.window import key
 
@@ -31,9 +33,17 @@ class Scene1(Scene):
 			'hbc2', 300, 300, 50, colors.RED, window, self, self.batch, self.main_group
 		)
 
+		self.pressed = key.KeyStateHandler()
+
 		self.window.push_handlers(self)
+		self.window.push_handlers(self.pressed)
 
 	def update(self, dt):
+		if self.pressed[key.LEFT]:
+			self.circle.angle += math.pi * dt
+		if self.pressed[key.RIGHT]:
+			self.circle.angle -= math.pi * dt
+
 		if self.circle.collide(self.circle2)[0]:
 			self.circle.render.opacity = 128
 		else:
@@ -56,6 +66,8 @@ class Scene1(Scene):
 			self.circle.angle -= 0.1
 		elif symbol == key.RIGHT:
 			self.circle.angle += 0.1
+		else:
+			return
 
 		print(self.circle)
 

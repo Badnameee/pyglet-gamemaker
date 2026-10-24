@@ -80,6 +80,8 @@ extend-ignore = [
 	"RUF",
 	"ANN401",
 	"C901",
+	"EXE005",
+	"ARG002",
 ]
 
 [tool.ruff.lint.pydocstyle]

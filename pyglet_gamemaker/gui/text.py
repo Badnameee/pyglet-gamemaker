@@ -16,7 +16,6 @@ from ..types import (
 	AnchorXDynamicValues,
 	AnchorYDynamicValues,
 )
-from ..utils import get_scene_widget_pos, pad_font_info
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -98,26 +97,29 @@ class Text(Label, Widget):
 				Font name, size, (and optional weight).
 				Defaults to (None, None, None).
 		"""
-		self.font_info = pad_font_info(font_info, self.DEFAULT_FONT_INFO)
-		x, y = get_scene_widget_pos(self, ID, x, y, scene)
+		self.ID = ID
+		self.scene = scene
 
-		(
-			super().__init__(
-				text,
-				x,
-				y,
-				0,
-				font_name=self.font_info[0],
-				font_size=self.font_info[1],
-				color=color,
-				batch=batch,
-				group=group,
-				weight=self.font_info[2],  # type: ignore[misc, arg-type]
-			),
+		# Verify scene attrs
+		self.font_info = self._process_font_info(font_info)
+		x, y = self._verify_pos(x, y)
+		self.window = self._verify_window(window)
+		batch = self._verify_batch(batch)
+		group = self._verify_group(group)
+
+		super().__init__(
+			text,
+			x,
+			y,
+			0,
+			font_name=self.font_info[0],
+			font_size=self.font_info[1],
+			color=color,
+			batch=batch,
+			group=group,
+			weight=self.font_info[2],  # type: ignore[misc, arg-type]
 		)
 
-		self.window, self.scene = window, scene
-		self.ID = ID
 		self.initial_anchor = self.anchor = anchor
 		self.initial_pos = self.pos = x, y
 		self.initial_text = self.text = text
@@ -362,4 +364,4 @@ class Text(Label, Widget):
 		self._calc_anchor()
 
 	def __str__(self) -> str:
-		return f'Text ({self.ID}): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'
+		return f'Text("{self.ID}"): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

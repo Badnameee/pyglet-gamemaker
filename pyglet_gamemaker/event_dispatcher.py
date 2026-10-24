@@ -15,8 +15,8 @@ class EventDispatcher(_EventDispatcher):
 	"""Fork of `pyglet.event.EventDispatcher` allowing for automatic integration with pgm.
 
 	Methods:
-	- `.register_events` : register several events at once
-	- `.bind_events` : Bind **kwargs and scene methods
+	- `.register_events`: register all events from `.EVENT_TYPES` at once
+	- `.bind_events`: Bind **kwargs and scene methods
 	"""
 
 	# * Constant vars

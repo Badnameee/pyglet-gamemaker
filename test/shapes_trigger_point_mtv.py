@@ -20,10 +20,7 @@ class Scene1(Scene):
 			300,
 			300,
 			(255, 0, 0),
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 			mouse_detection=True,
 		)
 		self.r2 = Rect(
@@ -33,10 +30,7 @@ class Scene1(Scene):
 			300,
 			300,
 			(255, 0, 0, 100),
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 			mouse_detection=False,
 		)
 		self.objs = []
@@ -46,8 +40,8 @@ class Scene1(Scene):
 		self.r1.pos += MTV
 
 	def on_mouse_trigger_motion(self, trigger, x, y, MTV):
-		print(f'Mouse moved in {trigger.ID} @ ({x}, {y})')
 		self.r1.pos += MTV
+		self.r1.trigger._update_mouse_collision(x, y)
 
 	def on_mouse_trigger_exit(self, trigger, x, y):
 		print(f'Mouse exited {trigger.ID} @ ({x}, {y})')

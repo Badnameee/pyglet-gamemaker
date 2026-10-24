@@ -17,7 +17,6 @@ from ..types import (
 	AnchorYDynamicValues,
 	ButtonStatus,
 )
-from ..utils import get_scene_widget_pos
 from .widget import Widget
 
 if TYPE_CHECKING:
@@ -105,16 +104,16 @@ class Button(_PushButton, Widget):
 				Defaults to None.
 			window (Window, optional):
 				Window for attaching self. Required if binding mouse events.
-				Defaults to None.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
 				The scene the widget is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to None.
+				Defaults to `scene.main_group` if scene is provided, else None.
 			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
@@ -128,7 +127,14 @@ class Button(_PushButton, Widget):
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
-		x, y = get_scene_widget_pos(self, ID, x, y, scene)
+		self.ID = ID
+		self.scene = scene
+
+		# Verify scene attrs
+		x, y = self._verify_pos(x, y)
+		self.window = self._verify_window(window)
+		batch = self._verify_batch(batch)
+		group = self._verify_group(group, 'button_group')
 
 		# Extract images from sheet
 		self._parse_sheet(
@@ -142,12 +148,9 @@ class Button(_PushButton, Widget):
 			self.pressed_img,
 			self.unpressed_img,
 			self.hover_img,
-			batch,
-			group,
+			batch=batch,
+			group=group,
 		)
-
-		self.window, self.scene = window, scene
-		self.ID = ID
 
 		self.initial_pos = self.pos = x, y
 		self.initial_anchor = self.anchor = anchor
@@ -425,4 +428,4 @@ class Button(_PushButton, Widget):
 		self._calc_anchor()
 
 	def __str__(self) -> str:
-		return f'Button ({self.ID}): {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'
+		return f'Button("{self.ID}"): {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'

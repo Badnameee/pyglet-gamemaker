@@ -5,6 +5,8 @@ import sys
 
 sys.path.append(os.getcwd())
 
+import math
+
 import pyglet
 from pyglet.window import key
 
@@ -23,10 +25,7 @@ class Scene1(Scene):
 			100,
 			50,
 			colors.WHITE,
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 		)
 		self.hitbox2 = Hitbox.from_rect(
 			'hb2',
@@ -35,29 +34,32 @@ class Scene1(Scene):
 			100,
 			50,
 			colors.RED,
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 		)
 		self.circle = HitboxCircle(
-			'hbc1',
+			'hbc',
 			100,
 			100,
 			50,
 			colors.WHITE,
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 		)
 		self.circle.render.visible = False
 
 		self.mode = 'rect'
+		self.pressed = key.KeyStateHandler()
 
 		self.window.push_handlers(self)
+		self.window.push_handlers(self.pressed)
 
 	def update(self, dt):
+		if self.pressed[key.LEFT]:
+			self.hitbox.angle += math.pi * dt
+			self.circle.angle += math.pi * dt
+		if self.pressed[key.RIGHT]:
+			self.hitbox.angle -= math.pi * dt
+			self.circle.angle -= math.pi * dt
+
 		if self.mode == 'rect':
 			if self.hitbox.collide(self.hitbox2)[0]:
 				self.hitbox.render.opacity = 128
@@ -87,14 +89,7 @@ class Scene1(Scene):
 		elif symbol == key.S:
 			self.hitbox.anchor_y -= 10
 			self.circle.anchor_y -= 10
-		elif symbol == key.LEFT:
-			self.hitbox.angle -= 0.1
-			self.circle.angle -= 0.1
-		elif symbol == key.RIGHT:
-			self.hitbox.angle += 0.1
-			self.circle.angle += 0.1
-
-		if symbol == key.C:
+		elif symbol == key.C:
 			self.mode = 'circle' if self.mode == 'rect' else 'rect'
 			if self.mode == 'rect':
 				self.hitbox.render.visible = True
@@ -102,6 +97,9 @@ class Scene1(Scene):
 			elif self.mode == 'circle':
 				self.hitbox.render.visible = False
 				self.circle.render.visible = True
+
+		else:
+			return
 
 		print(self.hitbox if self.mode == 'rect' else self.circle)
 

@@ -111,28 +111,30 @@ class TextButton(Widget):
 			text (str):
 				Label text.
 				Defaults to 'None'.
-			x (float):
-				Anchored x position of button
-			y (float):
-				Anchored y position of button
+			x (float, optional):
+				Anchored x position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
+			y (float, optional):
+				Anchored y position. Can be set through `Scene.WIDGET_POS` if scene is provided.
+				Defaults to None.
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
 			window (Window, optional):
 				Window for attaching self. Required if binding mouse events.
-				Defaults to None.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
 				The scene the widget is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			button_group (Group, optional):
 				Group for rendering button.
-				Defaults to None.
+				Defaults to `scene.button_group` if scene is provided, else None.
 			text_group (Group, optional):
 				Group for rendering text.
-				Defaults to None.
+				Defaults to `scene.text_group` if scene is provided, else None.
 			button_anchor (Anchor, optional):
 				Anchor position for the button. See `~pgm.gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
@@ -155,6 +157,16 @@ class TextButton(Widget):
 			**kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
+		self.ID = ID
+		self.scene = scene
+
+		# Verify scene attrs
+		x, y = self._verify_pos(x, y)
+		self.window = window = self._verify_window(window)
+		batch = self._verify_batch(batch)
+		button_group = self._verify_group(button_group, 'button_group', 'button_group')
+		text_group = self._verify_group(text_group, 'text_group', 'text_group')
+
 		self.button = Button(
 			ID,
 			image_sheet,
@@ -185,8 +197,6 @@ class TextButton(Widget):
 			font_info,
 		)
 
-		self.window, self.scene = window, scene
-		self.ID = ID
 		self.raw_anchor = self.button.raw_anchor
 		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 		self.dispatch = dispatch
@@ -485,7 +495,7 @@ class TextButton(Widget):
 
 	def __str__(self) -> str:
 		return (
-			f'TextButton ({self.ID}):\n'
+			f'TextButton("{self.ID}"):\n'
 			f'- Button @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored\n'
-			f'- Text @ {self.text.pos} @ {self.text.scale}x scale | {self.text.raw_anchor} anchored\n'
+			f'- Text @ {self.text.pos} @ {self.text.scale}x scale | {self.text.raw_anchor} anchored'
 		)

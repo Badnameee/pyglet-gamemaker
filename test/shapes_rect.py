@@ -5,6 +5,8 @@ import sys
 
 sys.path.append(os.getcwd())
 
+import math
+
 import pyglet
 from pyglet.window import key
 
@@ -24,28 +26,30 @@ class Scene1(Scene):
 			100,
 			50,
 			colors.WHITE,
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 		)
-		self.hitbox2 = Hitbox.from_rect(
+		self.hitbox = Hitbox.from_rect(
 			'hb1',
 			300,
 			300,
 			100,
 			50,
 			colors.RED,
-			self.window,
-			self,
-			self.batch,
-			self.main_group,
+			scene=self,
 		)
 
+		self.pressed = key.KeyStateHandler()
+
 		self.window.push_handlers(self)
+		self.window.push_handlers(self.pressed)
 
 	def update(self, dt):
-		if self.rect.collide(self.hitbox2)[0]:
+		if self.pressed[key.LEFT]:
+			self.rect.angle += math.pi * dt
+		if self.pressed[key.RIGHT]:
+			self.rect.angle -= math.pi * dt
+
+		if self.rect.collide(self.hitbox)[0]:
 			self.rect.render.opacity = 128
 		else:
 			self.rect.render.opacity = 255
@@ -63,10 +67,6 @@ class Scene1(Scene):
 			self.rect.anchor_y += 10
 		elif symbol == key.S:
 			self.rect.anchor_y -= 10
-		elif symbol == key.LEFT:
-			self.rect.angle -= 0.1
-		elif symbol == key.RIGHT:
-			self.rect.angle += 0.1
 
 		elif symbol == key.J:
 			self.rect.width -= 10
@@ -76,6 +76,8 @@ class Scene1(Scene):
 			self.rect.height += 10
 		elif symbol == key.K:
 			self.rect.height -= 10
+		else:
+			return
 
 		print(self.rect)
 

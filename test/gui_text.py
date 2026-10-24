@@ -11,6 +11,7 @@ import string
 from pyglet.shapes import Circle
 from pyglet.window import key
 
+from pyglet_gamemaker.gui.text import Text
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.window import Window
 
@@ -19,12 +20,12 @@ class Scene1(Scene):
 	WIDGET_POS = {'Test': (0, 0)}
 
 	def initialize(self):
-		self.txt = self.create_text(
+		self.txt = Text(
 			'Test',
 			'Hello World',
-			('.5', '.5'),
-			('Arial', 50),
-			add_to_widget_dict=False,
+			scene=self,
+			anchor=('.5', '.5'),
+			font_info=('Arial', 50),
 		)
 
 		self.txt_anchor = Circle(
@@ -40,12 +41,12 @@ class Scene1(Scene):
 	def on_mouse_motion(self, x, y, dx, dy):
 		self.txt.pos = x, y
 		self.txt_anchor.position = self.txt.pos
-		# print(self.txt)
+		print(self.txt)
 
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		self.txt.pos = x, y
 		self.txt_anchor.position = self.txt.pos
-		# print(self.txt)
+		print(self.txt)
 
 	def on_key_press(self, symbol, modifiers):
 		if symbol == key.LEFT:

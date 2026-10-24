@@ -59,20 +59,20 @@ class Rect(Hitbox):
 			height (float):
 				Height of rect
 			color (Color, optional):
-				Color of text.
+				Color of rect.
 				Defaults to Color.WHITE.
 			window (Window, optional):
-				Window for attaching self.
-				Defaults to None.
+				Window for attaching self. Required if binding mouse events.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
-				The scene the widget is from.
+				The scene the rect is from.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
-				Defaults to None.
+				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to None.
+				Defaults to `scene.main_group` if scene is provided, else None.
 			anchor (Point2D, optional):
 				The starting anchor position.
 				Defaults to (0, 0).
@@ -168,4 +168,4 @@ class Rect(Hitbox):
 		self._calc_coords()
 
 	def __str__(self) -> str:
-		return f'Rect ({self.ID}): {self.width}x{self.height} @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
+		return f'Rect("{self.ID}"): {self.width}x{self.height} @ {self.trigger._trans_pos} @ {self.angle} rad | {self.anchor} anchored'
