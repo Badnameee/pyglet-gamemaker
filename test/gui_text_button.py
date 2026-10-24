@@ -47,14 +47,14 @@ class Scene1(Scene):
 			10,
 			color=(0, 255, 255),
 			batch=self.batch,
-			group=self.UI_group,
+			group=self.GUI_group,
 		)
 		self.txt_anchor = Circle(
 			*self.button.text.pos,
 			5,
 			color=(255, 255, 0),
 			batch=self.batch,
-			group=self.UI_group,
+			group=self.GUI_group,
 		)
 
 		self.window.push_handlers(self)

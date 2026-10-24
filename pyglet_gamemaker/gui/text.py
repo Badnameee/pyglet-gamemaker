@@ -89,7 +89,7 @@ class Text(Label, Widget):
 				Defaults to `scene.batch` if scene is provided, else None.
 			group (Group, optional):
 				Group for rendering.
-				Defaults to `scene.main_group` if scene is provided, else None.
+				Defaults to `scene.text_group` if scene is provided, else None.
 			anchor (Anchor, optional):
 				Anchor position. See `~pgm.gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
@@ -105,7 +105,7 @@ class Text(Label, Widget):
 		x, y = self._verify_pos(x, y)
 		self.window = self._verify_window(window)
 		batch = self._verify_batch(batch)
-		group = self._verify_group(group)
+		group = self._verify_group(group, attr_name='text_group')
 
 		super().__init__(
 			text,

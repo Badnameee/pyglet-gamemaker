@@ -29,7 +29,7 @@ class Scene1(Scene):
 			color=colors.GRAY,
 		)
 
-		self.debug_group = Group(3, self.UI_group)
+		self.debug_group = Group(3, self.GUI_group)
 
 		self.anchor = Circle(
 			*self.entry.pos,

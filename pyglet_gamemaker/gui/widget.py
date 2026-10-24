@@ -251,12 +251,9 @@ class Widget(EventDispatcher, ABC):
 		return batch or self.scene.batch  # type: ignore[union-attr]
 
 	def _verify_group(
-		self, group: Group | None, name: str = 'group', attr_name: str = 'UI_group'
+		self, group: Group | None, name: str = 'group', attr_name: str = 'GUI_group'
 	) -> Group:
 		"""Verify group is set either in args or in scene.
-
-		- Because a scene can have several groups, override this by calling `super()._verify_group()`
-			and setting default scene group if it returns None.
 
 		Args:
 			group (Group | None):
@@ -266,7 +263,7 @@ class Widget(EventDispatcher, ABC):
 				Defaults to 'group'.
 			attr_name (str, optional):
 				If True, use scene.{attr_name} to get default group.
-				Defaults to 'UI_group'.
+				Defaults to 'GUI_group'.
 
 		Returns:
 			Group: New group

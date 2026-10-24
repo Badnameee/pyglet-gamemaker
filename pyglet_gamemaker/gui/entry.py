@@ -144,7 +144,7 @@ class Entry(TextEntry, Widget):
 		x, y = self._verify_pos(x, y)
 		self.window = self._verify_window(window)
 		batch = self._verify_batch(batch)
-		group = self._verify_group(group)
+		group = self._verify_group(group, attr_name='entry_group')
 
 		super().__init__(
 			text,

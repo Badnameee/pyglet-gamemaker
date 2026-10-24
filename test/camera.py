@@ -5,9 +5,12 @@ import sys
 
 sys.path.append(os.getcwd())
 
+import pyglet
 from pyglet.shapes import Circle, Rectangle
+from pyglet.window import key
 
 from pyglet_gamemaker.camera import Camera
+from pyglet_gamemaker.gui.text import Text
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.window import Window
 
@@ -15,6 +18,8 @@ window = Window(camera=Camera(anchor_x=640, anchor_y=360))
 
 
 class Scene1(Scene):
+	WIDGET_POS = {'hud': (0, 1)}
+
 	def initialize(self):
 		self.items = [
 			Rectangle(100, 100, 300, 300, (255, 255, 255, 255), batch=self.batch),
@@ -22,36 +27,56 @@ class Scene1(Scene):
 			Circle(640, 360, 300, color=(255, 255, 0), batch=self.batch),
 		]
 		self.items[0].z = -250
-		self.window.on_text = self.on_text
 
-	def on_text(self, txt):
-		if txt == 'a':
-			self.window.camera.move(x=-5)
-		if txt == 'd':
-			self.window.camera.move(x=5)
-		if txt == 'w':
-			self.window.camera.move(y=5)
-		if txt == 's':
-			self.window.camera.move(y=-5)
-		if txt == 'j':
-			self.window.camera.zoom(x=1 / 2)
-		if txt == 'l':
-			self.window.camera.zoom(x=2)
-		if txt == 'i':
-			self.window.camera.zoom(y=2)
-		if txt == 'k':
-			self.window.camera.zoom(y=1 / 2)
-		if txt == '=':
-			self.window.camera.zoom(2, 2)
-		if txt == '-':
-			self.window.camera.zoom(1 / 2, 1 / 2)
-		if txt == ',':
-			self.window.camera.rotate(z=-0.1)
-		if txt == '.':
-			self.window.camera.rotate(z=0.1)
+		self.txt = Text(
+			'hud',
+			'This is HUD!',
+			scene=self,
+			group=self.HUD_group,
+			anchor=('left', 'top'),
+			font_info=(None, 30),
+		)
 
-	def enable(self): ...
-	def disable(self): ...
+		self.speed = 500
+
+		self.pressed = key.KeyStateHandler()
+		self.window.push_handlers(self.pressed)
+
+	def update(self, dt):
+		move = self.speed * dt
+		scale = 1 + dt
+		rotate = dt
+
+		if self.pressed[key.A]:
+			self.window.camera.move(x=-move)
+		if self.pressed[key.D]:
+			self.window.camera.move(x=move)
+		if self.pressed[key.W]:
+			self.window.camera.move(y=move)
+		if self.pressed[key.S]:
+			self.window.camera.move(y=-move)
+		if self.pressed[key.J]:
+			self.window.camera.zoom(x=1 / scale)
+		if self.pressed[key.L]:
+			self.window.camera.zoom(x=scale)
+		if self.pressed[key.I]:
+			self.window.camera.zoom(y=scale)
+		if self.pressed[key.K]:
+			self.window.camera.zoom(y=1 / scale)
+		if self.pressed[key.EQUAL]:
+			self.window.camera.zoom(scale, scale)
+		if self.pressed[key.MINUS]:
+			self.window.camera.zoom(1 / scale, 1 / scale)
+		if self.pressed[key.COMMA]:
+			self.window.camera.rotate(z=-rotate)
+		if self.pressed[key.PERIOD]:
+			self.window.camera.rotate(z=rotate)
+
+	def enable(self):
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
+
+	def disable(self):
+		pyglet.clock.unschedule(self.update)
 
 
 scene1 = Scene1('Scene1')

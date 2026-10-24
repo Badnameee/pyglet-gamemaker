@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from pyglet.graphics import Batch, Group
 
 from .event_dispatcher import EventDispatcher
+from .gui import HUDGroup
 
 if TYPE_CHECKING:
 	from typing import Any
@@ -29,10 +30,11 @@ class Scene(EventDispatcher, ABC):
 	- `.batch`
 	- `.bg_group` - For backgrounds and stuff in the back
 	- `.main_group` - Main purpose group
-	- `.UI_group` - For all UI
+	- `.GUI_group` - For all UI
 		- `.button_group`
 		- `.entry_group`
 		- `.text_group`
+	- `.HUD_group` - All HUD items, special as it ignore's view matrix
 
 	Required Variables:
 	- `.WIDGET_POS`: Positions of widgets as scale to window (see `.WIDGET_POS`)
@@ -73,7 +75,7 @@ class Scene(EventDispatcher, ABC):
 	"""Rendering group for everything not UI"""
 	bg_group: Group
 	"""Rendering subgroup for the background"""
-	UI_group: Group
+	GUI_group: Group
 	"""Rendering group for all UI"""
 	button_group: Group
 	"""Rendering subgroup for buttons"""
@@ -81,6 +83,8 @@ class Scene(EventDispatcher, ABC):
 	"""Rendering subgroup for text"""
 	entry_group: Group
 	"""Rendering subgroup for entries"""
+	HUD_group: HUDGroup
+	"""Rendering group for HUD objects, ignores view matrix"""
 	widgets: dict[str, Widget]
 	"""Stores all widgets in the menu"""
 
@@ -99,10 +103,11 @@ class Scene(EventDispatcher, ABC):
 		self.batch = Batch()
 		self.bg_group = Group(0)
 		self.main_group = Group(1)
-		self.UI_group = Group(2)
-		self.button_group = Group(0, self.UI_group)
-		self.entry_group = Group(1, self.UI_group)
-		self.text_group = Group(2, self.UI_group)
+		self.GUI_group = Group(2)
+		self.button_group = Group(0, self.GUI_group)
+		self.entry_group = Group(1, self.GUI_group)
+		self.text_group = Group(2, self.GUI_group)
+		self.HUD_group = HUDGroup(3)
 
 		# Adds any event handlers passed through kwargs
 		self.register_events(**kwargs)
@@ -115,7 +120,7 @@ class Scene(EventDispatcher, ABC):
 			window (Window):
 				The screen window
 		"""
-		self.window = window
+		self.HUD_group.window = self.window = window
 
 		# Call user method initialize
 		self.initialize()
