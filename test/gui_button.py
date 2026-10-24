@@ -12,7 +12,7 @@ from pyglet_gamemaker import colors
 from pyglet_gamemaker.gui.button import Button
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.shapes.rect import Rect
+from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.window import Window
 
 

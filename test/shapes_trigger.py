@@ -8,7 +8,7 @@ sys.path.append(os.getcwd())
 from pyglet.shapes import Rectangle
 
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.shapes.trigger import Trigger
+from pyglet_gamemaker.collision.trigger import Trigger
 from pyglet_gamemaker.window import Window
 
 

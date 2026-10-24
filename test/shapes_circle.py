@@ -12,7 +12,7 @@ from pyglet.window import key
 
 from pyglet_gamemaker import colors
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.shapes.hitbox import HitboxCircle
+from pyglet_gamemaker.collision.hitbox import HitboxCircle
 from pyglet_gamemaker.window import Window
 
 

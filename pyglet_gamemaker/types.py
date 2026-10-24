@@ -123,4 +123,4 @@ class HasID(Protocol):
 	ID: str
 
 
-from .shapes.trigger import Trigger
+from .collision.trigger import Trigger

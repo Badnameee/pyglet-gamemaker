@@ -11,7 +11,7 @@ from pyglet_gamemaker.gui.text import Text
 from pyglet_gamemaker.gui.text_button import TextButton
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.shapes.rect import Rect
+from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.window import Window
 
 
