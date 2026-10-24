@@ -5,7 +5,7 @@ Use `~pgm.gui.TextButton` instead of `~pgm.gui.text_button.TextButton`.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .. import colors
 from ..types import ButtonStatus
@@ -34,9 +34,12 @@ if TYPE_CHECKING:
 class TextButton(Widget):
 	"""Both a 2D button and 2D text in one, see `~pgm.gui.Button` and `~pgm.gui.Text`.
 
-	Note: `.text` holds Text object, `.button` holds Button object
+	Note: `.text` holds Text object, `.button` holds Button object.
 
-	Note: Be cautious if editing button or text attributes directly, as it can cause desync between individual components and textbutton object
+	Properties found in both objects will have a unified setter in TextButton.
+	- To get/set text, use `.get_text()` and `.set_text()`.
+	- Note: Setting properties directly in `.button` or `.text` can cause desync.
+		- Since property getters pull from button, setting text would not be reflected in property getter.
 
 	See `~pgm.gui.widget.Widget` for information regarding anchoring.
 
@@ -49,8 +52,8 @@ class TextButton(Widget):
 	For example, passing in 0 will take 0 as the unpressed image, 1 as the hovered, and 2 as the pressed.
 
 	Dispatches:
-	- `on_half_click` when pressed.
-	- `on_full_click` when pressed and released without mouse moving off.
+	- `.on_half_click()` when pressed.
+	- `.on_full_click()` when pressed and released without mouse moving off.
 
 	Use kwargs to attach event handlers.
 
@@ -241,6 +244,14 @@ class TextButton(Widget):
 		self.hover_enlarge = self.start_hover_enlarge
 		# Sync status
 		self._on_mouse_motion(*self.button._last_mouse_pos, 0, 0)
+
+	def get_text(self) -> str:
+		"""Get text of text button."""
+		return self.text.text
+
+	def set_text(self, txt: Any) -> None:
+		"""Set text of text button."""
+		self.text.text = txt
 
 	def _update_status(self) -> None:
 		# Update the status of the button
@@ -454,6 +465,15 @@ class TextButton(Widget):
 	def visible(self, val: bool) -> None:
 		self.button.visible = val
 		self.text.visible = val
+
+	@property
+	def color(self) -> Color:
+		"""Color of text."""
+		return self.text.color
+
+	@color.setter
+	def color(self, val: Color) -> None:
+		self.text.color = val # type: ignore[assignment]
 
 	@property
 	def scale(self) -> float:

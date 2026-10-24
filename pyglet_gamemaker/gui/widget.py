@@ -102,12 +102,12 @@ class Widget(EventDispatcher, ABC):
 	_anchor: Point2D = 0, 0
 	_scale: float = 1
 
-	def offset(self, val: Point2D) -> None:  # noqa: D102
+	def offset(self, val: Point2D) -> None:
 		"""Add offset to widget."""
 		self.x += val[0]
 		self.y += val[1]
 
-	def set_offset(self, val: Point2D) -> None:  # noqa: D102
+	def set_offset(self, val: Point2D) -> None:
 		"""Set the offset of widget."""
 		self.pos = self.initial_pos[0] + val[0], self.initial_pos[1] + val[1]
 

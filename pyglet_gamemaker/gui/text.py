@@ -6,7 +6,7 @@ Use `~pgm.gui.Text` instead of `~pgm.gui.text.Text`.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pyglet.text import Label
 
@@ -212,7 +212,7 @@ class Text(Label, Widget):
 		return self.document.text
 
 	@text.setter
-	def text(self, txt: str | int) -> None:
+	def text(self, txt: Any) -> None:
 		self.document.text = str(txt)
 		self._calc_anchor()
 
