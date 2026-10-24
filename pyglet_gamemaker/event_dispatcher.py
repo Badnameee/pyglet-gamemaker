@@ -19,7 +19,7 @@ class EventDispatcher(_EventDispatcher):
 	- `.bind_events`: Bind **kwargs and scene methods
 	"""
 
-	# * Constant vars
+	# * CONSTS
 	EVENT_TYPES: tuple[str, ...] = ()
 	"""The event names that a widget can dispatch"""
 

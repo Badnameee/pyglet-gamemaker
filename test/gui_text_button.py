@@ -10,10 +10,10 @@ from pyglet.shapes import Circle
 from pyglet.window import key
 
 from pyglet_gamemaker import colors
+from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.gui.text_button import TextButton
 from pyglet_gamemaker.resources import DefaultResources
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.window import Window
 
 

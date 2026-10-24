@@ -7,8 +7,8 @@ sys.path.append(os.getcwd())
 
 import pyglet
 
+from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.shapes.rect import Rect
 from pyglet_gamemaker.types import TriggerInteractType
 from pyglet_gamemaker.window import Window
 
@@ -47,7 +47,7 @@ class Scene1(Scene):
 				50,
 				(0, 255, 0, 100),
 				scene=self,
-				anchor=(0, 25),
+				anchor=('left', 'center'),
 				mouse_detection=False,
 				tags={'Custom1'},
 			),
@@ -59,7 +59,7 @@ class Scene1(Scene):
 				50,
 				(0, 255, 255, 100),
 				scene=self,
-				anchor=(0, 25),
+				anchor=(0, '.5'),
 				mouse_detection=False,
 				tags={'Custom1', 'Custom2'},
 			),

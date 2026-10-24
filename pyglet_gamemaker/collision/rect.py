@@ -10,7 +10,14 @@ from typing import TYPE_CHECKING
 from pyglet.graphics import Batch, Group
 
 from .. import colors
-from ..types import Color, EventHandler, Point2D, TriggerInteractType, TriggerSubType
+from ..types import (
+	Anchor,
+	Color,
+	EventHandler,
+	Point2D,
+	TriggerInteractType,
+	TriggerSubType,
+)
 from .hitbox import Hitbox
 
 if TYPE_CHECKING:
@@ -38,7 +45,7 @@ class Rect(Hitbox):
 		scene: Scene | None = None,
 		batch: Batch | None = None,
 		group: Group | None = None,
-		anchor: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,

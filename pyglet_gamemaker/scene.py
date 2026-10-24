@@ -54,7 +54,7 @@ class Scene(EventDispatcher, ABC):
 	Use kwargs to attach event handlers.
 	"""
 
-	# * Constant vars
+	# * CONSTS
 	WIDGET_POS: dict[str, tuple[float, float]]
 	"""Stores the position of every widget as a scale {id: (scale_x, scale_y)}.
 

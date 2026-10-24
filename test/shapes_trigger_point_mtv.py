@@ -6,8 +6,8 @@ import sys
 sys.path.append(os.getcwd())
 
 
-from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.collision.rect import Rect
+from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.window import Window
 
 

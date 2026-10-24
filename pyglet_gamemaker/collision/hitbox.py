@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
 from .. import colors
-from ..types import EventHandler, TriggerInteractType, TriggerSubType
+from ..types import Anchor, EventHandler, TriggerInteractType, TriggerSubType
 from .trigger import Trigger, TriggerCircle
 
 if TYPE_CHECKING:
@@ -50,7 +50,7 @@ class Hitbox:
 		scene: Scene | None = None,
 		batch: Batch | None = None,
 		group: Group | None = None,
-		anchor: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,
@@ -313,7 +313,7 @@ class Hitbox:
 
 	@anchor_x.setter
 	def anchor_x(self, val: float) -> None:
-		self.trigger._anchor = val, self.anchor_y
+		self.trigger.anchor_x = val
 		self._calc_coords()
 
 	@property
@@ -326,7 +326,7 @@ class Hitbox:
 
 	@anchor_y.setter
 	def anchor_y(self, val: float) -> None:
-		self.trigger._anchor = self.anchor_x, val
+		self.trigger.anchor_y = val
 		self._calc_coords()
 
 	@property
@@ -335,8 +335,8 @@ class Hitbox:
 		return self.trigger._anchor
 
 	@anchor.setter
-	def anchor(self, val: Point2D) -> None:
-		self.trigger._anchor = val
+	def anchor(self, val: Anchor) -> None:
+		self.trigger.anchor = val
 		self._calc_coords()
 
 	@property
@@ -393,7 +393,7 @@ class HitboxCircle:
 		scene: Scene | None = None,
 		batch: Batch | None = None,
 		group: Group | None = None,
-		anchor: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,

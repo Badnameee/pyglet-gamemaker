@@ -8,19 +8,32 @@ Use `~pgm.shapes.{class}` instead of `~pgm.shapes.trigger.{class}`.
 from __future__ import annotations
 
 import math
+import re
 from typing import TYPE_CHECKING
 
 import pyglet
 from pyglet.math import Vec2
 
 from ..event_dispatcher import EventDispatcher
-from ..types import HasHitbox, TriggerInteractType, TriggerStatus, TriggerSubType
+from ..types import (
+	FLOAT_REGEX,
+	AnchorX,
+	AnchorXDynamicPresetType,
+	AnchorXDynamicPresetValues,
+	AnchorY,
+	AnchorYDynamicPresetType,
+	AnchorYDynamicPresetValues,
+	HasHitbox,
+	TriggerInteractType,
+	TriggerStatus,
+	TriggerSubType,
+)
 
 if TYPE_CHECKING:
 	from typing import Self
 
 	from ..scene import Scene
-	from ..types import Axis, EventHandler, Point2D
+	from ..types import Anchor, Axis, EventHandler, Point2D
 	from ..window import Window
 
 
@@ -94,7 +107,7 @@ class Trigger(EventDispatcher):
 	- `on_trigger_exit(self, other)` when trigger exits trigger
 	"""
 
-	# * Constant vars
+	# * CONSTS
 	EVENT_TYPES = (
 		'on_mouse_trigger_enter',
 		'on_mouse_trigger_motion',
@@ -102,6 +115,15 @@ class Trigger(EventDispatcher):
 		'on_trigger_enter',
 		'on_trigger_exit',
 	)
+	CONVERT_DYNAMIC: dict[
+		AnchorXDynamicPresetType | AnchorYDynamicPresetType, float
+	] = {
+		'left': 0,
+		'bottom': 0,
+		'center': 0.5,
+		'right': 1,
+		'top': 1,
+	}
 
 	# * Instance vars
 	ID: str
@@ -128,6 +150,8 @@ class Trigger(EventDispatcher):
 	"""Stores all overlapping hitboxes"""
 	tags: set[str]
 	"""All tags this trigger possesses"""
+	raw_anchor: Anchor = 0, 0
+	"""Holds the raw anchor position (static + dynamic) of widget"""
 
 	# * Property vars
 	_anchor: Point2D = 0, 0
@@ -155,7 +179,7 @@ class Trigger(EventDispatcher):
 		coords: tuple[Point2D, ...],
 		window: Window | None = None,
 		scene: Scene | None = None,
-		anchor: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,
@@ -707,6 +731,55 @@ class Trigger(EventDispatcher):
 			for coord in self._unanchored_coords
 		)
 
+	def _calc_anchor(self) -> None:
+
+		anchor_x: float = self._anchor[0]
+		anchor_y: float = self._anchor[1]
+
+		width = (
+			max(self._raw_coords, key=lambda pos: pos[0])[0]
+			- min(self._raw_coords, key=lambda pos: pos[0])[0]
+		)
+		height = (
+			max(self._raw_coords, key=lambda pos: pos[1])[1]
+			- min(self._raw_coords, key=lambda pos: pos[1])[1]
+		)
+
+		# Dynamic
+		if isinstance(self.raw_anchor[0], str):
+			# Original dynamic anchor
+			if self.raw_anchor[0] in AnchorXDynamicPresetValues:
+				anchor_x = self.CONVERT_DYNAMIC[self.raw_anchor[0]] * width  # type: ignore[index]
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[0]):
+				anchor_x = float(self.raw_anchor[0]) * width
+			else:
+				raise ValueError(
+					f'"Text.anchor_x" must be either one of {AnchorXDynamicPresetValues} or a string representing a float, not "{self.raw_anchor[0]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[0], float | int):
+			anchor_x = self.raw_anchor[0]
+
+		# Dynamic
+		if isinstance(self.raw_anchor[1], str):
+			# Original dynamic anchor
+			if self.raw_anchor[1] in AnchorYDynamicPresetValues:
+				anchor_y = self.CONVERT_DYNAMIC[self.raw_anchor[1]] * height  # type: ignore[index]
+			elif re.fullmatch(FLOAT_REGEX, self.raw_anchor[1]):
+				anchor_y = float(self.raw_anchor[1]) * height
+			else:
+				raise ValueError(
+					f'"Text.anchor_y" must be either one of {AnchorYDynamicPresetValues} or a string representing a float, not "{self.raw_anchor[1]}".'
+				)
+		# Static
+		if isinstance(self.raw_anchor[1], float | int):
+			anchor_y = self.raw_anchor[1]
+
+		self._anchor = anchor_x, anchor_y
+
+		# Refresh position
+		self.pos = self._trans_pos
+
 	def _get_rotated_pos(self, coord: Point2D, axis: Axis) -> float:
 		# Gets position of point if it were rotated
 		if axis == 'x':
@@ -828,8 +901,9 @@ class Trigger(EventDispatcher):
 		return self._anchor[0]
 
 	@anchor_x.setter
-	def anchor_x(self, val: float) -> None:
-		self._anchor = val, self.anchor_y
+	def anchor_x(self, val: AnchorX) -> None:
+		self.raw_anchor = val, self.anchor_y
+		self._calc_anchor()
 		self._calc_coords()
 
 	@property
@@ -841,8 +915,9 @@ class Trigger(EventDispatcher):
 		return self._anchor[1]
 
 	@anchor_y.setter
-	def anchor_y(self, val: float) -> None:
-		self._anchor = self.anchor_x, val
+	def anchor_y(self, val: AnchorY) -> None:
+		self.raw_anchor = self.raw_anchor[0], val
+		self._calc_anchor()
 		self._calc_coords()
 
 	@property
@@ -851,8 +926,9 @@ class Trigger(EventDispatcher):
 		return self._anchor
 
 	@anchor.setter
-	def anchor(self, val: Point2D) -> None:
-		self._anchor = val
+	def anchor(self, val: Anchor) -> None:
+		self.raw_anchor = val
+		self._calc_anchor()
 		self._calc_coords()
 
 	@property
@@ -897,7 +973,7 @@ class TriggerCircle(Trigger):
 		radius: float,
 		window: Window | None = None,
 		scene: Scene | None = None,
-		anchor: Point2D = (0, 0),
+		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,
