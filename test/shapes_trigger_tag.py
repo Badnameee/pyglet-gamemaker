@@ -9,7 +9,7 @@ import pyglet
 
 from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.types import TriggerInteractType
+from pyglet_gamemaker.types import TriggerInteractType, TriggerStatus
 from pyglet_gamemaker.window import Window
 
 
@@ -25,7 +25,7 @@ class Scene1(Scene):
 			scene=self,
 			anchor=(100, 200),
 			mouse_detection=True,
-			target_tags={'Custom2': TriggerInteractType.OVERLAP},
+			target_tags={'Custom2': TriggerInteractType.COLLIDE},
 		)
 		self.small = [
 			Rect(
@@ -73,7 +73,24 @@ class Scene1(Scene):
 
 			if small.x >= self.window.width:
 				small.x = -small.width
+			#small.render.opacity = 255 if not small.trigger.status & TriggerStatus.TRIGGER_NOHIT else 100
 			small.render.opacity = 255 if self.main.collide(small)[0] else 100
+
+	def on_trigger_overlap_enter(self, t1, t2, MTV):
+		if t1.ID == 'Main':
+			print(f'Overlap Enter: "{t1.ID}", "{t2.ID}"')
+
+	def on_trigger_collide_enter(self, t1, t2, MTV):
+		if t1.ID == 'Main':
+			print(f'Collide Enter: "{t1.ID}", "{t2.ID}"')
+
+	def on_trigger_overlap_exit(self, t1, t2):
+		if t1.ID == 'Main':
+			print(f'Overlap Exit: "{t1.ID}", "{t2.ID}"')
+
+	def on_trigger_collide_exit(self, t1, t2):
+		if t1.ID == 'Main':
+			print(f'Collide Exit: "{t1.ID}", "{t2.ID}"')
 
 	def disable(self):
 		pyglet.clock.unschedule(self.update)

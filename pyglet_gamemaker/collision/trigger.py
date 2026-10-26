@@ -58,12 +58,32 @@ class TargetTagManager:
 
 		Args:
 			tags (set[str]):
-				Trigger tags of other trigger.
+				Trigger tags of other trigger
 
 		Returns:
-			set[str]: All tags that allow for collision between both triggers.
+			set[str]: All tags that allow for collision between both triggers
 		"""
 		return self._set.intersection(tags)
+
+	def get_collision_level(self, tags: set[str]) -> TriggerInteractType:
+		"""Get the collision level with trigger tags of other trigger.
+		
+		Args:
+			tags (set[str]):
+				Trigger tags of other trigger
+		
+		Returns:
+			TriggerInteractType: The collision level.
+		"""
+		overlapping_tags = self.intersection(tags)
+		if not overlapping_tags:
+			return TriggerInteractType.NONE
+
+		# COLLIDE is higher priority than OVERLAP
+		for tag in overlapping_tags:
+			if self._dict[tag] == TriggerInteractType.COLLIDE:
+				return TriggerInteractType.COLLIDE
+		return TriggerInteractType.OVERLAP
 
 	def __getitem__(self, key: str) -> TriggerInteractType:
 		return self._dict[key]
@@ -82,7 +102,7 @@ class TargetTagManager:
 		self._dict[key] = value
 
 	def __str__(self) -> str:
-		return str(self._dict)
+		return f'TargetTagManager={self._dict}'
 
 	def __repr__(self) -> str:
 		return f'{self._dict=}, {self._set=}'
@@ -103,8 +123,10 @@ class Trigger(EventDispatcher):
 	- `on_mouse_trigger_enter(self, x, y, MTV)` when mouse enters trigger
 	- `on_mouse_trigger_motion(self, x, y, MTV)` when mouse moves in trigger
 	- `on_mouse_trigger_exit(self, x, y)` when mouse exits trigger
-	- `on_trigger_enter(self, other, MTV)` when trigger enters trigger
-	- `on_trigger_exit(self, other)` when trigger exits trigger
+	- `on_trigger_overlap_enter(self, other, MTV)` when trigger 1 enters trigger 2 (with overlap trigger type)
+	- `on_trigger_collide_enter(self, other, MTV)` when trigger 1 enters trigger 2 (with collide trigger type)
+	- `on_trigger_overlap_exit(self, other)` when trigger 1 exits trigger 2 (with overlap trigger type)
+	- `on_trigger_collide_exit(self, other)` when trigger 1 exits trigger 2 (with collide trigger type)
 	"""
 
 	# * CONSTS
@@ -112,8 +134,10 @@ class Trigger(EventDispatcher):
 		'on_mouse_trigger_enter',
 		'on_mouse_trigger_motion',
 		'on_mouse_trigger_exit',
-		'on_trigger_enter',
-		'on_trigger_exit',
+		'on_trigger_overlap_enter',
+		'on_trigger_collide_enter',
+		'on_trigger_overlap_exit',
+		'on_trigger_collide_exit',
 	)
 	CONVERT_DYNAMIC: dict[
 		AnchorXDynamicPresetType | AnchorYDynamicPresetType, float
@@ -449,30 +473,10 @@ class Trigger(EventDispatcher):
 			return abs(length)
 		return -abs(length)
 
-		# Line1 cannot possibly intersect
-		if l1[0] >= l2[1] or l1[1] < l2[0]:
-			return 0
-
-		# Left of line1 inside line2
-		if l2[0] <= l1[0] < l2[1]:
-			return min(l1[1], l2[1]) - l1[0]
-
-		# Right of line1 inside line2
-		if l2[0] < l1[1] <= l2[1]:
-			return min(l1[0], l2[0]) - l1[1]
-
-		# Line2 in line1
-		return l2[1] - l2[0]
-
 	@staticmethod
 	def _contains(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
 		# Check if one of the lines in completely contained inside the other (for SAT).
 		return (l1[0] < l2[0] and l1[1] > l2[1]) or (l2[0] < l1[0] and l2[1] > l1[1])
-
-	@staticmethod
-	def _shorter_than(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
-		# Check if l1 shorter than l2
-		return abs(l1[1] - l1[0]) < abs(l2[1] - l2[0])
 
 	def collide(
 		self,
@@ -507,7 +511,7 @@ class Trigger(EventDispatcher):
 			return False, None
 
 		# Check other has at least one tag
-		if not self._target_tags.intersection(other.tags):
+		if (collision_level:= self._target_tags.get_collision_level(other.tags)) == TriggerInteractType.NONE:
 			return False, None
 
 		# Do not try to check 2 points
@@ -546,8 +550,8 @@ class Trigger(EventDispatcher):
 			# * 	If the projections do not intersect, there cannot be a collision
 			if not (overlap := self._get_intersection_length(l1, l2)):
 				# Run post collision to update triggers
-				self._post_trigger_collision(other, TriggerStatus.TRIGGER_NOHIT)
-				other._post_trigger_collision(self, TriggerStatus.TRIGGER_NOHIT)
+				self._post_trigger_collision(other, TriggerStatus.TRIGGER_NOHIT, collision_level)
+				other._post_trigger_collision(self, TriggerStatus.TRIGGER_NOHIT, collision_level)
 				return False, None
 
 			# * Step 4: If line completely contained, find nearest exit
@@ -570,8 +574,8 @@ class Trigger(EventDispatcher):
 		MTV = MTV_axis * MTV_len
 
 		# Run post collision to update triggers
-		self._post_trigger_collision(other, TriggerStatus.TRIGGER_HIT, MTV)
-		other._post_trigger_collision(self, TriggerStatus.TRIGGER_HIT, MTV)
+		self._post_trigger_collision(other, TriggerStatus.TRIGGER_HIT, collision_level, MTV)
+		other._post_trigger_collision(self, TriggerStatus.TRIGGER_HIT, collision_level, MTV)
 
 		return True, MTV
 
@@ -656,7 +660,7 @@ class Trigger(EventDispatcher):
 		return True, MTV
 
 	def _post_trigger_collision(
-		self, other: Trigger, hit_status: TriggerStatus, MTV: Vec2 | None = None
+		self, other: Trigger, hit_status: TriggerStatus, collision_level: TriggerInteractType, MTV: Vec2 | None = None
 	) -> None:
 		# Update internals after collision, not just enter or exit
 		# 	Also dispatch events
@@ -664,12 +668,22 @@ class Trigger(EventDispatcher):
 		# First hit
 		if hit_status & TriggerStatus.TRIGGER_HIT and other not in self.hit_triggers:
 			self.hit_triggers.add(other)
-			self.dispatch_event('on_trigger_enter', self, other, MTV)
+
+			# Choose event type
+			if collision_level == TriggerInteractType.OVERLAP:
+				self.dispatch_event('on_trigger_overlap_enter', self, other, MTV)
+			else:
+				self.dispatch_event('on_trigger_collide_enter', self, other, MTV)
 
 		# First nohit
 		elif hit_status & TriggerStatus.TRIGGER_NOHIT and other in self.hit_triggers:
 			self.hit_triggers.remove(other)
-			self.dispatch_event('on_trigger_exit', self, other)
+
+			# Choose event type
+			if collision_level == TriggerInteractType.OVERLAP:
+				self.dispatch_event('on_trigger_overlap_exit', self, other)
+			else:
+				self.dispatch_event('on_trigger_collide_exit', self, other)
 
 		# Flip bit according to if intersecting any other triggers
 		if self.status & TriggerStatus.TRIGGER_HIT and not self.hit_triggers:
@@ -820,7 +834,7 @@ class Trigger(EventDispatcher):
 		self._last_mouse_info = x, y
 
 	def bind_mouse(self) -> None:
-		"""Bind mouse events to widget."""
+		"""Bind mouse events to trigger."""
 		if not self.window:
 			return
 		self.window.push_handlers(
