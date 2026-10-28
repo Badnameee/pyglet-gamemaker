@@ -14,7 +14,8 @@ from typing import TYPE_CHECKING
 import pyglet
 from pyglet.math import Vec2
 
-from ..event_dispatcher import EventDispatcher
+from pyglet_gamemaker.base_object import BaseObject
+
 from ..types import (
 	FLOAT_REGEX,
 	AnchorX,
@@ -67,11 +68,11 @@ class TargetTagManager:
 
 	def get_collision_level(self, tags: set[str]) -> TriggerInteractType:
 		"""Get the collision level with trigger tags of other trigger.
-		
+
 		Args:
 			tags (set[str]):
 				Trigger tags of other trigger
-		
+
 		Returns:
 			TriggerInteractType: The collision level.
 		"""
@@ -108,7 +109,7 @@ class TargetTagManager:
 		return f'{self._dict=}, {self._set=}'
 
 
-class Trigger(EventDispatcher):
+class Trigger(BaseObject):
 	"""Store a convex trigger that uses SAT (Separating Axis Theorem) method for collision.
 
 	Can use `.from_rect()` to create rectangular trigger, and `.from_point()` to create point trigger.
@@ -150,14 +151,8 @@ class Trigger(EventDispatcher):
 	}
 
 	# * Instance vars
-	ID: str
-	"""The unique ID of trigger to distinguish it"""
 	coords: tuple[Point2D, ...]
 	"""The final coordinates of the trigger"""
-	window: Window | None
-	"""Window trigger is associated with"""
-	scene: Scene | None
-	"""The scene the trigger is from."""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
 	subtype: TriggerSubType
@@ -250,8 +245,8 @@ class Trigger(EventDispatcher):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
 		self.ID = ID
-		self.window = window if window else scene.window if scene else None
 		self.scene = scene
+		self.window = self._verify_window(window, necessary=mouse_detection)
 		self._trans_pos = coords[0]
 		self._raw_coords = coords
 		self.anchor = anchor
@@ -511,7 +506,9 @@ class Trigger(EventDispatcher):
 			return False, None
 
 		# Check other has at least one tag
-		if (collision_level:= self._target_tags.get_collision_level(other.tags)) == TriggerInteractType.NONE:
+		if (
+			collision_level := self._target_tags.get_collision_level(other.tags)
+		) == TriggerInteractType.NONE:
 			return False, None
 
 		# Do not try to check 2 points
@@ -550,8 +547,12 @@ class Trigger(EventDispatcher):
 			# * 	If the projections do not intersect, there cannot be a collision
 			if not (overlap := self._get_intersection_length(l1, l2)):
 				# Run post collision to update triggers
-				self._post_trigger_collision(other, TriggerStatus.TRIGGER_NOHIT, collision_level)
-				other._post_trigger_collision(self, TriggerStatus.TRIGGER_NOHIT, collision_level)
+				self._post_trigger_collision(
+					other, TriggerStatus.TRIGGER_NOHIT, collision_level
+				)
+				other._post_trigger_collision(
+					self, TriggerStatus.TRIGGER_NOHIT, collision_level
+				)
 				return False, None
 
 			# * Step 4: If line completely contained, find nearest exit
@@ -574,8 +575,12 @@ class Trigger(EventDispatcher):
 		MTV = MTV_axis * MTV_len
 
 		# Run post collision to update triggers
-		self._post_trigger_collision(other, TriggerStatus.TRIGGER_HIT, collision_level, MTV)
-		other._post_trigger_collision(self, TriggerStatus.TRIGGER_HIT, collision_level, MTV)
+		self._post_trigger_collision(
+			other, TriggerStatus.TRIGGER_HIT, collision_level, MTV
+		)
+		other._post_trigger_collision(
+			self, TriggerStatus.TRIGGER_HIT, collision_level, MTV
+		)
 
 		return True, MTV
 
@@ -660,7 +665,11 @@ class Trigger(EventDispatcher):
 		return True, MTV
 
 	def _post_trigger_collision(
-		self, other: Trigger, hit_status: TriggerStatus, collision_level: TriggerInteractType, MTV: Vec2 | None = None
+		self,
+		other: Trigger,
+		hit_status: TriggerStatus,
+		collision_level: TriggerInteractType,
+		MTV: Vec2 | None = None,
 	) -> None:
 		# Update internals after collision, not just enter or exit
 		# 	Also dispatch events
@@ -805,7 +814,7 @@ class Trigger(EventDispatcher):
 		# Update the status of the mouse given new info
 
 		if not self._mouse_trigger:
-			self._mouse_trigger = Trigger.from_point('MOUSE', x, y)
+			self._mouse_trigger = Trigger.from_point('MOUSE', x, y, mouse_detection=False)
 		else:
 			self._mouse_trigger.pos = x, y
 
@@ -869,6 +878,12 @@ class Trigger(EventDispatcher):
 			return False
 		self._update_mouse_collision(x, y)
 		return False
+
+	def enable(self) -> None:  # noqa: D102
+		self.enabled = True
+
+	def disable(self) -> None:  # noqa: D102
+		self.enabled = False
 
 	@property
 	def x(self) -> float:

@@ -25,7 +25,7 @@ class Scene1(Scene):
 			100,
 			50,
 			colors.WHITE,
-			scene=self,
+			window=self.window,
 		)
 		self.hitbox2 = Hitbox.from_rect(
 			'hb2',

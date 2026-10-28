@@ -473,7 +473,7 @@ class TextButton(Widget):
 
 	@color.setter
 	def color(self, val: Color) -> None:
-		self.text.color = val # type: ignore[assignment]
+		self.text.color = val  # type: ignore[assignment]
 
 	@property
 	def scale(self) -> float:

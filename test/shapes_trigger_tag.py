@@ -9,7 +9,7 @@ import pyglet
 
 from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.types import TriggerInteractType, TriggerStatus
+from pyglet_gamemaker.types import TriggerInteractType
 from pyglet_gamemaker.window import Window
 
 
@@ -73,7 +73,7 @@ class Scene1(Scene):
 
 			if small.x >= self.window.width:
 				small.x = -small.width
-			#small.render.opacity = 255 if not small.trigger.status & TriggerStatus.TRIGGER_NOHIT else 100
+			# small.render.opacity = 255 if not small.trigger.status & TriggerStatus.TRIGGER_NOHIT else 100
 			small.render.opacity = 255 if self.main.collide(small)[0] else 100
 
 	def on_trigger_overlap_enter(self, t1, t2, MTV):

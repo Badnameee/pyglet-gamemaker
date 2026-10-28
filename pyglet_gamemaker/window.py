@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 import pyglet
 from pyglet.window import Window as PygletWin
 
+from pyglet_gamemaker.collision.trigger import Trigger
+
 from .camera import Camera
 
 if TYPE_CHECKING:
@@ -30,18 +32,20 @@ class Window(PygletWin):  # type: ignore[misc]
 	if data transfer is necessary. Each Scene also gets a copy of the window object, so data can be
 	transferred in that way as well.
 
-	Add scenes using `.add_scene` and remove using `.pop_scenes`.
+	Add scenes using `.add_scene()` and remove using `.pop_scene()`.
 
-	Use `.run` to run the game.
+	Use `.run()` to run the program.
 	"""
 
 	# * Instance vars
-	scenes: dict[str, Scene] = {}
+	scenes: dict[str, Scene]
 	"""Stores all the scenes in the game"""
 	scene: str = ''
 	"""The currently running scene"""
 	centered: bool
 	"""If True, the window is centered. Do not set."""
+	triggers: set[Trigger]
+	"""All triggers to have automatic collision detection"""
 
 	def __init__(
 		self,
@@ -140,6 +144,9 @@ class Window(PygletWin):  # type: ignore[misc]
 			mode,
 			**kwargs,
 		)
+
+		self.scenes = {}
+		self.triggers = set()
 
 		# Center if requested
 		self.centered = center_window
