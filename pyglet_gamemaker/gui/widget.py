@@ -83,7 +83,7 @@ class Widget(BaseObject, ABC):
 	"""Original anchor offset of widget"""
 	dispatch: bool
 	"""If False, don't dispatch events to handlers"""
-	attach_events: bool
+	mouse_detection: bool
 	"""If False, don't attach events (e.g. mouse) to window"""
 
 	# * Property vars

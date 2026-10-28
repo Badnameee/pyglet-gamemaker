@@ -81,7 +81,7 @@ class Button(_PushButton, Widget):
 		group: Group | None = None,
 		anchor: Anchor = (0, 0),
 		dispatch: bool = True,
-		attach_events: bool = True,
+		mouse_detection: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a button.
@@ -118,7 +118,7 @@ class Button(_PushButton, Widget):
 			dispatch (bool, optional):
 				If False, don't dispatch events to handlers (may also improve performance). See `~pgm.gui.Button` for more info.
 				Defaults to True.
-			attach_events (bool, optional):
+			mouse_detection (bool, optional):
 				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
@@ -153,12 +153,12 @@ class Button(_PushButton, Widget):
 		self.initial_pos = self.pos = x, y
 		self.initial_anchor = self.anchor = anchor
 		self.dispatch = dispatch
-		self.attach_events = attach_events
+		self.mouse_detection = mouse_detection
 
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
-		if attach_events:
+		if mouse_detection:
 			self.bind_mouse()
 		# Bind user kwargs
 		if dispatch:

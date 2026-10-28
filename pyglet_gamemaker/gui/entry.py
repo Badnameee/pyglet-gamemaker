@@ -77,7 +77,7 @@ class Entry(TextEntry, Widget):
 		color: Color = colors.WHITE,
 		text_color: Color = colors.BLACK,
 		caret_color: Color = colors.BLACK,
-		attach_events: bool = True,
+		mouse_detection: bool = True,
 		dispatch: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
@@ -125,7 +125,7 @@ class Entry(TextEntry, Widget):
 			caret_color (Color, optional):
 				The color of the caret (when it is visible) in RGBA or RGB format.
 				Defaults to (0, 0, 0, 255).
-			attach_events (bool, optional):
+			mouse_detection (bool, optional):
 				If False, don't attach events (e.g. mouse) to window.
 				Event handlers can still be manually invoked.
 				Defaults to True.
@@ -142,7 +142,7 @@ class Entry(TextEntry, Widget):
 		# Verify scene attrs
 		self.font_info = self._process_font_info(font_info)
 		x, y = self._verify_pos(x, y)
-		self.window = self._verify_window(window)
+		self.window = self._verify_window(window, necessary=mouse_detection)
 		batch = self._verify_batch(batch)
 		group = self._verify_group(group, attr_name='entry_group')
 
@@ -161,7 +161,7 @@ class Entry(TextEntry, Widget):
 		)
 
 		self.dispatch = dispatch
-		self.attach_events = attach_events
+		self.mouse_detection = mouse_detection
 		self._color = color
 		self.initial_pos = x, y
 		self.initial_anchor = self.anchor = anchor
@@ -188,7 +188,7 @@ class Entry(TextEntry, Widget):
 		# Register events
 		self.register_events()
 		# Adds event handler for mouse events
-		if attach_events:
+		if mouse_detection:
 			self.window.push_handlers(self)
 		# Bind user kwargs
 		if dispatch:
