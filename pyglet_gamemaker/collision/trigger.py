@@ -802,6 +802,7 @@ class Trigger(BaseObject):
 
 		# Refresh position
 		self.pos = self._trans_pos
+		self._calc_coords()
 
 	def _get_rotated_pos(self, coord: Point2D, axis: Axis) -> float:
 		# Gets position of point if it were rotated
@@ -814,7 +815,9 @@ class Trigger(BaseObject):
 		# Update the status of the mouse given new info
 
 		if not self._mouse_trigger:
-			self._mouse_trigger = Trigger.from_point('MOUSE', x, y, mouse_detection=False)
+			self._mouse_trigger = Trigger.from_point(
+				'MOUSE', x, y, mouse_detection=False
+			)
 		else:
 			self._mouse_trigger.pos = x, y
 
@@ -933,7 +936,6 @@ class Trigger(BaseObject):
 	def anchor_x(self, val: AnchorX) -> None:
 		self.raw_anchor = val, self.anchor_y
 		self._calc_anchor()
-		self._calc_coords()
 
 	@property
 	def anchor_y(self) -> float:
@@ -947,7 +949,6 @@ class Trigger(BaseObject):
 	def anchor_y(self, val: AnchorY) -> None:
 		self.raw_anchor = self.raw_anchor[0], val
 		self._calc_anchor()
-		self._calc_coords()
 
 	@property
 	def anchor(self) -> Point2D:
@@ -958,7 +959,6 @@ class Trigger(BaseObject):
 	def anchor(self, val: Anchor) -> None:
 		self.raw_anchor = val
 		self._calc_anchor()
-		self._calc_coords()
 
 	@property
 	def angle(self) -> float:

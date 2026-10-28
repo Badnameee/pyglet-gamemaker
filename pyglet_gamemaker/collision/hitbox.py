@@ -13,8 +13,17 @@ from pyglet.graphics import Batch, Group
 from pyglet.math import Vec2
 from pyglet.shapes import Circle, Polygon
 
+from pyglet_gamemaker.base_object import BaseObject
+
 from .. import colors
-from ..types import Anchor, EventHandler, TriggerInteractType, TriggerSubType
+from ..types import (
+	Anchor,
+	AnchorX,
+	AnchorY,
+	EventHandler,
+	TriggerInteractType,
+	TriggerSubType,
+)
 from .trigger import Trigger, TriggerCircle
 
 if TYPE_CHECKING:
@@ -25,12 +34,10 @@ if TYPE_CHECKING:
 	from ..window import Window
 
 
-class Hitbox:
+class Hitbox(BaseObject):
 	"""Holds a Hitbox with `.trigger` and `.render` objects."""
 
 	# * Instance vars
-	ID: str
-	"""The unique ID of the hitbox to distinguish it"""
 	trigger: Trigger
 	"""The trigger object"""
 	render: Polygon
@@ -105,16 +112,20 @@ class Hitbox:
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
+		self.ID = ID
+		self.scene = scene
+		self.window = self._verify_window(window, necessary=mouse_detection)
+
 		self.render = Polygon(
 			*coords,
 			color=color,
-			batch=batch if batch else scene.batch if scene else None,
-			group=group if group else scene.main_group if scene else None,
+			batch=self._verify_batch(batch),
+			group=self._verify_group(group, attr_name='main_group'),
 		)
 		self.trigger = Trigger(
 			ID,
 			coords,
-			window,
+			self.window,
 			scene,
 			anchor,
 			dispatch,
@@ -125,7 +136,6 @@ class Hitbox:
 			**kwargs,
 		)
 
-		self.ID = ID
 		self.subtype = _subtype
 		self._hitbox_color = color
 		# Refresh anchor to make sure correct ._calc_coords is called
@@ -169,7 +179,7 @@ class Hitbox:
 				Defaults to Color.WHITE.
 			window (Window, optional):
 				Window for attaching self. Required if binding mouse events.
-				Defaults to None.
+				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
 				The scene the hitbox is from.
 				Defaults to None.
@@ -267,6 +277,13 @@ class Hitbox:
 		self.render.x = self.trigger.coords[0][0]
 		self.render.y = self.trigger.coords[0][1]
 
+	def _calc_anchor(self) -> None:
+		self.trigger._calc_anchor()
+		self._calc_coords()
+
+	def enable(self) -> None: ... # noqa: D102
+	def disable(self) -> None: ... # noqa: D102
+
 	@property
 	def x(self) -> float:
 		"""The x position of the anchor point.
@@ -312,9 +329,9 @@ class Hitbox:
 		return self.trigger.anchor_x
 
 	@anchor_x.setter
-	def anchor_x(self, val: float) -> None:
+	def anchor_x(self, val: AnchorX) -> None:
 		self.trigger.anchor_x = val
-		self._calc_coords()
+		self._calc_anchor()
 
 	@property
 	def anchor_y(self) -> float:
@@ -325,9 +342,9 @@ class Hitbox:
 		return self.trigger.anchor_y
 
 	@anchor_y.setter
-	def anchor_y(self, val: float) -> None:
+	def anchor_y(self, val: AnchorY) -> None:
 		self.trigger.anchor_y = val
-		self._calc_coords()
+		self._calc_anchor()
 
 	@property
 	def anchor(self) -> Point2D:
@@ -337,7 +354,7 @@ class Hitbox:
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
 		self.trigger.anchor = val
-		self._calc_coords()
+		self._calc_anchor()
 
 	@property
 	def angle(self) -> float:

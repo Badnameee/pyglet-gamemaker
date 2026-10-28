@@ -163,7 +163,7 @@ class TextButton(Widget):
 
 		# Verify scene attrs
 		x, y = self._verify_pos(x, y)
-		self.window = window = self._verify_window(window)
+		self.window = window = self._verify_window(window, necessary=mouse_detection)
 		batch = self._verify_batch(batch)
 		button_group = self._verify_group(button_group, 'button_group', 'button_group')
 		text_group = self._verify_group(text_group, 'text_group', 'text_group')

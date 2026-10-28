@@ -111,7 +111,9 @@ class BaseObject(EventDispatcher, ABC):
 
 		return x, y
 
-	def _verify_window(self, window: Window | None, name: str = 'window', necessary: bool=True) -> Window | None:
+	def _verify_window(
+		self, window: Window | None, name: str = 'window', necessary: bool = True
+	) -> Window | None:
 		"""Verify window is set either in arg or in scene, reterning verified window.
 
 		Args:

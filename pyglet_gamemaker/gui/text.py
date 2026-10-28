@@ -103,7 +103,7 @@ class Text(Label, Widget):
 		# Verify scene attrs
 		self.font_info = self._process_font_info(font_info)
 		x, y = self._verify_pos(x, y)
-		self.window = self._verify_window(window)
+		self.window = self._verify_window(window, necessary=False)
 		batch = self._verify_batch(batch)
 		group = self._verify_group(group, attr_name='text_group')
 

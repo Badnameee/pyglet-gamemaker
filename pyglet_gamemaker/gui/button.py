@@ -130,7 +130,7 @@ class Button(_PushButton, Widget):
 
 		# Verify scene attrs
 		x, y = self._verify_pos(x, y)
-		self.window = self._verify_window(window)
+		self.window = self._verify_window(window, necessary=mouse_detection)
 		batch = self._verify_batch(batch)
 		group = self._verify_group(group, 'button_group')
 

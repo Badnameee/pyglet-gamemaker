@@ -189,7 +189,7 @@ class Entry(TextEntry, Widget):
 		self.register_events()
 		# Adds event handler for mouse events
 		if mouse_detection:
-			self.window.push_handlers(self)
+			self.window.push_handlers(self)  # type: ignore[union-attr] # window should be real window by here
 		# Bind user kwargs
 		if dispatch:
 			self.bind_events(**kwargs)
