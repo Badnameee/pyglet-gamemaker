@@ -173,6 +173,18 @@ class BaseObject(EventDispatcher, ABC):
 			raise MissingAttr(self, name)
 		return group or getattr(self.scene, attr_name)
 
+	def add_trigger_to_physics_backend(self) -> None:
+		"""Attempt to add a TRIGGER to the physics backend. Do not call on non-trigger objects."""
+		if not self.window:
+			raise TypeError(
+				f'{self.__class__.__name__}({self.ID}) must have a window to add to physics backend. To disable, use "_auto_collide=False".'
+			)
+		if not self.scene:
+			raise TypeError(
+				f'{self.__class__.__name__}({self.ID}) must have a scene to add to physics backend. To disable, use "_auto_collide=False".'
+			)
+		self.window.add_trigger(self.scene, self)  # type: ignore[arg-type] # Cannot insert guard statement without circular import
+
 	@abstractmethod
 	def _calc_anchor(self) -> None:
 		"""Calculate new anchor and sync position."""

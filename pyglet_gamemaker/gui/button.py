@@ -178,7 +178,6 @@ class Button(_PushButton, Widget):
 			image_start (str | int, optional):
 				New start position.
 				Defaults to 0.
-
 		"""
 		self._parse_sheet(image_sheet, image_start)
 		self._calc_anchor()

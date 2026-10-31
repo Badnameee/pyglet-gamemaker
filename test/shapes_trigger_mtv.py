@@ -35,7 +35,6 @@ class Scene1(Scene):
 			110,
 			(0, 0, 255, 100),
 			scene=self,
-			mouse_detection=False,
 		)
 		self.objs = []
 
@@ -45,12 +44,6 @@ class Scene1(Scene):
 		self.window.push_handlers(self.pressed)
 
 	def update(self, dt) -> None:
-		if (data := self.r1.collide(self.r2))[0]:
-			self.r1.render.opacity = self.r2.render.opacity = 255
-			self.r1.pos += data[1]
-		else:
-			self.r1.render.opacity = self.r2.render.opacity = 100
-
 		if self.pressed[key.LEFT]:
 			self.r1.angle += math.pi * dt
 		if self.pressed[key.RIGHT]:
@@ -64,6 +57,20 @@ class Scene1(Scene):
 	def on_mouse_motion(self, x, y, dx, dy) -> None:
 		self.r1.pos = x, y
 
+	def on_trigger_overlap_enter(self, t1, t2, MTV):
+		if t1.ID == 'Test':
+			self.r1.render.opacity = self.r2.render.opacity = 255
+			self.r1.pos += MTV
+
+	def on_trigger_overlap_motion(self, t1, t2, MTV):
+		if t1.ID == 'Test':
+			self.r1.render.opacity = self.r2.render.opacity = 255
+			self.r1.pos += MTV
+
+	def on_trigger_overlap_exit(self, t1, t2):
+		if t1.ID == 'Test':
+			self.r1.render.opacity = self.r2.render.opacity = 100
+
 	def disable(self):
 		pyglet.clock.unschedule(self.update)
 
@@ -72,5 +79,6 @@ class Scene1(Scene):
 
 
 window = Window(640, 480)
+window.PHYSICS_FPS = 1200
 window.add_scene(Scene1('Scene'))
 window.run()

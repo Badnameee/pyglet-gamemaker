@@ -13,6 +13,7 @@ from pyglet.window import key
 from pyglet_gamemaker import colors
 from pyglet_gamemaker.collision.hitbox import Hitbox, HitboxCircle
 from pyglet_gamemaker.scene import Scene
+from pyglet_gamemaker.types import TriggerStatus
 from pyglet_gamemaker.window import Window
 
 
@@ -44,7 +45,7 @@ class Scene1(Scene):
 			colors.WHITE,
 			scene=self,
 		)
-		self.circle.render.visible = False
+		self.circle.disable()
 
 		self.mode = 'rect'
 		self.pressed = key.KeyStateHandler()
@@ -61,15 +62,15 @@ class Scene1(Scene):
 			self.circle.angle -= math.pi * dt
 
 		if self.mode == 'rect':
-			if self.hitbox.collide(self.hitbox2)[0]:
-				self.hitbox.render.opacity = 128
-			else:
+			if self.hitbox.trigger.status & TriggerStatus.TRIGGER_HIT:
 				self.hitbox.render.opacity = 255
-		elif self.mode == 'circle':
-			if self.hitbox2.collide(self.circle)[0]:
-				self.circle.render.opacity = 128
 			else:
+				self.hitbox.render.opacity = 128
+		elif self.mode == 'circle':
+			if self.circle.trigger.status & TriggerStatus.TRIGGER_HIT:
 				self.circle.render.opacity = 255
+			else:
+				self.circle.render.opacity = 128
 
 	def on_mouse_motion(self, x, y, dx, dy):
 		self.hitbox.pos = x, y
@@ -92,22 +93,22 @@ class Scene1(Scene):
 		elif symbol == key.C:
 			self.mode = 'circle' if self.mode == 'rect' else 'rect'
 			if self.mode == 'rect':
-				self.hitbox.render.visible = True
-				self.circle.render.visible = False
+				self.hitbox.enable()
+				self.circle.disable()
 			elif self.mode == 'circle':
-				self.hitbox.render.visible = False
-				self.circle.render.visible = True
+				self.hitbox.disable()
+				self.circle.enable()
 
 		else:
 			return
 
 		print(self.hitbox if self.mode == 'rect' else self.circle)
 
-	def on_trigger_enter(self, t1, t2, MTV):
-		print(f'{t1.ID} entered {t2.ID}!')
+	def on_trigger_overlap_enter(self, t1, t2, MTV):
+		print(f'Overlap Enter: "{t1.ID}", "{t2.ID}"')
 
-	def on_trigger_exit(self, t1, t2):
-		print(f'{t1.ID} exited {t2.ID}!')
+	def on_trigger_overlap_exit(self, t1, t2):
+		print(f'Overlap Exit: "{t1.ID}", "{t2.ID}"')
 
 	def disable(self):
 		pyglet.clock.unschedule(self.update)

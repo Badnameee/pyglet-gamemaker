@@ -56,7 +56,6 @@ class TextButton(Widget):
 	- `.on_full_click()` when pressed and released without mouse moving off.
 
 	Use kwargs to attach event handlers.
-
 	"""
 
 	# * CONSTS

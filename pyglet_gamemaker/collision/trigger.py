@@ -16,6 +16,7 @@ from pyglet.math import Vec2
 
 from pyglet_gamemaker.base_object import BaseObject
 
+from ..tag_manager import TagManager
 from ..types import (
 	FLOAT_REGEX,
 	AnchorX,
@@ -38,77 +39,6 @@ if TYPE_CHECKING:
 	from ..window import Window
 
 
-class TargetTagManager:
-	"""Manages tags for what tags a trigger, hitbox, etc. can interact with.
-
-	Adds functionality for removing tags when value is NONE.
-	"""
-
-	_set: set[str]
-	_dict: dict[str, TriggerInteractType]
-
-	def __init__(self, d: dict[str, TriggerInteractType] | None) -> None:  # noqa: D107
-		self._dict = d or {}
-		# Immediately remove items with 'NONE'
-		self._set = (
-			{k for k, v in d.items() if v != TriggerInteractType.NONE} if d else set()
-		)
-
-	def intersection(self, tags: set[str]) -> set[str]:
-		"""Return interesction of target tags with trigger tags of other trigger.
-
-		Args:
-			tags (set[str]):
-				Trigger tags of other trigger
-
-		Returns:
-			set[str]: All tags that allow for collision between both triggers
-		"""
-		return self._set.intersection(tags)
-
-	def get_collision_level(self, tags: set[str]) -> TriggerInteractType:
-		"""Get the collision level with trigger tags of other trigger.
-
-		Args:
-			tags (set[str]):
-				Trigger tags of other trigger
-
-		Returns:
-			TriggerInteractType: The collision level.
-		"""
-		overlapping_tags = self.intersection(tags)
-		if not overlapping_tags:
-			return TriggerInteractType.NONE
-
-		# COLLIDE is higher priority than OVERLAP
-		for tag in overlapping_tags:
-			if self._dict[tag] == TriggerInteractType.COLLIDE:
-				return TriggerInteractType.COLLIDE
-		return TriggerInteractType.OVERLAP
-
-	def __getitem__(self, key: str) -> TriggerInteractType:
-		return self._dict[key]
-
-	def __setitem__(self, key: str, value: TriggerInteractType) -> None:
-		# Remove item
-		if key in self._set and value == TriggerInteractType.NONE:
-			self._set.remove(key)
-			self._dict.pop(key)
-			return
-
-		# Add new entry in set
-		if key not in self._set:
-			self._set.add(key)
-		# Add/set value
-		self._dict[key] = value
-
-	def __str__(self) -> str:
-		return f'TargetTagManager={self._dict}'
-
-	def __repr__(self) -> str:
-		return f'{self._dict=}, {self._set=}'
-
-
 class Trigger(BaseObject):
 	"""Store a convex trigger that uses SAT (Separating Axis Theorem) method for collision.
 
@@ -125,7 +55,8 @@ class Trigger(BaseObject):
 	- `on_mouse_trigger_motion(self, x, y, MTV)` when mouse moves in trigger
 	- `on_mouse_trigger_exit(self, x, y)` when mouse exits trigger
 	- `on_trigger_overlap_enter(self, other, MTV)` when trigger 1 enters trigger 2 (with overlap trigger type)
-	- `on_trigger_collide_enter(self, other, MTV)` when trigger 1 enters trigger 2 (with collide trigger type)
+	- `on_trigger_collide_enter(self, other, MTV)` when trigger 1 enters trigger 2 (with collide trigger type) (NOTE: Triggers will still be colliding when event dispatched)
+	- `on_mouse_overlap_motion(self, x, y, MTV)` when trigger 1 moves inside trigger 2 (with overlap trigger type)
 	- `on_trigger_overlap_exit(self, other)` when trigger 1 exits trigger 2 (with overlap trigger type)
 	- `on_trigger_collide_exit(self, other)` when trigger 1 exits trigger 2 (with collide trigger type)
 	"""
@@ -137,6 +68,7 @@ class Trigger(BaseObject):
 		'on_mouse_trigger_exit',
 		'on_trigger_overlap_enter',
 		'on_trigger_collide_enter',
+		'on_trigger_overlap_motion',
 		'on_trigger_overlap_exit',
 		'on_trigger_collide_exit',
 	)
@@ -167,10 +99,10 @@ class Trigger(BaseObject):
 	"""If True, detect mouse collision + attach mouse events to window"""
 	hit_triggers: set[Trigger]
 	"""Stores all overlapping hitboxes"""
-	tags: set[str]
-	"""All tags this trigger possesses"""
+	tags: TagManager
+	"""Manager for tags / target tags of trigger"""
 	raw_anchor: Anchor = 0, 0
-	"""Holds the raw anchor position (static + dynamic) of widget"""
+	"""Holds the raw anchor position (static + dynamic) of trigger"""
 
 	# * Property vars
 	_anchor: Point2D = 0, 0
@@ -190,7 +122,6 @@ class Trigger(BaseObject):
 	_last_mouse_info: Point2D = 0, 0
 	_mouse_trigger: Trigger | None = None
 	"""Trigger on the mouse for mouse detection"""
-	_target_tags: TargetTagManager
 
 	def __init__(
 		self,
@@ -203,6 +134,7 @@ class Trigger(BaseObject):
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,
 		target_tags: dict[str, TriggerInteractType] | None = None,
+		auto_collide: bool = True,
 		*,
 		_subtype: TriggerSubType = TriggerSubType.NONE,
 		**kwargs: EventHandler,
@@ -218,7 +150,7 @@ class Trigger(BaseObject):
 				Window for attaching self. Required if binding mouse events.
 				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
-				The scene the trigger is from.
+				The scene the trigger is from. Required for backend physics detection.
 				Defaults to None.
 			anchor (Point2D, optional):
 				The starting anchor position.
@@ -232,13 +164,15 @@ class Trigger(BaseObject):
 				Defaults to False.
 			tags (set[str], optional):
 				Tags trigger should possess, used for controlling collision more closely.
-				Uses 'Default' tag by default.
 				Defaults to None.
 			target_tags (dict[str, TriggerInteractType], optional):
-				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
+				Tags trigger can interact with, as well as the interaction level. see `~pgm.types.TriggerInteractType`.
 				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
-			_subtype (TriggerSubType, optional)
+			auto_collide (bool, optional):
+				If True, add to physics backend for automatic collision calls. Trigger must have a vaiid window and scene.
+				Defaults to True.
+			_subtype (TriggerSubType, optional):
 				The subtype of the trigger (i.e. 'RECT').
 				Defaults to TriggerSubType.NONE.
 			kwargs (EventHandler):
@@ -253,11 +187,11 @@ class Trigger(BaseObject):
 		self.subtype = _subtype
 
 		self.hit_triggers = set()
-		self.tags = tags if tags is not None else {'Default'}
-		# Use Default first so that target_tags can overwrite
-		self._target_tags = TargetTagManager(
-			{'Default': TriggerInteractType.OVERLAP} | (target_tags or {})
-		)
+		self.tags = TagManager(tags, target_tags)
+
+		# Add to physics backend
+		if auto_collide:
+			self.add_trigger_to_physics_backend()
 
 		self.dispatch = dispatch
 		self.mouse_detection = mouse_detection
@@ -286,6 +220,7 @@ class Trigger(BaseObject):
 		mouse_detection: bool = True,
 		tags: set[str] | None = None,
 		target_tags: dict[str, TriggerInteractType] | None = None,
+		auto_collide: bool = False,
 		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a trigger from rectangle args.
@@ -305,7 +240,7 @@ class Trigger(BaseObject):
 				Window for attaching self. Required if binding mouse events.
 				Defaults to None.
 			scene (Scene, optional):
-				The scene the trigger is from.
+				The scene the trigger is from. Required for backend physics detection.
 				Defaults to None.
 			anchor (Point2D, optional):
 				Anchor position.
@@ -325,6 +260,9 @@ class Trigger(BaseObject):
 				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
 				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
+			auto_collide (bool, optional):
+				If True, add to physics backend for automatic collision calls. Trigger must have a vaiid window and scene.
+				Defaults to True.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
@@ -338,6 +276,7 @@ class Trigger(BaseObject):
 			mouse_detection,
 			tags,
 			target_tags,
+			auto_collide,
 			_subtype=TriggerSubType.RECT,
 			**kwargs,
 		)
@@ -355,6 +294,7 @@ class Trigger(BaseObject):
 		mouse_detection: bool = True,
 		tags: set[str] | None = None,
 		target_tags: dict[str, TriggerInteractType] | None = None,
+		auto_collide: bool = False,
 		**kwargs: EventHandler,
 	) -> Self:
 		"""Create a trigger from a point.
@@ -373,8 +313,8 @@ class Trigger(BaseObject):
 			window (Window, optional):
 				Window for attaching self.
 				Defaults to None.
-			scene (Scene | None):
-				The scene the trigger is from.
+			scene (Scene, optional):
+				The scene the trigger is from. Required for backend physics detection.
 			anchor (Point2D, optional):
 				Anchor position.
 				Defaults to (0, 0).
@@ -389,6 +329,9 @@ class Trigger(BaseObject):
 				Tags trigger should possess, used for controlling collision more closely.
 				Uses 'Default' tag if None passed.
 				Defaults to None.
+			auto_collide (bool, optional):
+				If True, add to physics backend for automatic collision calls. Trigger must have a vaiid window and scene.
+				Defaults to True.
 			target_tags (dict[str, TriggerInteractType], optional):
 				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
 				Uses 'Default': 'OVERLAP' if not overriden.
@@ -406,6 +349,7 @@ class Trigger(BaseObject):
 			mouse_detection,
 			tags,
 			target_tags,
+			auto_collide,
 			_subtype=TriggerSubType.POINT,
 			**kwargs,
 		)
@@ -462,7 +406,7 @@ class Trigger(BaseObject):
 		# Get the length of intersection between 2 lines (for SAT).
 
 		length = min(l1[1], l2[1]) - max(l1[0], l2[0])
-		if length < 0:
+		if length <= 0:
 			return 0
 		if (l1[0] + l1[1]) / 2 > (l2[0] + l2[1]) / 2:
 			return abs(length)
@@ -493,6 +437,10 @@ class Trigger(BaseObject):
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
+		# Same obj
+		if self is other:
+			return True, Vec2(0, 0)
+
 		# Get trigger if not subclass
 		if not isinstance(other, Trigger):
 			if isinstance(other, HasHitbox):
@@ -507,7 +455,7 @@ class Trigger(BaseObject):
 
 		# Check other has at least one tag
 		if (
-			collision_level := self._target_tags.get_collision_level(other.tags)
+			collision_level := self.tags.get_collision_level(other.tags)
 		) == TriggerInteractType.NONE:
 			return False, None
 
@@ -547,10 +495,10 @@ class Trigger(BaseObject):
 			# * 	If the projections do not intersect, there cannot be a collision
 			if not (overlap := self._get_intersection_length(l1, l2)):
 				# Run post collision to update triggers
-				self._post_trigger_collision(
+				self._post_trigger_interaction(
 					other, TriggerStatus.TRIGGER_NOHIT, collision_level
 				)
-				other._post_trigger_collision(
+				other._post_trigger_interaction(
 					self, TriggerStatus.TRIGGER_NOHIT, collision_level
 				)
 				return False, None
@@ -575,11 +523,11 @@ class Trigger(BaseObject):
 		MTV = MTV_axis * MTV_len
 
 		# Run post collision to update triggers
-		self._post_trigger_collision(
+		self._post_trigger_interaction(
 			other, TriggerStatus.TRIGGER_HIT, collision_level, MTV
 		)
-		other._post_trigger_collision(
-			self, TriggerStatus.TRIGGER_HIT, collision_level, MTV
+		other._post_trigger_interaction(
+			self, TriggerStatus.TRIGGER_HIT, collision_level, -MTV
 		)
 
 		return True, MTV
@@ -664,7 +612,7 @@ class Trigger(BaseObject):
 
 		return True, MTV
 
-	def _post_trigger_collision(
+	def _post_trigger_interaction(
 		self,
 		other: Trigger,
 		hit_status: TriggerStatus,
@@ -674,25 +622,34 @@ class Trigger(BaseObject):
 		# Update internals after collision, not just enter or exit
 		# 	Also dispatch events
 
-		# First hit
-		if hit_status & TriggerStatus.TRIGGER_HIT and other not in self.hit_triggers:
-			self.hit_triggers.add(other)
-
-			# Choose event type
-			if collision_level == TriggerInteractType.OVERLAP:
-				self.dispatch_event('on_trigger_overlap_enter', self, other, MTV)
+		# Hit
+		if hit_status & TriggerStatus.TRIGGER_HIT:
+			# First time
+			if other not in self.hit_triggers:
+				self.hit_triggers.add(other)
+				# Choose event type
+				if self.dispatch:
+					if collision_level == TriggerInteractType.OVERLAP:
+						self.dispatch_event('on_trigger_overlap_enter', self, other, MTV)  # fmt: skip
+					else:
+						self.dispatch_event('on_trigger_collide_enter', self, other, MTV)  # fmt: skip
+			# Repeat offender
 			else:
-				self.dispatch_event('on_trigger_collide_enter', self, other, MTV)
+				if self.dispatch:  # noqa: SIM102
+					if collision_level == TriggerInteractType.OVERLAP:
+						self.dispatch_event('on_trigger_overlap_motion', self, other, MTV)  # fmt: skip
 
-		# First nohit
-		elif hit_status & TriggerStatus.TRIGGER_NOHIT and other in self.hit_triggers:
-			self.hit_triggers.remove(other)
-
-			# Choose event type
-			if collision_level == TriggerInteractType.OVERLAP:
-				self.dispatch_event('on_trigger_overlap_exit', self, other)
-			else:
-				self.dispatch_event('on_trigger_collide_exit', self, other)
+		# Nohit
+		else:
+			# First time
+			if other in self.hit_triggers:
+				self.hit_triggers.remove(other)
+				# Choose event type
+				if self.dispatch:
+					if collision_level == TriggerInteractType.OVERLAP:
+						self.dispatch_event('on_trigger_overlap_exit', self, other)
+					else:
+						self.dispatch_event('on_trigger_collide_exit', self, other)
 
 		# Flip bit according to if intersecting any other triggers
 		if self.status & TriggerStatus.TRIGGER_HIT and not self.hit_triggers:
@@ -837,6 +794,7 @@ class Trigger(BaseObject):
 
 		# Exit
 		else:
+			# First time
 			if self.status & TriggerStatus.MOUSE_HIT:
 				self.status &= ~TriggerStatus.MOUSE_HIT
 				self.status |= TriggerStatus.MOUSE_NOHIT
@@ -970,11 +928,6 @@ class Trigger(BaseObject):
 		self._angle = val
 		self._calc_coords()
 
-	@property
-	def target_tags(self) -> TargetTagManager:
-		"""Get the tags this trigger targets. See `~pgm.shapes.TargetTagManager`."""
-		return self._target_tags
-
 	def __str__(self) -> str:
 		return (
 			f'Trigger({self.ID}): Subtype "{self.subtype}" @ {self._trans_pos} @ {self.angle} rad | {self.anchor} anchored\n'
@@ -1007,6 +960,7 @@ class TriggerCircle(Trigger):
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,
 		target_tags: dict[str, TriggerInteractType] | None = None,
+		auto_collide: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a trigger from a circle.
@@ -1024,7 +978,7 @@ class TriggerCircle(Trigger):
 				Window for attaching self. Required if binding mouse events.
 				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
-				The scene the trigger is from.
+				The scene the trigger is from. Required for backend physics detection.
 				Defaults to None.
 			anchor (Point2D, optional):
 				The anchor position.
@@ -1042,6 +996,9 @@ class TriggerCircle(Trigger):
 			target_tags (dict[str, TriggerInteractType], optional):
 				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
 				Defaults to None.
+			auto_collide (bool, optional):
+				If True, add to physics backend for automatic collision calls. Trigger must have a vaiid window and scene.
+				Defaults to True.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
@@ -1055,6 +1012,7 @@ class TriggerCircle(Trigger):
 			mouse_detection,
 			tags,
 			target_tags,
+			auto_collide,
 			_subtype=TriggerSubType.CIRCLE,
 			**kwargs,
 		)
@@ -1062,7 +1020,10 @@ class TriggerCircle(Trigger):
 		self.radius = radius
 
 	def _get_axes(self, _sacrifice_MTV: bool) -> list[Vec2]:
-		return [self.axis.normalize()]
+		# If center of circle is directly on other trigger, self.axis is length 0 vector
+		# 	This breaks the collision algorithm
+		# 	Therefore, return nothing
+		return [self.axis.normalize()] if self.axis else []
 
 	def _project(self, axis: Vec2, _remove_dupes: bool) -> tuple[float, float]:
 		proj = axis.dot(Vec2(*self.coords[0]))

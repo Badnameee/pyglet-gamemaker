@@ -14,6 +14,7 @@ from pyglet_gamemaker import colors
 from pyglet_gamemaker.collision.hitbox import Hitbox
 from pyglet_gamemaker.collision.rect import Rect
 from pyglet_gamemaker.scene import Scene
+from pyglet_gamemaker.types import TriggerStatus
 from pyglet_gamemaker.window import Window
 
 
@@ -49,10 +50,10 @@ class Scene1(Scene):
 		if self.pressed[key.RIGHT]:
 			self.rect.angle -= math.pi * dt
 
-		if self.rect.collide(self.hitbox)[0]:
-			self.rect.render.opacity = 128
-		else:
+		if self.rect.trigger.status & TriggerStatus.TRIGGER_HIT:
 			self.rect.render.opacity = 255
+		else:
+			self.rect.render.opacity = 128
 
 	def on_mouse_motion(self, x, y, dx, dy):
 		self.rect.pos = x, y
@@ -81,11 +82,11 @@ class Scene1(Scene):
 
 		print(self.rect)
 
-	def on_trigger_enter(self, t1, t2, MTV):
-		print(f'{t1.ID} entered {t2.ID}!')
+	def on_trigger_overlap_enter(self, t1, t2, MTV):
+		print(f'Overlap Enter: "{t1.ID}", "{t2.ID}"')
 
-	def on_trigger_exit(self, t1, t2):
-		print(f'{t1.ID} exited {t2.ID}!')
+	def on_trigger_overlap_exit(self, t1, t2):
+		print(f'Overlap Exit: "{t1.ID}", "{t2.ID}"')
 
 	def disable(self):
 		pyglet.clock.unschedule(self.update)

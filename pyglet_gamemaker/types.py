@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from enum import Enum, Flag, auto
+from enum import Enum, Flag, IntEnum, auto
 
 __all__ = [
 	'Point2D',
@@ -101,12 +101,13 @@ class TriggerStatus(Flag):
 	TRIGGER_HIT = auto()
 
 
-class TriggerInteractType(Enum):
+class TriggerInteractType(IntEnum):
 	"""All possible trigger collision types."""
 
-	NONE = auto()
-	OVERLAP = auto()
-	COLLIDE = auto()
+	# Numbers set manually for collision tag calculation, as smaller numbers will overpower higher ones.
+	NONE = 1
+	OVERLAP = 2
+	COLLIDE = 3
 
 
 @runtime_checkable

@@ -5,12 +5,15 @@ Use `~pgm.Window` instead of `~pgm.window.Window`
 
 from __future__ import annotations
 
+import itertools
 from typing import TYPE_CHECKING
 
 import pyglet
 from pyglet.window import Window as PygletWin
 
+from pyglet_gamemaker.collision.hitbox import Hitbox
 from pyglet_gamemaker.collision.trigger import Trigger
+from pyglet_gamemaker.types import TriggerInteractType
 
 from .camera import Camera
 
@@ -37,6 +40,9 @@ class Window(PygletWin):  # type: ignore[misc]
 	Use `.run()` to run the program.
 	"""
 
+	# * CONSTS
+	PHYSICS_FPS: float = 60
+
 	# * Instance vars
 	scenes: dict[str, Scene]
 	"""Stores all the scenes in the game"""
@@ -44,8 +50,8 @@ class Window(PygletWin):  # type: ignore[misc]
 	"""The currently running scene"""
 	centered: bool
 	"""If True, the window is centered. Do not set."""
-	triggers: set[Trigger]
-	"""All triggers to have automatic collision detection"""
+	triggers: dict[str, set[Trigger | Hitbox]]
+	"""All triggers to have automatic collision detection, by scene"""
 
 	def __init__(
 		self,
@@ -146,7 +152,7 @@ class Window(PygletWin):  # type: ignore[misc]
 		)
 
 		self.scenes = {}
-		self.triggers = set()
+		self.triggers = {}
 
 		# Center if requested
 		self.centered = center_window
@@ -181,7 +187,22 @@ class Window(PygletWin):  # type: ignore[misc]
 		# Enable beginning scene
 		self.scenes[self.scene].enable()
 
+		pyglet.clock.schedule_interval(self._physics_loop, 1 / self.PHYSICS_FPS)
 		pyglet.app.run()
+
+	def _physics_loop(self, dt: float) -> None:
+		for t1, t2 in itertools.combinations(self.triggers[self.scene], 2):
+			if not isinstance(t1, Trigger):
+				t1 = t1.trigger
+			if not isinstance(t2, Trigger):
+				t2 = t2.trigger
+			if t1 is t2:
+				continue
+
+			collided, MTV = t1.collide(t2)
+			# If COLLIDE type, auto-move
+			if collided and MTV and t1.tags.get_collision_level(t2.tags) == TriggerInteractType.COLLIDE:  # fmt: skip
+				t1.pos += MTV  # type: ignore[assignment]
 
 	def on_draw(self) -> None:  # noqa: D102
 		self.clear()
@@ -190,6 +211,7 @@ class Window(PygletWin):  # type: ignore[misc]
 	def add_scene(self, scene: Scene) -> None:
 		"""Add a scene to the game."""
 		self.scenes[scene.name] = scene
+		self.triggers[scene.name] = set()
 		scene.set_window(self)
 		scene.disable()
 
@@ -200,6 +222,17 @@ class Window(PygletWin):  # type: ignore[misc]
 	def pop_scene(self, name: str) -> Scene:
 		"""Pop and scene (by name) from the game."""
 		return self.scenes.pop(name)
+
+	def add_trigger(self, scene: Scene, trigger: Trigger) -> None:
+		"""Add a trigger to the physics backend for automatic collision detection.
+
+		Args:
+			scene (Scene | None):
+				The scene trigger is in.
+			trigger (Trigger):
+				The trigger to add
+		"""
+		self.triggers.setdefault(scene.name, set()).add(trigger)
 
 	def _on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
 		# Run when the scene needs to be changed to a new one

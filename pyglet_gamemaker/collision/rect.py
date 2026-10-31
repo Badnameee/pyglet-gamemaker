@@ -50,6 +50,7 @@ class Rect(Hitbox):
 		mouse_detection: bool = False,
 		tags: set[str] | None = None,
 		target_tags: dict[str, TriggerInteractType] | None = None,
+		auto_collide: bool = True,
 		**kwargs: EventHandler,
 	) -> None:
 		"""Create a rectangle.
@@ -72,7 +73,7 @@ class Rect(Hitbox):
 				Window for attaching self. Required if binding mouse events.
 				Defaults to `scene.window` if scene is provided, else None.
 			scene (Scene, optional):
-				The scene the rect is from.
+				The scene the rect is from. Required for backend physics detection.
 				Defaults to None.
 			batch (Batch, optional):
 				Batch for rendering.
@@ -98,9 +99,19 @@ class Rect(Hitbox):
 				Tags trigger interacts with as well as the type of interaction. see `~pgm.types.TriggerInteractType`.
 				Uses 'Default': 'OVERLAP' if not overriden.
 				Defaults to None.
+			auto_collide (bool, optional):
+				If True, add to physics backend for automatic collision calls. Trigger must have a vaiid window and scene.
+				Defaults to True.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
 		"""
+		# Have to do this to call add_trigger_to_physics_backend()
+		self.ID = ID
+		self.scene = scene
+		self.window = self._verify_window(window, necessary=mouse_detection)
+		if auto_collide:
+			self.add_trigger_to_physics_backend()
+
 		super().__init__(
 			ID,
 			((x, y), (x + width, y), (x + width, y + height), (x, y + height)),
@@ -114,6 +125,7 @@ class Rect(Hitbox):
 			mouse_detection,
 			tags,
 			target_tags,
+			auto_collide,
 			_subtype=TriggerSubType.RECT,
 			**kwargs,
 		)

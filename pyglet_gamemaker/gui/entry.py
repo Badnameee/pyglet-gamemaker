@@ -134,7 +134,6 @@ class Entry(TextEntry, Widget):
 				Defaults to True.
 			kwargs (EventHandler):
 				Event handlers to attach. Has priority over scene implementation. (name=func, see `.EVENT_TYPES` for event names)
-
 		"""
 		self.ID = ID
 		self.scene = scene
