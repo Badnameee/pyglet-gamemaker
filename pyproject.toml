@@ -13,6 +13,7 @@ exclude = [
 	"/.github",
 	"/media",
 	".gitignore",
+	"default.mustache",
 	"google.mustache",
 	"/.ruff_cache",
 	"/dist",
