@@ -182,7 +182,12 @@ class Entry(TextEntry, Widget):
 
 		# Automatically adjust height to font size
 		if self.font_info[1] is not None:
-			self.height *= self.font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # Don't care if it's a float
+			self.base_height = self.height = self.height * self.font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # Don't care if it's a float
+			# By default, text shifts upward, clinging to the top of the box before resizing
+			# 	Somehow setting text calls something that makes default text shift back to normal
+			# 	Have to set manually as text property has guard statement for same text
+			self._doc.delete_text(0, len(text))
+			self._doc.insert_text(0, text, None)
 
 		# Register events
 		self.register_events()
@@ -195,7 +200,7 @@ class Entry(TextEntry, Widget):
 
 	def clear(self) -> None:
 		"""Clear the entry."""
-		self._layout.document.delete_text(0, len(self._layout.document.text))
+		self._doc.delete_text(0, len(self._doc.text))
 
 	def reset(
 		self,
@@ -232,7 +237,7 @@ class Entry(TextEntry, Widget):
 			self.scale = 1
 		if text:
 			self.clear()
-			self._layout.document.insert_text(0, self.initial_text)
+			self._doc.insert_text(0, self.initial_text)
 			self.edited = False
 		if font:
 			self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
@@ -252,9 +257,9 @@ class Entry(TextEntry, Widget):
 		# First click-off
 		elif not value and prev_value:
 			# If empty, bring back text and clear when focused
-			self.edited = len(self._layout.document.text) != 0
+			self.edited = len(self._doc.text) != 0
 			if not self.edited:
-				self._layout.document.insert_text(0, self.initial_text)
+				self._doc.insert_text(0, self.initial_text)
 
 	def _calc_anchor(self) -> None:
 		# Get pos before messing with anchor
@@ -359,9 +364,29 @@ class Entry(TextEntry, Widget):
 		self._calc_anchor()
 
 	@property
+	def width(self) -> int:
+		"""Width of the text entry."""
+		return super().width
+
+	@width.setter
+	def width(self, val: int) -> None:
+		TextEntry.width.fset(self, val) # type: ignore[attr-defined]
+		self._calc_anchor()
+
+	@property
+	def height(self) -> int:
+		"""Height of the text entry."""
+		return super().height
+
+	@height.setter
+	def height(self, val: int) -> None:
+		TextEntry.height.fset(self, val) # type: ignore[attr-defined]
+		self._calc_anchor()
+
+	@property
 	def text(self) -> str:
 		"""The text currently in the entry. Can return default text."""
-		return self._layout.document.text
+		return self._doc.text
 
 	@property
 	def font_name(self) -> str | list[str]:

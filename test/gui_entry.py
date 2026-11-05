@@ -16,7 +16,7 @@ from pyglet_gamemaker.window import Window
 
 
 class Scene1(Scene):
-	WIDGET_POS = {'Test': (0.5, 0.5)}
+	WIDGET_POS = {'Test': ('0.5', '0.5')}
 
 	def initialize(self):
 		self.entry = Entry(
@@ -25,9 +25,10 @@ class Scene1(Scene):
 			width=250,
 			scene=self,
 			anchor=('.5', '.5'),
-			font_info=(None, None),
+			font_info=(None, 30, None),
 			color=colors.GRAY,
 		)
+		self.entry.update_groups(0)
 
 		self.debug_group = Group(3, self.GUI_group)
 
