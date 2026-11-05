@@ -43,10 +43,10 @@ class Entry(TextEntry, Widget):
 	- `on_submit()` when enter/return key is pressed on the entry.
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	EVENT_TYPES = ('on_submit',)
 
-	# * Instance Vars
+	#* Instance Vars
 	initial_text: str
 	"""Initial text to display"""
 	edited: bool = False
@@ -58,7 +58,7 @@ class Entry(TextEntry, Widget):
 	base_height: int
 	"""The height without scaling"""
 
-	# * Property vars
+	#* Property vars
 	_color: Color
 
 	def __init__(
@@ -137,11 +137,11 @@ class Entry(TextEntry, Widget):
 		"""
 		self.ID = ID
 		self.scene = scene
+		self.font_info = self._process_font_info(font_info)
 
 		# Verify scene attrs
-		self.font_info = self._process_font_info(font_info)
-		x, y = self._verify_pos(x, y)
 		self.window = self._verify_window(window, necessary=mouse_detection)
+		x, y = self._verify_pos(x, y)
 		batch = self._verify_batch(batch)
 		group = self._verify_group(group, attr_name='entry_group')
 

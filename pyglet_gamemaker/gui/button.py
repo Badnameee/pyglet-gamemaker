@@ -49,10 +49,10 @@ class Button(_PushButton, Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	EVENT_TYPES = 'on_half_click', 'on_full_click'
 
-	# * Instance vars
+	#* Instance vars
 	unpressed_img: AbstractImage
 	"""Image of unpressed button"""
 	hover_img: AbstractImage
@@ -64,7 +64,7 @@ class Button(_PushButton, Widget):
 	status: ButtonStatus = ButtonStatus.UNPRESSED
 	"""Status of button"""
 
-	# * Private vars
+	#* Private vars
 	_last_mouse_pos: tuple[int, int] = 0, 0
 	_prev_status: ButtonStatus
 
@@ -129,8 +129,8 @@ class Button(_PushButton, Widget):
 		self.scene = scene
 
 		# Verify scene attrs
-		x, y = self._verify_pos(x, y)
 		self.window = self._verify_window(window, necessary=mouse_detection)
+		x, y = self._verify_pos(x, y)
 		batch = self._verify_batch(batch)
 		group = self._verify_group(group, 'button_group')
 

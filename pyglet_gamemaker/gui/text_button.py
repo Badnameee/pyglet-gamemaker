@@ -58,10 +58,10 @@ class TextButton(Widget):
 	Use kwargs to attach event handlers.
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	EVENT_TYPES = Button.EVENT_TYPES + Text.EVENT_TYPES
 
-	# * Instance vars
+	#* Instance vars
 	button: Button
 	"""Button object"""
 	text: Text
@@ -69,10 +69,10 @@ class TextButton(Widget):
 	start_hover_enlarge: int
 	"""Starting hover enlarge value"""
 
-	# * Property vars
+	#* Property vars
 	_hover_enlarge: float = 0
 
-	# * Private vars
+	#* Private vars
 	_enlarged: bool = False
 	"""If true, text is currently enlarged. Used internally to enlarge text once."""
 
@@ -159,10 +159,11 @@ class TextButton(Widget):
 		"""
 		self.ID = ID
 		self.scene = scene
+		self.font_info = self._process_font_info(font_info)
 
 		# Verify scene attrs
-		x, y = self._verify_pos(x, y)
 		self.window = window = self._verify_window(window, necessary=mouse_detection)
+		x, y = self._verify_pos(x, y)
 		batch = self._verify_batch(batch)
 		button_group = self._verify_group(button_group, 'button_group', 'button_group')
 		text_group = self._verify_group(text_group, 'text_group', 'text_group')
@@ -286,11 +287,13 @@ class TextButton(Widget):
 			if not self._enlarged:
 				self._enlarged = True
 				self.text.font_size += self._hover_enlarge
+				self.text._calc_anchor()
 		else:
 			# First frame unhover: unenlarge text
 			if self._enlarged:
 				self._enlarged = False
 				self.text.font_size -= self._hover_enlarge
+				self.text._calc_anchor()
 
 	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> bool:
 		if not self.button.enabled:

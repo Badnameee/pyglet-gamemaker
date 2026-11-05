@@ -99,11 +99,11 @@ class Text(Label, Widget):
 		"""
 		self.ID = ID
 		self.scene = scene
+		self.font_info = self._process_font_info(font_info)
 
 		# Verify scene attrs
-		self.font_info = self._process_font_info(font_info)
+		self.window = self._verify_window(window, necessary=False)  # fmt: skip  #! Technically necessary=True if pos is dynamic
 		x, y = self._verify_pos(x, y)
-		self.window = self._verify_window(window, necessary=False)
 		batch = self._verify_batch(batch)
 		group = self._verify_group(group, attr_name='text_group')
 
@@ -205,11 +205,13 @@ class Text(Label, Widget):
 		self.pos = self._pos
 
 	def _get_left_anchor(self) -> int:
-		return -self.anchor_x # type: ignore[return-value]
+		return -self.anchor_x  # type: ignore[return-value]
+
 	def _get_bottom_anchor(self) -> int:
-		return -(self.anchor_y - self._descent) # type: ignore[return-value]
+		return -(self.anchor_y - self._descent)  # type: ignore[return-value]
+
 	def _get_top_anchor(self) -> int:
-		return self.height - self.anchor_y # type: ignore[return-value]
+		return self.height - self.anchor_y  # type: ignore[return-value]
 
 	def enable(self) -> None: ...  # noqa: D102
 
@@ -249,7 +251,9 @@ class Text(Label, Widget):
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val)# - self._anchor[1])# - self._descent)  # Fixes y not centering
+		self._set_y(
+			val
+		)  # - self._anchor[1])# - self._descent)  # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
@@ -261,8 +265,8 @@ class Text(Label, Widget):
 		self._pos = val
 		self._set_position(
 			(
-				val[0],# - self._anchor[0],
-				val[1],# - self._anchor[1],# - self._descent,  # Fixes y not centering
+				val[0],  # - self._anchor[0],
+				val[1],  # - self._anchor[1],# - self._descent,  # Fixes y not centering
 				self._z,
 			)
 		)

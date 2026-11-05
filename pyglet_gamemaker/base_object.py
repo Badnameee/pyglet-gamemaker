@@ -1,12 +1,17 @@
-"""."""
+"""Module holding BaseObject class, the root of most other objects in pgm.
+
+Use `~pgm.BaseObject` instead of `~pgm.base_object.BaseObject`.
+"""
 
 from __future__ import annotations
 
+import re
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from pyglet_gamemaker.errors import MissingAttr
 from pyglet_gamemaker.event_dispatcher import EventDispatcher
+from pyglet_gamemaker.types import FLOAT_REGEX
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
@@ -29,15 +34,16 @@ class BaseObject(EventDispatcher, ABC):
 	Methods:
 	- `._process_font_info()`
 	- `.verify_...()`: 'pos', 'window', 'batch', 'group'
+	- `._convert_dynamic_pos()`
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	DEFAULT_FONT_SIZE: int = 12
 	"""Default pyglet/pgm font size"""
 	DEFAULT_FONT_INFO: FontInfo = None, DEFAULT_FONT_SIZE, 'normal'
 	"""The default font info"""
 
-	# * Instance vars
+	#* Instance vars
 	ID: str
 	"""The unique ID of the widget to distinguish it"""
 	window: Window | None
@@ -75,7 +81,7 @@ class BaseObject(EventDispatcher, ABC):
 	def _verify_pos(
 		self, x: float | None, y: float | None, x_name: str = 'x', y_name: str = 'y'
 	) -> Point2D:
-		"""Verify pos is set either in arg or in scene, reterning verified pos.
+		"""Verify pos is set either in arg or in scene, returning verified pos.
 
 		Args:
 			x (float | None):
@@ -99,7 +105,7 @@ class BaseObject(EventDispatcher, ABC):
 				raise ValueError(
 					f'"{self.ID}" is not in `{self.scene.__class__.__name__}.WIDGET_POS` = {self.scene.WIDGET_POS}.'
 				)
-			x = self.scene.WIDGET_POS[self.ID][0] * self.scene.window.width
+			x = self.scene.WIDGET_POS[self.ID][0]  # type: ignore[assignment]
 		if y is None:
 			if self.scene is None:
 				raise MissingAttr(self, y_name)
@@ -107,9 +113,9 @@ class BaseObject(EventDispatcher, ABC):
 				raise ValueError(
 					f'"{self.ID}" is not in `{self.scene.__class__.__name__}.WIDGET_POS` = {self.scene.WIDGET_POS}.'
 				)
-			y = self.scene.WIDGET_POS[self.ID][1] * self.scene.window.height
+			y = self.scene.WIDGET_POS[self.ID][1]  # type: ignore[assignment]
 
-		return x, y
+		return self._convert_dynamic_pos(x, y)  # type: ignore[arg-type]
 
 	def _verify_window(
 		self, window: Window | None, name: str = 'window', necessary: bool = True
@@ -172,6 +178,44 @@ class BaseObject(EventDispatcher, ABC):
 		if not group and not self.scene and not hasattr(self.scene, attr_name):
 			raise MissingAttr(self, name)
 		return group or getattr(self.scene, attr_name)
+
+	def _convert_dynamic_pos(self, x: str | float, y: str | float) -> Point2D:
+		"""Convert a possibly dynamic position into static.
+
+		Args:
+			x (str | float):
+				x pos
+			y (str | float):
+				y pos
+
+		Returns:
+			Point2D: Static position
+		"""
+		# Dynamic
+		if isinstance(x, str):
+			if re.fullmatch(FLOAT_REGEX, x):
+				if not self.window:
+					raise MissingAttr(self, 'window')
+				x = float(x) * self.window.width
+
+			else:
+				raise TypeError(
+					f'"{self.__class__.__name__}({self.ID}).x" must be a string representing a float, not "{x}".'
+				)
+
+		# Dynamic
+		if isinstance(y, str):
+			if re.fullmatch(FLOAT_REGEX, y):
+				if not self.window:
+					raise MissingAttr(self, 'window')
+				y = float(y) * self.window.height
+
+			else:
+				raise TypeError(
+					f'"{self.__class__.__name__}({self.ID}).y" must be a string representing a float, not "{y}".'
+				)
+
+		return x, y  # type: ignore[return-value]
 
 	def add_trigger_to_physics_backend(self) -> None:
 		"""Attempt to add a TRIGGER to the physics backend. Do not call on non-trigger objects."""

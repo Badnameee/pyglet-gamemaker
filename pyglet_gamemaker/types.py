@@ -1,6 +1,7 @@
 """Stores all custom types used in pgm.
 
 - Point2D: (float, float) - for 2D points
+- Point2D: (str | float, str | float) - for dynamic 2D points
 - FontInfo: (type, size, weight). See `pyglet.text.Weight` for weight values.
 - Axis: Either 'x' or 'y'
 - AnchorXDynamicValues: All dynamic preset anchors on x-axis
@@ -28,6 +29,7 @@ from enum import Enum, Flag, IntEnum, auto
 
 __all__ = [
 	'Point2D',
+	'DynamicPoint2D',
 	'FontInfo',
 	'Axis',
 	'AnchorXDynamicPresetValues',
@@ -54,6 +56,7 @@ from collections.abc import Callable
 from typing import Any, Literal, Protocol, runtime_checkable
 
 Point2D = tuple[float, float]
+DynamicPoint2D = tuple[str | float, str | float]
 FontInfo = tuple[str | None, int | None] | tuple[str | None, int | None, str | None]
 Axis = Literal['x', 'y']
 AnchorXDynamicPresetValues = 'left', 'center', 'right'
