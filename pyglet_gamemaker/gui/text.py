@@ -41,7 +41,7 @@ class Text(Label, Widget):
 	Does not support rotating around anchor point (rotates about bottomleft).
 	"""
 
-	# * Instance vars
+	#* Instance vars
 	font_info: FontInfo
 	"""The font information"""
 	initial_text: str
@@ -123,6 +123,7 @@ class Text(Label, Widget):
 		self.initial_anchor = self.anchor = anchor
 		self.initial_pos = self.pos = x, y
 		self.initial_text = self.text = text
+		self._update_anchor()
 
 	def reset(
 		self,
@@ -198,9 +199,17 @@ class Text(Label, Widget):
 			anchor_y = self.raw_anchor[1]
 
 		self._anchor = anchor_x, anchor_y
+		self._update_anchor()
 
 		# Refresh position
 		self.pos = self._pos
+
+	def _get_left_anchor(self) -> int:
+		return -self.anchor_x # type: ignore[return-value]
+	def _get_bottom_anchor(self) -> int:
+		return -(self.anchor_y - self._descent) # type: ignore[return-value]
+	def _get_top_anchor(self) -> int:
+		return self.height - self.anchor_y # type: ignore[return-value]
 
 	def enable(self) -> None: ...  # noqa: D102
 
@@ -240,7 +249,7 @@ class Text(Label, Widget):
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val - self._anchor[1] - self._descent)  # Fixes y not centering
+		self._set_y(val)# - self._anchor[1])# - self._descent)  # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
@@ -252,8 +261,8 @@ class Text(Label, Widget):
 		self._pos = val
 		self._set_position(
 			(
-				val[0] - self._anchor[0],
-				val[1] - self._anchor[1] - self._descent,  # Fixes y not centering
+				val[0],# - self._anchor[0],
+				val[1],# - self._anchor[1],# - self._descent,  # Fixes y not centering
 				self._z,
 			)
 		)
@@ -364,4 +373,4 @@ class Text(Label, Widget):
 		self._calc_anchor()
 
 	def __str__(self) -> str:
-		return f'Text("{self.ID}"): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'
+		return f'Text("{self.ID}"): "{self.text}" @ {self.pos} @ {self.rotation:.3f} rad @ {self.scale}x scale | {self.raw_anchor} anchored'
