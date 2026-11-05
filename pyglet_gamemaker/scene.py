@@ -10,7 +10,9 @@ from typing import TYPE_CHECKING
 
 from pyglet.graphics import Batch, Group
 
-from .event_dispatcher import EventDispatcher
+from pyglet_gamemaker.base_object import BaseObject
+from pyglet_gamemaker.types import DynamicPoint2D
+
 from .gui import HUDGroup
 
 if TYPE_CHECKING:
@@ -21,7 +23,7 @@ if TYPE_CHECKING:
 	from .window import Window
 
 
-class Scene(EventDispatcher, ABC):
+class Scene(ABC):
 	"""Abstract class for a Scene in the game, inherit to create own scenes.
 
 	`~pgm.Window` object should hold all scenes in window.scenes dictionary.
@@ -34,37 +36,36 @@ class Scene(EventDispatcher, ABC):
 		- `.button_group`
 		- `.entry_group`
 		- `.text_group`
-	- `.HUD_group` - All HUD items, special as it ignore's view matrix
+	- `.HUD_group` - All HUD items, special as it ignores view matrix
 
-	Required Variables:
+	Vars:
 	- `.WIDGET_POS`: Positions of widgets as scale to window (see `.WIDGET_POS`)
 	- `.DEFAULT_FONT_INFO`: The default font information used if none passed into methods
+
+	Methods:
+	- `.change_scene()`: Change the scene to a new one. Can pass in extra data that gets passed to `new_scene.enable()`.
+		Additionally, scenes can access the window, scenes can directly see other scene data.
 
 	Required Methods (**do not override `.__init__`**):
 	- `.initialize()`: The initializer that runs when adding scene to window
 	- `.enable()`: Enable scene (not rendering, just logic)
 	- `.disable()`: Disable scene (not rendering, just logic)
 
-	Dispatches:
-	- `on_scene_change` (to window) when program wishes to switch scenes.
-		- Args:
-			- Name of new scene to switch to
-			- Any args for extra data to be sent to `.enable(...)`. Note scenes have access to window and can retrieve data manually from there.
-
 	Use kwargs to attach event handlers.
 	"""
 
-	# * CONSTS
-	WIDGET_POS: dict[str, tuple[float, float]]
-	"""Stores the position of every widget as a scale {id: (scale_x, scale_y)}.
+	#* CONSTS
+	WIDGET_POS: dict[str, DynamicPoint2D]
+	"""Stores the position of every widget as a static/dynamic position.
 
-	Ex. `'Test': (0.5, 0.5)` is the center of the window.
+	Does not implement dynamic presets. See `~pgm.gui.widget.Widget` for more information.
+
+	Ex. `'Test': ('0.5', '0.5')` is the center of the window.
 	"""
-	DEFAULT_FONT_INFO: FontInfo = None, None, None
+	DEFAULT_FONT_INFO: FontInfo = BaseObject.DEFAULT_FONT_INFO
 	"""The default font info if none passed to widget, overrides `~pgm.gui.Widget.DEFAULT_FONT_INFO`. Scene must be passed into widget to function."""
-	EVENT_TYPES = ('on_scene_change',)
 
-	# * Instance vars
+	#* Instance vars
 	name: str
 	"""The name of the scene"""
 	window: Window
@@ -88,14 +89,12 @@ class Scene(EventDispatcher, ABC):
 	widgets: dict[str, Widget]
 	"""Stores all widgets in the menu"""
 
-	def __init__(self, name: str, **kwargs: EventHandler) -> None:
+	def __init__(self, name: str) -> None:
 		"""Create a scene.
 
 		Args:
 			name (str):
 				The name of the scene (used to identity scene by name)
-			**kwargs (EventHandler):
-				Event handlers to attach (name=func)
 		"""
 		self.name = name
 		self.widgets = {}
@@ -109,10 +108,6 @@ class Scene(EventDispatcher, ABC):
 		self.text_group = Group(2, self.GUI_group)
 		self.HUD_group = HUDGroup(3)
 
-		# Adds any event handlers passed through kwargs
-		self.register_events(**kwargs)
-		self.set_handlers(**kwargs)
-
 	def set_window(self, window: Window) -> None:
 		"""Set the window the Scene will use.
 
@@ -125,8 +120,8 @@ class Scene(EventDispatcher, ABC):
 		# Call user method initialize
 		self.initialize()
 
-	def on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
-		"""A middleman between event dispatch and `window._on_scene_change`.
+	def change_scene(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
+		"""Switch scene to new scene.
 
 		Args:
 			new_scene (str):
@@ -135,7 +130,7 @@ class Scene(EventDispatcher, ABC):
 				Any extra data
 			**kwargs (Any):
 				Any extra data
-		"""  # noqa: D401
+		"""
 		self.window._on_scene_change(new_scene, *args, **kwargs)
 
 	@abstractmethod
