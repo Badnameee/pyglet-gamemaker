@@ -40,10 +40,10 @@ class Window(PygletWin):  # type: ignore[misc]
 	Use `.run()` to run the program.
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	PHYSICS_FPS: float = 60
 
-	# * Instance vars
+	#* Instance vars
 	scenes: dict[str, Scene]
 	"""Stores all the scenes in the game"""
 	scene: str = ''
@@ -169,20 +169,22 @@ class Window(PygletWin):  # type: ignore[misc]
 		else:
 			self.camera = Camera(self)
 
+		self.register_event_type('on_window_close')
+		pyglet.app.event_loop.set_handler('on_window_close', self._on_window_close)
+
 	def run(self, start_scene: str | None = None) -> None:
 		"""Run the game.
 
 		Args:
 			start_scene (str, optional):
 				The scene to start on.
-				Defaults to None.
+				Defaults to first scene added.
 		"""
 		if not self.scenes:
 			raise RuntimeError('Window must have at least 1 scene!')
 
 		# Set start scene if needed
-		if start_scene is not None:
-			self.scene = start_scene
+		self.scene = start_scene or self.scene
 
 		# Enable beginning scene
 		self.scenes[self.scene].enable()
@@ -207,6 +209,10 @@ class Window(PygletWin):  # type: ignore[misc]
 	def on_draw(self) -> None:  # noqa: D102
 		self.clear()
 		self.scenes[self.scene].batch.draw()
+
+	def _on_window_close(self, window: Window) -> None:
+		"""Run when window closed. Used to disable running scene."""
+		self.scenes[self.scene].disable()
 
 	def add_scene(self, scene: Scene) -> None:
 		"""Add a scene to the game."""
@@ -234,7 +240,7 @@ class Window(PygletWin):  # type: ignore[misc]
 		"""
 		self.triggers.setdefault(scene.name, set()).add(trigger)
 
-	def _on_scene_change(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
+	def _change_scene(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
 		# Run when the scene needs to be changed to a new one
 		# 	Arbitrary data can be passed if more information is needed
 
