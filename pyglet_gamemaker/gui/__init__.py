@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import weakref
-
 from pyglet.graphics import Group
 from pyglet.math import Mat4
 
@@ -12,6 +10,15 @@ from .text_button import TextButton
 from .widget import Widget
 
 from ..window import Window  # isort: skip
+
+__all__ = [
+	'Button',
+	'Entry',
+	'Text',
+	'TextButton',
+	'Widget',
+	'HUDGroup',
+]
 
 
 class HUDGroup(Group):
