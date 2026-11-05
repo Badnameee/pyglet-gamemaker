@@ -61,7 +61,7 @@ class Trigger(BaseObject):
 	- `on_trigger_collide_exit(self, other)` when trigger 1 exits trigger 2 (with collide trigger type)
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	EVENT_TYPES = (
 		'on_mouse_trigger_enter',
 		'on_mouse_trigger_motion',
@@ -82,7 +82,7 @@ class Trigger(BaseObject):
 		'top': 1,
 	}
 
-	# * Instance vars
+	#* Instance vars
 	coords: tuple[Point2D, ...]
 	"""The final coordinates of the trigger"""
 	_trans_pos: Point2D
@@ -104,11 +104,11 @@ class Trigger(BaseObject):
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic) of trigger"""
 
-	# * Property vars
+	#* Property vars
 	_anchor: Point2D = 0, 0
 	_angle: float = 0
 
-	# * Private vars
+	#* Private vars
 	_local_coords: tuple[Point2D, ...] = ()
 	"""Holds the *untransformed* coords relative to first coordinate"""
 	_raw_coords: tuple[Point2D, ...] = ()
@@ -357,7 +357,7 @@ class Trigger(BaseObject):
 	def _get_axes(self, _: bool) -> list[Vec2]:
 		# Get the normal axes of the trigger as Vec2 (for SAT).
 
-		# * Special case: point trigger has no axes
+		#* Special case: point trigger has no axes
 		if self.subtype == TriggerSubType.POINT:
 			return []
 
@@ -479,20 +479,20 @@ class Trigger(BaseObject):
 		if isinstance(other, TriggerCircle):
 			other._get_collision_axis(self)
 
-		# * Step 1: Get the normal axes of each edge
+		#* Step 1: Get the normal axes of each edge
 		axes = self._get_axes(sacrifice_MTV)
 		other_axes = other._get_axes(sacrifice_MTV)
 
 		MTV_len = float('inf')
 		MTV_axis = Vec2(0, 0)
 
-		# * Step 2: Project the shapes onto each axis
+		#* Step 2: Project the shapes onto each axis
 		for axis in axes + other_axes:
 			l1 = self._project(axis, sacrifice_MTV)
 			l2 = other._project(axis, sacrifice_MTV)
 
-			# * Step 3: Check for intersection
-			# * 	If the projections do not intersect, there cannot be a collision
+			#* Step 3: Check for intersection
+			#* 	If the projections do not intersect, there cannot be a collision
 			if not (overlap := self._get_intersection_length(l1, l2)):
 				# Run post collision to update triggers
 				self._post_trigger_interaction(
@@ -503,7 +503,7 @@ class Trigger(BaseObject):
 				)
 				return False, None
 
-			# * Step 4: If line completely contained, find nearest exit
+			#* Step 4: If line completely contained, find nearest exit
 			if self._contains(l1, l2):
 				# Check which direction is less distance
 				left_diff = abs(l1[0] - l2[0])
@@ -514,8 +514,8 @@ class Trigger(BaseObject):
 				else:
 					overlap = -(overlap + right_diff)
 
-			# * Step 5: For MTV - Get the smallest intersection length
-			# *	and store it along with the axis
+			#* Step 5: For MTV - Get the smallest intersection length
+			#*	and store it along with the axis
 			if abs(overlap) < abs(MTV_len):
 				MTV_len = overlap
 				MTV_axis = axis
@@ -576,24 +576,24 @@ class Trigger(BaseObject):
 		if not self.enabled:
 			return False, None
 
-		# * Step 1: Get the normal axes of each edge
+		#* Step 1: Get the normal axes of each edge
 		axes = self._get_axes(sacrifice_MTV)
 
 		# These store the length and axis for the MTV
 		MTV_len = float('inf')
 		MTV_axis = Vec2(0, 0)
 
-		# * Step 2: Project the shapes onto each axis
+		#* Step 2: Project the shapes onto each axis
 		for axis in axes:
 			l1 = self._project(axis, sacrifice_MTV)
 			l2 = other._project(axis, sacrifice_MTV)
 
-			# * Step 3: Check for intersection
-			# * 	If the projections do not intersect, there cannot be a collision
+			#* Step 3: Check for intersection
+			#* 	If the projections do not intersect, there cannot be a collision
 			if not self._contains(l1, l2):
 				return False, None
 
-			# * Step 4: Line is always containing point, so simplified overlap algorithm
+			#* Step 4: Line is always containing point, so simplified overlap algorithm
 			left_diff = abs(l1[0] - l2[0])
 			right_diff = abs(l1[1] - l2[1])
 
@@ -602,8 +602,8 @@ class Trigger(BaseObject):
 			else:
 				overlap = -right_diff
 
-			# * Step 5: For MTV - Get the smallest intersection length
-			# *	and store it along with the axis
+			#* Step 5: For MTV - Get the smallest intersection length
+			#*	and store it along with the axis
 			if abs(overlap) < abs(MTV_len):
 				MTV_len = overlap
 				MTV_axis = axis
@@ -941,7 +941,7 @@ class TriggerCircle(Trigger):
 	Do not try to access `.coords` as they are not real coords.
 	"""
 
-	# * Instance vars
+	#* Instance vars
 	axis: Vec2
 	"""The axis between the center and the closest point on last trigger checked for collision."""
 	radius: float
@@ -1060,8 +1060,8 @@ class TriggerCircle(Trigger):
 		if not isinstance(trigger, Trigger):
 			trigger = trigger.trigger
 
-		# * Special case: circle-circle collision
-		# *	To calculate collision axis, use line between centers
+		#* Special case: circle-circle collision
+		#*	To calculate collision axis, use line between centers
 		if isinstance(trigger, TriggerCircle):
 			# Get vector pointing from the center of circle # 1 to the edge of circle # 2
 			self.axis = Vec2(

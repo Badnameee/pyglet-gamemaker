@@ -28,7 +28,7 @@ class Camera:
 	- NOTE: These transformations are **relative** to the default settings provided at creation.
 	"""
 
-	# * Instance vars
+	#* Instance vars
 	window: Window | None
 	'The window the camera is attached to'
 	og_mat: Mat4 | None

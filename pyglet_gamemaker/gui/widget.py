@@ -56,7 +56,7 @@ class Widget(BaseObject, ABC):
 	- `.EVENT_TYPES`: Put event names that may be dispatched
 	"""
 
-	# * CONSTS
+	#* CONSTS
 	CONVERT_DYNAMIC: dict[
 		AnchorXDynamicPresetType | AnchorYDynamicPresetType, float
 	] = {
@@ -72,7 +72,7 @@ class Widget(BaseObject, ABC):
 	DEFAULT_FONT_INFO: FontInfo = None, DEFAULT_FONT_SIZE, 'normal'
 	"""The default font info,"""
 
-	# * Instance vars
+	#* Instance vars
 	ID: str
 	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
@@ -86,7 +86,7 @@ class Widget(BaseObject, ABC):
 	mouse_detection: bool
 	"""If False, don't attach events (e.g. mouse) to window"""
 
-	# * Property vars
+	#* Property vars
 	_pos: Point2D = 0, 0
 	_anchor: Point2D = 0, 0
 	_scale: float = 1

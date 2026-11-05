@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 class Hitbox(BaseObject):
 	"""Holds a Hitbox with `.trigger` and `.render` objects."""
 
-	# * Instance vars
+	#* Instance vars
 	trigger: Trigger
 	"""The trigger object"""
 	render: Polygon
@@ -400,7 +400,7 @@ class Hitbox(BaseObject):
 class HitboxCircle(BaseObject):
 	"""Holds a Circle Hitbox with `.trigger` and `.render` objects."""
 
-	# * Instance vars
+	#* Instance vars
 	ID: str
 	"""The unique ID of the hitbox to distinguish it"""
 	trigger: TriggerCircle
