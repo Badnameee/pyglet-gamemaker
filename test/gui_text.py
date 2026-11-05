@@ -42,9 +42,9 @@ class Scene1(Scene):
 		self.window.push_handlers(self)
 		self.window.push_handlers(self.pressed)
 
-		self.rotation_speed = 180 # deg/s
-		self.anchor_speed = 100 # px/s
-		self.scale_speed = 2 # factor/s
+		self.rotation_speed = 180  # deg/s
+		self.anchor_speed = 100  # px/s
+		self.scale_speed = 2  # factor/s
 
 	def update(self, dt):
 		if self.pressed[key.LEFT]:
@@ -60,9 +60,9 @@ class Scene1(Scene):
 		if self.pressed[key.D]:
 			self.txt.rotation += self.rotation_speed * dt
 		if self.pressed[key.BRACKETLEFT]:
-			self.txt.scale *= (self.scale_speed-1) * dt + 1
+			self.txt.scale *= (self.scale_speed - 1) * dt + 1
 		if self.pressed[key.BRACKETRIGHT]:
-			self.txt.scale /= (self.scale_speed-1) * dt + 1
+			self.txt.scale /= (self.scale_speed - 1) * dt + 1
 		print(self.txt)
 
 	def on_mouse_motion(self, x, y, dx, dy):
@@ -88,11 +88,12 @@ class Scene1(Scene):
 
 	def disable(self):
 		self.txt.disable()
+		print('disabling')
 		pyglet.clock.unschedule(self.update)
 
 	def enable(self):
 		self.txt.enable()
-		pyglet.clock.schedule_interval(self.update, 1/60)
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 
 
 window = Window(640, 480)

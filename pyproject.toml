@@ -60,7 +60,6 @@ exclude = [
 
 [tool.ruff]
 exclude = [
-	"run_demo.py",
 	".venv/*",
 ]
 
@@ -94,11 +93,10 @@ indent-style = "tab"
 quote-style = "single"
 preview = false
 
-[tool.ruff.lint.per-file-ignores]
-"test/*" = ["C", "D", "T20", "F403", "F405", "ANN", "ARG"]
-
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.extend-per-file-ignores]
+"test/*" = ["C", "D", "T20", "F403", "F405", "ANN", "ARG"]
 "**/__init__.py" = ["F401", "D104"]
+"demo.py" = ["T20"]
