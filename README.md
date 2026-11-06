@@ -15,25 +15,40 @@
 
 ## 🌟 Features
 
-- Hitboxes
-  - Fully working convex polygon collision
-  - Includes circles
+- Triggers/Hitboxes
+  - Fully working convex polygon collision using SAT algorithm
+  - Includes circles + points
+  - Can interact with mouse (toggleable)
+  - Can possess tags and tags it can collide with
+  - 3 collision types: `None`, `Overlap`, and `Collide`
+  - Can be setup to automatically detect collision
+  - Dispatch events on different types of collision
 - Spritesheets:
-  - Automatically loaded
-  - Labelable to allow for indexing by string
+  - Can label to allow indexing by string
+  - Can have several animations present in a single sheet
+  - Uses yaml config file
 - Widgets:
-  - Dynamic anchoring for changing size
-  - Uses spritesheets instead of individual images
+  - Can use spritesheet instead of individual images
+  - Widgets can be added to the HUD automatically
+- Camera:
+  - Can easily transform, rotate, and zoom
 - Scenes:
   - Enabling and disabling handled automatically
-  - Menus:
-    - Easily create visuals + widgets
-    - Widget positions relative to window size
-- Main Window class handles switching of scenes
+  - Event handlers can be written in scene and automatically detected by objects at creation
+- Window:
+  - Handles switching of scenes
+  - Handles physics backend
+- Anchoring (all objects):
+    - Static: raw pixel value
+    - Dynamic Preset: `left`, `center`, `right`, etc. like pyglet
+    - Dynamic: ratios of width/height, changes automatically as widget scales
+- Event dispatching (all objects):
+  - Event handlers can be passed into any object's `.__init__()` as a kwarg
+  - Handlers are also automatically detected in the scene
 
 ### ✍️ Authors
 
-I'm [Steven Robles](https://github.com/Badnameee) and I am a high school student with a *small?* passion for making games.
+I'm [Steven Robles](https://github.com/Badnameee) and I am a high school student with a moderate passion for making games.
 
 
 ## 🚀 Usage
@@ -53,15 +68,14 @@ A simple program to render an empty Scene with button detection:
 >>>     # Code that runs when button is fully clicked and released
 >>>     def on_full_click(self, button): ...
 >>>     # Code that runs when scene is enabled
->>>     def enable(self): ...
+>>>     def enable(self, *args, **kwargs): ...
 >>>     # Code that runs when scene is disabled
 >>>     def disable(self): ...
 >>> 
 >>> 
->>> menu = Menu('Test')
->>> game = pgm.Window((640, 480))
->>> game.add_scene('Test', menu)
->>> game.run()
+>>> window = pgm.Window(width=640, height=480)
+>>> window.add_scene(Menu(name='Menu'))
+>>> window.run()
 ```
 
 Creating a spritesheet
@@ -72,23 +86,42 @@ Creating a spritesheet
 >>> self.sheet = pgm.sprite.SpriteSheet('test/Test Button SpriteSheet.png', rows=3, cols=1)
 ```
 
-The following should go in `Menu.create_widgets()`:
+Creating a rectangle hitbox
+```py
+>>> # In addition to Rect, there is also Hitbox and Trigger
+>>> pgm.collision.Rect(
+>>>     ID='TextButton',
+>>>     x=100, y=100, width=90, height=60,
+>>>     tags={'MyTag1'},
+>>>     target_tags={'MyTag1': pgm.types.TriggerInteractType.OVERLAP},
+>>> )
+```
+
+Creating an AnimationList
+```py
+>>> # Copied from tests/sprite.py
+>>> pgm.sprite.AnimationList(
+>>> 	'media/AnimationList.png',
+>>> 	'tests/media/AnimationList.yaml',
+>>> )
+```
+
+Widget creation should go in `Menu.initialize()`:
 
 - Creating text
 ```py
->>> self.create_text(
->>>     'Text', 'Test',
->>>     ('center', 'center'), color=pgm.types.Color.RED
+>>> pgm.gui.Text(
+>>>     ID='Text', text='Test',
+>>>     anchor=('center', 'center'), color=pgm.colors.RED,
 >>> )
 ```
 
 - Creating a button
 ```py
->>> self.create_button(
->>>     'Button', self.sheet, 0,
->>>     ('center', 'center'),
->>>     # Event handlers defined in empty Menu class above
->>>     on_half_click=self.on_half_click, on_full_click=self.on_full_click
+>>> pgm.gui.Button(
+>>>     ID='Button', image_sheet=self.sheet
+>>>     anchor=('center', 'center'),
+>>>     # Event handlers automatically added from Menu class
 >>> )
 ```
 
@@ -97,28 +130,25 @@ The following should go in `Menu.create_widgets()`:
 >>> # A textbutton combines text and a button
 >>> #   Hover enlarge makes text larger when hovering
 >>> #   Works well with using larger hover sprite for button
->>> self.create_text_button(
->>>     'TextButton', 'Text',
->>>     self.sheet, 0,
->>>     ('center', 'center'), ('center', 'center'),
->>>     # Event handlers defined in empty Menu class above
->>>     on_half_click=self.on_half_click, on_full_click=self.on_full_click
+>>> pgm.gui.TextButton(
+>>>     ID='TextButton', image_sheet=self.sheet
+>>>     text='Text', 
+>>>     button_anchor=('center', 'center'),
+>>>     # Event handlers automatically added from Menu class
 >>> )
 ```
-
-<img src="/media/demo.gif" width="50%" height="50%"/>
 
 
 ## ⬇️ Installation
 
-Simple, understandable installation instructions!
+<!-- Simple, understandable installation instructions! -->
 
 ```bash
 pip install pyglet-gamemaker
 ```
 
 <!-- And be sure to specify any other minimum requirements like Python versions or operating systems. -->
-Works in Python >=3.10
+**Works in Python >=3.10**
 
 <!-- *You may be inclined to add development instructions here, don't.* -->
 
