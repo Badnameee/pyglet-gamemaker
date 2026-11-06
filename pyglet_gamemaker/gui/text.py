@@ -213,7 +213,7 @@ class Text(Label, Widget):
 	def _get_top_anchor(self) -> int:
 		return self.height - self.anchor_y  # type: ignore[return-value]
 
-	def enable(self) -> None: ...  # noqa: D102
+	def enable(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: D102
 
 	def disable(self) -> None: ...  # noqa: D102
 

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 	from typing import Any
 
 	from .gui.widget import Widget
-	from .types import EventHandler, FontInfo
+	from .types import FontInfo
 	from .window import Window
 
 
@@ -138,8 +138,8 @@ class Scene(ABC):
 		"""Initialize the scene."""
 
 	@abstractmethod
-	def enable(self) -> None:
-		"""Enable this scene (does not enable rendering)."""
+	def enable(self, *args: Any, **kwargs: Any) -> None:
+		"""Enable this scene (does not enable rendering). Can take aribtrary data from previous scene."""
 
 	@abstractmethod
 	def disable(self) -> None:

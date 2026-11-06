@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pyglet_gamemaker.errors import MissingAttr
 from pyglet_gamemaker.event_dispatcher import EventDispatcher
@@ -45,7 +45,7 @@ class BaseObject(EventDispatcher, ABC):
 
 	#* Instance vars
 	ID: str
-	"""The unique ID of the widget to distinguish it"""
+	"""The unique ID of the object to distinguish it"""
 	window: Window | None
 	"""Window object is associated with"""
 	scene: Scene | None
@@ -85,9 +85,9 @@ class BaseObject(EventDispatcher, ABC):
 
 		Args:
 			x (float | None):
-				x pos of widget
+				x pos of object
 			y (float | None):
-				y pos of widget
+				y pos of object
 			x_name (str, optional):
 				Name of arg to propagate to error.
 				Defaults to 'x'.
@@ -124,7 +124,7 @@ class BaseObject(EventDispatcher, ABC):
 
 		Args:
 			window (Window | None):
-				Window of widget
+				Window of object
 			name (str, optional):
 				Name of arg to propagate to error.
 				Defaults to 'window'.
@@ -145,7 +145,7 @@ class BaseObject(EventDispatcher, ABC):
 
 		Args:
 			batch (Batch | None):
-				Batch of widget
+				Batch of object
 			name (str, optional):
 				Name of arg to propagate to error.
 				Defaults to 'batch'.
@@ -164,7 +164,7 @@ class BaseObject(EventDispatcher, ABC):
 
 		Args:
 			group (Group | None):
-				Group of widget
+				Group of object
 			name (str, optional):
 				Name of arg to propagate to error.
 				Defaults to 'group'.
@@ -234,8 +234,8 @@ class BaseObject(EventDispatcher, ABC):
 		"""Calculate new anchor and sync position."""
 
 	@abstractmethod
-	def enable(self) -> None:
-		"""Enable object."""
+	def enable(self, *args: Any, **kwargs: Any) -> None:
+		"""Enable object. Can take aribtrary data from previous scene."""
 
 	@abstractmethod
 	def disable(self) -> None:
@@ -244,7 +244,7 @@ class BaseObject(EventDispatcher, ABC):
 	@property
 	@abstractmethod
 	def x(self) -> float:
-		"""X position of widget's anchor point.
+		"""X position of object's anchor point.
 
 		To set both `.x` and `.y`, use `.pos`
 		"""
@@ -256,7 +256,7 @@ class BaseObject(EventDispatcher, ABC):
 	@property
 	@abstractmethod
 	def y(self) -> float:
-		"""Y position of widget's anchor point.
+		"""Y position of object's anchor point.
 
 		To set both `.x` and `.y`, use `.pos`
 		"""
@@ -277,7 +277,7 @@ class BaseObject(EventDispatcher, ABC):
 	@property
 	@abstractmethod
 	def anchor_x(self) -> float:
-		"""X position of widget anchor offset.
+		"""X position of object anchor offset.
 
 		Can be set in px or dynamic.
 
@@ -291,7 +291,7 @@ class BaseObject(EventDispatcher, ABC):
 	@property
 	@abstractmethod
 	def anchor_y(self) -> float:
-		"""Y position of widget anchor offset.
+		"""Y position of object anchor offset.
 
 		Can be set in px or dynamic.
 

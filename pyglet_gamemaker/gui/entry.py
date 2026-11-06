@@ -6,7 +6,7 @@ Use `~pgm.gui.Entry` instead of `~pgm.gui.entry.Entry`.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pyglet.gui import TextEntry
 
@@ -316,7 +316,7 @@ class Entry(TextEntry, Widget):
 		# Refresh position
 		self.pos = prev_pos
 
-	def enable(self) -> None:  # noqa: D102
+	def enable(self, *args: Any, **kwargs: Any) -> None:  # noqa: D102
 		self.enabled = True
 
 	def disable(self) -> None:  # noqa: D102

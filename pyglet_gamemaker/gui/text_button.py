@@ -329,7 +329,7 @@ class TextButton(Widget):
 		self._enlarge()
 		return False
 
-	def enable(self) -> None:  # noqa: D102
+	def enable(self, *args: Any, **kwargs: Any) -> None:  # noqa: D102
 		self.button.enable()
 
 	def disable(self) -> None:  # noqa: D102

@@ -6,7 +6,7 @@ Use `~pgm.gui.Button` instead of `~pgm.gui.button.Button`.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pyglet.gui import PushButton as _PushButton
 
@@ -298,7 +298,7 @@ class Button(_PushButton, Widget):
 		self._update_status(x, y)
 		return False
 
-	def enable(self) -> None:  # noqa: D102
+	def enable(self, *args: Any, **kwargs: Any) -> None:  # noqa: D102
 		self.enabled = True
 
 	def disable(self) -> None:  # noqa: D102

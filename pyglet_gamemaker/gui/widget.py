@@ -73,8 +73,6 @@ class Widget(BaseObject, ABC):
 	"""The default font info,"""
 
 	#* Instance vars
-	ID: str
-	"""The unique ID of the widget to distinguish it"""
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic) of widget"""
 	initial_pos: Point2D = 0, 0
