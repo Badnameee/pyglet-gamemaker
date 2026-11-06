@@ -238,7 +238,8 @@ class Window(PygletWin):  # type: ignore[misc]
 			trigger (Trigger):
 				The trigger to add
 		"""
-		self.triggers.setdefault(scene.name, set()).add(trigger)
+		self.triggers.setdefault(scene.name, set())
+		self.triggers[scene.name].add(trigger)
 
 	def _change_scene(self, new_scene: str, *args: Any, **kwargs: Any) -> None:
 		# Run when the scene needs to be changed to a new one
