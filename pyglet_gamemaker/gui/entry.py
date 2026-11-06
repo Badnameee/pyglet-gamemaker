@@ -182,7 +182,9 @@ class Entry(TextEntry, Widget):
 
 		# Automatically adjust height to font size
 		if self.font_info[1] is not None:
-			self.base_height = self.height = self.height * self.font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # Don't care if it's a float
+			self.base_height = self.height = (
+				self.height * self.font_info[1] / self.DEFAULT_FONT_SIZE
+			)  # type: ignore[assignment] # Don't care if it's a float
 			# By default, text shifts upward, clinging to the top of the box before resizing
 			# 	Somehow setting text calls something that makes default text shift back to normal
 			# 	Have to set manually as text property has guard statement for same text
@@ -370,7 +372,7 @@ class Entry(TextEntry, Widget):
 
 	@width.setter
 	def width(self, val: int) -> None:
-		TextEntry.width.fset(self, val) # type: ignore[attr-defined]
+		TextEntry.width.fset(self, val)  # type: ignore[attr-defined]
 		self._calc_anchor()
 
 	@property
@@ -380,7 +382,7 @@ class Entry(TextEntry, Widget):
 
 	@height.setter
 	def height(self, val: int) -> None:
-		TextEntry.height.fset(self, val) # type: ignore[attr-defined]
+		TextEntry.height.fset(self, val)  # type: ignore[attr-defined]
 		self._calc_anchor()
 
 	@property

@@ -49,7 +49,7 @@ sprite2.scale = 10
 
 anim3 = AnimationList(
 	'media/AnimationList.png',
-	'test/media/AnimationList.yaml',
+	'tests/media/AnimationList.yaml',
 )
 sprite_3s = []
 x = sprite.width
@@ -59,7 +59,6 @@ for anim in anim3.animations.values():
 	x += sprite_3s[-1].width
 
 # Alias images
-glBindTexture(GL_TEXTURE_2D, 1)
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
 

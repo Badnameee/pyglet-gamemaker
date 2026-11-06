@@ -1,4 +1,4 @@
-"""pgm demo."""
+"""pgm demo. Unfinished as it probably won't make its way to the readme anyways."""
 
 from __future__ import annotations
 
@@ -26,8 +26,9 @@ class TextScene(Scene):
 		'Welcome': ('.5', '.5'),
 		'Next': (1270, 10),
 		'Prev': (10, 10),
-		'Name: ': ('.4', '.1'),
+		'Name Prefix': ('.4', '.1'),
 		'Name': ('.4', '.1'),
+		'Hello': ('.8', '.5'),
 	}
 
 	def initialize(self) -> None:  # noqa: D102
@@ -60,7 +61,7 @@ class TextScene(Scene):
 		# Visual for center of rotation of text
 		self.welcome_anchor = Circle(
 			*self.welcome.pos,
-			10,
+			5,
 			color=colors.RED,
 			batch=self.batch,
 			group=self.main_group,
@@ -69,27 +70,43 @@ class TextScene(Scene):
 
 		# Create name entering gui
 		self.name_label = Text(
-			'Name: ',
+			'Name Prefix',
 			'Name: ',
 			color=colors.RED,
 			scene=self,
 			anchor=('right', 'center'),
 			font_info=(None, 30, None),
 		)
-		self.name_label.y+=2
+		self.name_label.y += 2
 		self.name_entry = Entry(
 			'Name',
-			'',
+			'Enter Name',
 			scene=self,
 			anchor=('left', 'center'),
 			color=colors.ORANGE,
 			font_info=(None, 30, None),
 		)
+		self.hello_label = Text(
+			'Hello',
+			'Hello User!',
+			color=colors.BLACK,
+			scene=self,
+			anchor=('center', 'center'),
+			font_info=(None, 30, None),
+		)
+		self.hello_label.rotation = 30
 
 		# Create circle background
 		self.circles = [
-			Circle(self.window.width/2, self.window.height/2, 25 * n**2, color=(colors.RED if n % 2 == 0 else colors.BLACK), batch=self.batch, group=self.bg_group)
-			for n in range(0, 10)
+			Circle(
+				self.window.width / 2,
+				self.window.height / 2,
+				25 * n**2,
+				color=(colors.RED if n % 2 == 0 else colors.BLACK),
+				batch=self.batch,
+				group=self.bg_group,
+			)
+			for n in range(10)
 		]
 
 		# Create navigation buttons
@@ -110,7 +127,7 @@ class TextScene(Scene):
 
 	def on_submit(self, entry: Entry, text: str) -> None:
 		"""Run when entry submitted (pressed Enter)."""
-		print(f'Hello {text}!')
+		self.hello_label.text = f'Hello {text}!'
 
 	def on_full_click(self, button: Button) -> None:
 		"""Run when button pressed + released."""
