@@ -23,8 +23,63 @@ if TYPE_CHECKING:
 	from pyglet.image import AbstractImage
 
 
+class AnimationFrame(_AnimationFrame):
+	"""A single frame of an animation.
+
+	A frame contains:
+	- an image
+	- a duration
+	- an optional frame number for sorting the frames
+
+	< and > methods can be used to sort the frames is necessary.
+	"""
+
+	frame_num: int | None
+
+	def __init__(
+		self, image: AbstractImage, duration: float | None, frame_num: int | None = None
+	) -> None:
+		"""Create an animation frame.
+
+		Args:
+			image (AbstractImage):
+				The image to display
+			duration (float | None):
+				The duration of the frame
+			frame_num (int, optional):
+				The frame number in the animation.
+				Defaults to None.
+		"""
+		super().__init__(image, duration)
+		self.frame_num = frame_num
+
+	def __lt__(self, other: AnimationFrame) -> bool:
+		"""Shorthand for comparing frame num. Always returns False if frame num is not set."""
+		return (
+			self.frame_num is not None
+			and other.frame_num is not None
+			and self.frame_num < other.frame_num
+		)
+
+	def __gt__(self, other: AnimationFrame) -> bool:
+		"""Shorthand for comparing frame num. Always returns False if frame num is not set."""
+		return (
+			self.frame_num is not None
+			and other.frame_num is not None
+			and self.frame_num > other.frame_num
+		)
+
+	def __str__(self) -> str:
+		"""Show variables in frame."""
+		if self.frame_num:
+			return f'AnimationFrame({self.image}, duration={self.duration}, frame={self.frame_num})'
+		return f'AnimationFrame({self.image}, duration={self.duration})'
+
+
 class Animation(_Animation):
 	"""Stores an single Animation from frames.
+
+	Animation must be passed into `~pyglet.sprite.Sprite` to be used.
 
 	Can be initialized from:
 	- Raw frames `.__init__()`
@@ -92,7 +147,7 @@ class Animation(_Animation):
 				If True, have animation loop when using `~pyglet.sprite.Sprite`.
 				Defaults to False.
 			atlas (bool, optional):
-				If True, spritesheet is stored in a global atlas. False if not.
+				If True, spritesheet is stored in a global atlas.
 				See `~pgm.sprite.SpriteSheet` for more info.
 				Defaults to True.
 		"""
@@ -110,63 +165,10 @@ class Animation(_Animation):
 		return self
 
 
-class AnimationFrame(_AnimationFrame):
-	"""A single frame of an animation.
-
-	A frame contains:
-	- an image
-	- a duration
-	- an optional frame number for sorting the frames
-
-	< and > methods can be used to sort the frames is necessary.
-	"""
-
-	frame_num: int | None
-
-	def __init__(
-		self, image: AbstractImage, duration: float | None, frame_num: int | None = None
-	) -> None:
-		"""Create an animation frame.
-
-		Args:
-			image (AbstractImage):
-				The image to display
-			duration (float | None):
-				The duration of the frame
-			frame_num (int, optional):
-				The frame number in the animation.
-				Defaults to None.
-		"""
-		super().__init__(image, duration)
-		self.frame_num = frame_num
-
-	def __lt__(self, other: AnimationFrame) -> bool:
-		"""Shorthand for comparing frame num. Always returns False if frame num is not set."""
-		return (
-			self.frame_num is not None
-			and other.frame_num is not None
-			and self.frame_num < other.frame_num
-		)
-
-	def __gt__(self, other: AnimationFrame) -> bool:
-		"""Shorthand for comparing frame num. Always returns False if frame num is not set."""
-		return (
-			self.frame_num is not None
-			and other.frame_num is not None
-			and self.frame_num > other.frame_num
-		)
-
-	def __str__(self) -> str:
-		"""Show variables in frame."""
-		if self.frame_num:
-			return f'AnimationFrame({self.image}, duration={self.duration}, frame={self.frame_num})'
-		return f'AnimationFrame({self.image}, duration={self.duration})'
-
-
 class AnimationList:
 	"""Stores a sequence of animations created by a single spritesheet.
 
-	This is achieved using a `.yaml` file with the same name as the spritesheet.
+	This is achieved using a `.yaml` file (defaults to the same name as the spritesheet).
 
 	The created animations will be available through the `.animations` dictionary using unaliased name.
 
