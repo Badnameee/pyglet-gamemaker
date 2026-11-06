@@ -354,7 +354,7 @@ class Trigger(BaseObject):
 			**kwargs,
 		)
 
-	def _get_axes(self, _: bool) -> list[Vec2]:
+	def _get_axes(self) -> list[Vec2]:
 		# Get the normal axes of the trigger as Vec2 (for SAT).
 
 		#* Special case: point trigger has no axes
@@ -382,7 +382,7 @@ class Trigger(BaseObject):
 
 		return axes
 
-	def _project(self, axis: Vec2, _: bool) -> tuple[float, float]:
+	def _project(self, axis: Vec2) -> tuple[float, float]:
 		# Project the trigger onto an axis (use self._get_axes()) (for SAT).
 		# 	Returns a line
 
@@ -420,7 +420,6 @@ class Trigger(BaseObject):
 	def collide(
 		self,
 		other: Trigger | HasHitbox,
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
 
@@ -430,9 +429,6 @@ class Trigger(BaseObject):
 		Args:
 			other (Trigger):
 				The other trigger to detect collision with
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
@@ -469,9 +465,9 @@ class Trigger(BaseObject):
 			)
 
 		if self.subtype == TriggerSubType.POINT:
-			return other._collide_point(self, sacrifice_MTV)
+			return other._collide_point(self)
 		if other.subtype == TriggerSubType.POINT:
-			return self._collide_point(other, sacrifice_MTV)
+			return self._collide_point(other)
 
 		# Get circle collision axis
 		if isinstance(self, TriggerCircle):
@@ -480,16 +476,16 @@ class Trigger(BaseObject):
 			other._get_collision_axis(self)
 
 		#* Step 1: Get the normal axes of each edge
-		axes = self._get_axes(sacrifice_MTV)
-		other_axes = other._get_axes(sacrifice_MTV)
+		axes = self._get_axes()
+		other_axes = other._get_axes()
 
 		MTV_len = float('inf')
 		MTV_axis = Vec2(0, 0)
 
 		#* Step 2: Project the shapes onto each axis
 		for axis in axes + other_axes:
-			l1 = self._project(axis, sacrifice_MTV)
-			l2 = other._project(axis, sacrifice_MTV)
+			l1 = self._project(axis)
+			l2 = other._project(axis)
 
 			#* Step 3: Check for intersection
 			#* 	If the projections do not intersect, there cannot be a collision
@@ -535,16 +531,12 @@ class Trigger(BaseObject):
 	def collide_any(
 		self,
 		others: list[Trigger | HasHitbox],
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others. Return on the first overlap/collision.
 
 		Args:
 			others (list[Trigger]):
 				List of others to check collision with self
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
@@ -553,22 +545,19 @@ class Trigger(BaseObject):
 			return False, None
 
 		for rect in others:
-			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
+			if (collision_info := self.collide(rect))[0]:
 				return collision_info
 
 		return False, None
 
 	def _collide_point(
-		self, other: Trigger, sacrifice_MTV: bool
+		self, other: Trigger
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a polygon and a point. Do not invoke manually.
 
 		Args:
 			other (Trigger):
 				The other trigger to detect collision with
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
@@ -577,7 +566,7 @@ class Trigger(BaseObject):
 			return False, None
 
 		#* Step 1: Get the normal axes of each edge
-		axes = self._get_axes(sacrifice_MTV)
+		axes = self._get_axes()
 
 		# These store the length and axis for the MTV
 		MTV_len = float('inf')
@@ -585,8 +574,8 @@ class Trigger(BaseObject):
 
 		#* Step 2: Project the shapes onto each axis
 		for axis in axes:
-			l1 = self._project(axis, sacrifice_MTV)
-			l2 = other._project(axis, sacrifice_MTV)
+			l1 = self._project(axis)
+			l2 = other._project(axis)
 
 			#* Step 3: Check for intersection
 			#* 	If the projections do not intersect, there cannot be a collision
@@ -778,7 +767,7 @@ class Trigger(BaseObject):
 		else:
 			self._mouse_trigger.pos = x, y
 
-		collided, MTV = self.collide(self._mouse_trigger, False)
+		collided, MTV = self.collide(self._mouse_trigger)
 
 		# Enter
 		if collided:
@@ -1019,23 +1008,22 @@ class TriggerCircle(Trigger):
 		self.axis = Vec2(0, 0)
 		self.radius = radius
 
-	def _get_axes(self, _sacrifice_MTV: bool) -> list[Vec2]:
+	def _get_axes(self) -> list[Vec2]:
 		# If center of circle is directly on other trigger, self.axis is length 0 vector
 		# 	This breaks the collision algorithm
 		# 	Therefore, return nothing
 		return [self.axis.normalize()] if self.axis else []
 
-	def _project(self, axis: Vec2, _remove_dupes: bool) -> tuple[float, float]:
+	def _project(self, axis: Vec2) -> tuple[float, float]:
 		proj = axis.dot(Vec2(*self.coords[0]))
 		return proj - self.radius, proj + self.radius
 
 	def collide_any(  # noqa: D102
 		self,
 		others: list[Trigger | HasHitbox],
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		for rect in others:
-			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
+			if (collision_info := self.collide(rect))[0]:
 				return collision_info
 
 		return False, None

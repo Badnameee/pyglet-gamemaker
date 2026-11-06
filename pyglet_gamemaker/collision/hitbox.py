@@ -237,7 +237,6 @@ class Hitbox(BaseObject):
 	def collide(
 		self,
 		other: Trigger | HasHitbox,
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
 
@@ -247,34 +246,27 @@ class Hitbox(BaseObject):
 		Args:
 			other (Trigger):
 				The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether
 				collision passed and MTV (None if no collision)
 		"""
-		return self.trigger.collide(other, sacrifice_MTV)
+		return self.trigger.collide(other)
 
 	def collide_any(
 		self,
 		others: list[Trigger | HasHitbox],
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others. Return on the first overlap/collision.
 
 		Args:
 			others (list[Trigger | HasHitbox]):
 				List of others to check collision with self
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
-		return self.trigger.collide_any(others, sacrifice_MTV)
+		return self.trigger.collide_any(others)
 
 	def _calc_coords(self, call_trigger: bool = False) -> None:
 		if call_trigger:
@@ -510,7 +502,6 @@ class HitboxCircle(BaseObject):
 	def collide(
 		self,
 		other: Trigger | HasHitbox,
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm to determine if 2 objects are colliding.
 
@@ -520,33 +511,26 @@ class HitboxCircle(BaseObject):
 		Args:
 			other (Trigger | HasHitbox):
 				The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
-		return self.trigger.collide(other, sacrifice_MTV)
+		return self.trigger.collide(other)
 
 	def collide_any(
 		self,
 		others: list[Trigger | HasHitbox],
-		sacrifice_MTV: bool = False,
 	) -> tuple[bool, Vec2 | None]:
 		"""Run the SAT algorithm on a list of others. Return on the first overlap/collision.
 
 		Args:
 			others (list[Trigger | HasHitbox]):
 				List of others to check collision with self
-			sacrifice_MTV (bool, optional):
-				If True, optimize speed in exchange for no MTV.
-				Defaults to False.
 
 		Returns:
 			tuple[bool, Vec2 | None]: Whether collision passed and MTV (None if no collision)
 		"""
-		return self.trigger.collide_any(others, sacrifice_MTV)
+		return self.trigger.collide_any(others)
 
 	def _calc_coords(self, call_trigger: bool = False) -> None:
 		if call_trigger:
