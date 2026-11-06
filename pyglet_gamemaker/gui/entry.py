@@ -60,6 +60,7 @@ class Entry(TextEntry, Widget):
 
 	#* Property vars
 	_color: Color
+	_text_color: Color
 
 	def __init__(
 		self,
@@ -182,9 +183,7 @@ class Entry(TextEntry, Widget):
 
 		# Automatically adjust height to font size
 		if self.font_info[1] is not None:
-			self.base_height = self.height = (
-				self.height * self.font_info[1] / self.DEFAULT_FONT_SIZE
-			)  # type: ignore[assignment] # Don't care if it's a float
+			self.base_height = self.height = self.height * self.font_info[1] / self.DEFAULT_FONT_SIZE  # type: ignore[assignment] # fmt: skip
 			# By default, text shifts upward, clinging to the top of the box before resizing
 			# 	Somehow setting text calls something that makes default text shift back to normal
 			# 	Have to set manually as text property has guard statement for same text
@@ -228,7 +227,7 @@ class Entry(TextEntry, Widget):
 				If True, reset the text.
 				Defaults to True.
 			font (bool, optional):
-				If True, reset the font information.
+				If True, reset the color / font information.
 				Defaults to True.
 		"""
 		if pos:
@@ -242,11 +241,23 @@ class Entry(TextEntry, Widget):
 			self._doc.insert_text(0, self.initial_text)
 			self.edited = False
 		if font:
-			self.font_name, self.font_size = self.font_info[:2]  # type: ignore[assignment]
+			self._reset_style()
 
 	def on_commit(self, widget: TextEntry, text: str) -> None:  # noqa: D102
 		if self.dispatch:
 			self.dispatch_event('on_submit', self, text)
+
+	def _reset_style(self) -> None:
+		self._doc.set_style(
+			0,
+			len(self._doc.text),
+			{
+				'color': self._text_color,
+				'font_name': self.font_info[0],
+				'font_size': self.font_info[1],
+				'weight': self.font_info[2],  # type: ignore[misc]
+			},
+		)
 
 	def _set_focus(self, value: bool) -> None:
 		# Get previous value to detect first click-off
@@ -391,6 +402,15 @@ class Entry(TextEntry, Widget):
 		return self._doc.text
 
 	@property
+	def text_color(self) -> Color:
+		"""The color of the text in the entry."""
+		return self._doc.get_style('color')  # type: ignore[no-any-return]
+
+	@text_color.setter
+	def text_color(self, val: Color) -> None:
+		self._doc.set_style(0, len(self._doc.text), {'color': val})
+
+	@property
 	def font_name(self) -> str | list[str]:
 		"""Font family name.
 
@@ -449,7 +469,7 @@ class Entry(TextEntry, Widget):
 		self.width = int(self.base_width * val)
 		self.height = int(self.base_height * val)
 		self._scale = val
-		self._calc_anchor()
+		#self._calc_anchor()
 
 	def __str__(self) -> str:
 		return f'Entry ({self.ID}): "{self.text}" @ {self.pos} @ {self.scale}x scale | {self.raw_anchor} anchored'
