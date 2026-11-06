@@ -67,6 +67,7 @@ class SpriteSheet:
 		col_padding: int = 0,
 		top_down: bool = True,
 		atlas: bool = True,
+		*,
 		_yaml: bool = False,
 		_yaml_path: Path | str | None = None,
 	) -> None:
@@ -95,9 +96,14 @@ class SpriteSheet:
 				Defaults to True.
 			_yaml (bool, optional):
 				If True, add yaml file path to `.yaml_path`.
-				Used by `._name_with_yaml()`.
+				Used internally, use `SpriteSheet.from_yaml()`.
+				Used for loading animations.
+				Defaults to False.
 			_yaml_path (Path | str, optional):
-				Used
+				Path used when loading animation yaml config file.
+				Used internally, use `SpriteSheet.from_yaml()`.
+				Used for loading animations.
+				Defaults to file_path with the extension replaced to `.yaml`.
 		"""
 		self.path, self.rows, self.cols = Path(file_path), rows, cols
 		self.row_padding, self.col_padding = row_padding, col_padding
@@ -142,11 +148,13 @@ class SpriteSheet:
 		if isinstance(yaml_path, str):
 			yaml_path = Path(yaml_path)
 
+		# Validate yaml
 		validator = YAMLValidator(yaml_path, 'Anim')
 		errors = validator.validate()
 		if errors:
 			raise InvalidConfigFile(str(yaml_path), validator.validation_mode, errors)
 
+		# Create object
 		yaml = cls._raw_yaml(yaml_path)
 		self = cls(
 			file_path,
@@ -220,7 +228,7 @@ class SpriteSheet:
 		# Use lookup table if string
 		if isinstance(index, str):
 			return self.image_grid[self.lookup[index]]  # type: ignore[return-value]
-		raise ValueError(f'SpriteSheet[] recieved bad value: {index}')
+		raise TypeError(f'SpriteSheet[] recieved bad value: {index}')
 
 	@property
 	def item_width(self) -> int:
