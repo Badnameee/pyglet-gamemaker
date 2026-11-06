@@ -83,7 +83,10 @@ Creating a spritesheet
 >>> # Create a sprite sheet with image assets
 >>> #   This image, found in /test, has 3 images (bottom to top):
 >>> #   Unpressed, Hover, and Pressed
->>> self.sheet = pgm.sprite.SpriteSheet('test/Test Button SpriteSheet.png', rows=3, cols=1)
+>>> pgm.sprite.SpriteSheet(
+>>>     file_path='test/Test Button SpriteSheet.png',
+>>>     rows=3, cols=1
+>>> )
 ```
 
 Creating a rectangle hitbox
@@ -119,7 +122,7 @@ Widget creation should go in `Menu.initialize()`:
 - Creating a button
 ```py
 >>> pgm.gui.Button(
->>>     ID='Button', image_sheet=self.sheet
+>>>     ID='Button', image_sheet=self.sheet,
 >>>     anchor=('center', 'center'),
 >>>     # Event handlers automatically added from Menu class
 >>> )
@@ -131,7 +134,7 @@ Widget creation should go in `Menu.initialize()`:
 >>> #   Hover enlarge makes text larger when hovering
 >>> #   Works well with using larger hover sprite for button
 >>> pgm.gui.TextButton(
->>>     ID='TextButton', image_sheet=self.sheet
+>>>     ID='TextButton', image_sheet=self.sheet,
 >>>     text='Text', 
 >>>     button_anchor=('center', 'center'),
 >>>     # Event handlers automatically added from Menu class
