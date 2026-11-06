@@ -16,7 +16,7 @@ from pyglet_gamemaker.window import Window
 
 
 class TestScene(Scene):
-	WIDGET_POS = {'Test1': (0.2, 0.1), 'Test2': (0.5, 0.5), 'Test3': (0.7, 0.7)}
+	WIDGET_POS = {'Test1': ('0.2', '0.1'), 'Test2': ('0.5', '0.5'), 'Test3': ('0.7', '0.7')}
 
 	DEFAULT_FONT_INFO = None, 40, None
 
@@ -82,9 +82,9 @@ class TestScene(Scene):
 
 class TestScene2(Scene):
 	WIDGET_POS = {
-		'Test1': (0, 0.3),
-		'Test2': (0.4, 0.6),
-		'Test3': (0.6, 0.8),
+		'Test1': (0, '0.3'),
+		'Test2': ('0.4', '0.6'),
+		'Test3': ('0.6', '0.8'),
 	}
 
 	DEFAULT_FONT_INFO = None, 40, None

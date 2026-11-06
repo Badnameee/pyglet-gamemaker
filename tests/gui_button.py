@@ -17,7 +17,7 @@ from pyglet_gamemaker.window import Window
 
 
 class Scene1(Scene):
-	WIDGET_POS = {'Test': (0.5, 0.5)}
+	WIDGET_POS = {'Test': ('0.5', '0.5')}
 
 	def initialize(self):
 		self.bg = Rect(

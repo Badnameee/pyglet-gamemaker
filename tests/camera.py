@@ -18,7 +18,7 @@ window = Window(camera=Camera(anchor_x=640, anchor_y=360))
 
 
 class Scene1(Scene):
-	WIDGET_POS = {'hud': (0, 1)}
+	WIDGET_POS = {'hud': ('0', '1')}
 
 	def initialize(self):
 		self.items = [
